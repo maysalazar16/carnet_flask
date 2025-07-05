@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #007f3e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar button {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .sidebar button:hover {
+            background-color: #1e7e34;
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f2f2f2;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Admin</h3>
+        <button onclick="cargar('agregar')">➕ Agregar Empleado</button>
+        <button onclick="cargar('generar')">🆔 Generar Carné</button>
+        <button onclick="cargar('ver_registros')">📋 Ver Registros</button>
+        <button onclick="location.href='/logout'">🔒 Cerrar Sesión</button>
+    </div>
+
+    <div class="content" id="contenido">
+        <iframe src="{{ url_for('agregar') }}"></iframe>
+    </div>
+
+    <script>
+        function cargar(ruta) {
+            let url = '';
+            if (ruta === 'agregar') {
+                url = "{{ url_for('agregar') }}";
+            } else if (ruta === 'generar') {
+                url = "{{ url_for('generar_carnet_web') }}";
+            } else if (ruta === 'ver_registros') {
+                url = "/ver";  // Debes tener una ruta que muestre lista de empleados
+            }
+            document.querySelector('#contenido iframe').src = url;
+        }
+    </script>
+</body>
+</html>

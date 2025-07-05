@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Empleado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f0fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 450px;
+        }
+        h2 {
+            text-align: center;
+            color: #28a745;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        input[type="submit"]:hover {
+            background-color: #28a745;
+        }
+        .flash {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function generarCodigo() {
+            const nombres = document.getElementById('nombres').value.trim().toUpperCase();
+            const apellidos = document.getElementById('apellidos').value.trim().toUpperCase();
+            const iniciales = nombres.charAt(0) + apellidos.charAt(0);
+            const aleatorio = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('codigo').value = iniciales + aleatorio;
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Agregar Empleado</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="text" id="nombres" name="nombres" placeholder="Nombres" oninput="generarCodigo()" required>
+            <input type="text" id="apellidos" name="apellidos" placeholder="Apellidos" oninput="generarCodigo()" required>
+
+            <label for="tipo_documento">Tipo de Documento:</label>
+            <select name="tipo_documento" required>
+                <option value="">Seleccione</option>
+                <option value="CC">Cédula de Ciudadanía</option>
+                <option value="TI">Tarjeta de Identidad</option>
+            </select>
+
+            <input type="text" name="cedula" placeholder="Número de Documento" required>
+
+            <label for="cargo">Cargo:</label>
+            <select name="cargo" required>
+                <option value="Aprendiz">Aprendiz</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Administración">Administración</option>
+            </select>
+
+            <input type="text" id="codigo" name="codigo" placeholder="Código generado" readonly required>
+
+            <label>Fecha de emisión:</label>
+            <input type="date" name="fecha_emision" value="{{ fecha_hoy }}" readonly>
+
+            <label>Fecha de vencimiento:</label>
+            <input type="date" name="fecha_vencimiento" value="{{ fecha_vencimiento }}" required>
+
+            <input type="text" name="tipo_sangre" placeholder="Tipo de sangre (Ej: O+)" required>
+
+            <label>Foto (JPG o PNG):</label>
+            <input type="file" name="foto" accept="image/*" required>
+
+            <input type="submit" value="Guardar">
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html>

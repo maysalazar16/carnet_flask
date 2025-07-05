@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Aprendiz con Vista Previa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e0f2e9;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      position: relative;
+    }
+    .logout-container {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+    }
+    .logout-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .logout-button:hover {
+      background-color: #c82333;
+    }
+
+    .form-container {
+      width: 400px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-container h2 {
+      text-align: center;
+      color: #007f3e;
+    }
+    .form-container label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .form-container input,
+    .form-container select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .form-container input[type="submit"] {
+      margin-top: 20px;
+      background: #007f3e;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 6px;
+    }
+    .form-container input[type="submit"]:hover {
+      background: #005f2e;
+    }
+    .flash {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .preview-container {
+      width: 400px;
+      height: 620px;
+      background: #fff;
+      position: relative;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .carnet {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .carnet .logo {
+      position: absolute;
+      top: 40px; left: 40px;
+      width: 140px;
+    }
+    .carnet .foto {
+      position: absolute;
+      top: 30px; right: 30px;
+      width: 140px; height: 160px;
+      object-fit: cover;
+      border: 1px solid #ccc;
+    }
+    .carnet .cargo-vertical {
+      position: absolute;
+      top: 50px; right: 0;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-size: 24px;
+      font-weight: bold;
+      color:rgb(9, 9, 9);
+    }
+    .carnet .linea {
+      position: absolute;
+      top: 200px; left: 20px;
+      width: calc(100% - 40px);
+      height: 4px;
+      background: #007f3e;
+    }
+    .carnet .datos {
+      position: absolute;
+      top: 210px; left: 20px;
+      width: calc(100% - 40px - 160px);
+      font-size: 14px;
+      line-height: 1.5;
+      color: #000;
+    }
+    .carnet .datos .nombre-linea1 {
+      color: #007f3e;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .carnet .datos .nombre-linea2 {
+      color: #007f3e;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .carnet .datos .cc {
+      color: #666;
+      margin-top: 5px;
+    }
+    .carnet .datos .rh-label {
+      margin-top: 70px;
+      margin-left: 50px;
+      color: rgb(7, 7, 7);
+      font-size: 16px;
+    }
+    .carnet .datos .rh {
+      font-size: 54px;
+      color:rgb(129, 140, 137);
+      margin-top: 30px;
+    }
+    .carnet .qr {
+      position: absolute;
+      top: 330px; right: 30px;
+      width: 180px; height: 180px;
+    }
+    .carnet .pie {
+      position: absolute;
+      bottom: 20px; left: 20px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+    .carnet .pie .regional {
+      color: #666;
+    }
+    .carnet .pie .footer {
+      color: #007f3e;
+    }
+    .carnet .pie .subline {
+      color: #007f3e;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logout-container">
+    <form action="{{ url_for('logout') }}" method="POST">
+      <button type="submit" class="logout-button">Cerrar sesión</button>
+    </form>
+  </div>
+
+  <div class="form-container">
+    <h2>Registro de Datos - Aprendiz</h2>
+    <form method="POST" enctype="multipart/form-data" oninput="actualizarPreview()">
+      <label>Nombres</label>
+      <input type="text" id="nombres" name="nombres" required>
+      <label>Apellidos</label>
+      <input type="text" id="apellidos" name="apellidos" required>
+
+      <label>Tipo Documento</label>
+      <select id="tipo_documento" name="tipo_documento" required>
+        <option value="">Seleccione</option>
+        <option value="CC">CC</option>
+        <option value="TI">TI</option>
+      </select>
+
+      <label>Cédula</label>
+      <input type="text" id="cedula" name="cedula" required>
+
+      <label>Cargo</label>
+      <input type="text" name="cargo" value="APRENDIZ" readonly>
+
+      <label>Fecha Emisión</label>
+      <input type="date" id="fecha_emision" name="fecha_emision" value="{{ fecha_hoy }}" readonly>
+
+      <label>Fecha Vencimiento</label>
+      <input type="date" id="fecha_vencimiento" name="fecha_vencimiento" value="{{ fecha_vencimiento }}" required>
+
+      <label>Tipo Sangre</label>
+      <input type="text" id="tipo_sangre" name="tipo_sangre" required>
+
+      <label>Foto</label>
+      <input type="file" name="foto" accept="image/*" onchange="previewFoto(this)" required>
+
+      <input type="submit" value="Guardar">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+    </form>
+  </div>
+
+  <div class="preview-container">
+    <div class="carnet">
+      <img src="{{ url_for('static', filename='fotos/logo_sena.png') }}" class="logo" alt="SENA">
+      <img src="https://via.placeholder.com/140x160.png?text=FOTO" id="pv_foto" class="foto" alt="Foto Aprendiz">
+      <div class="cargo-vertical">APRENDIZ</div>
+      <div class="linea"></div>
+      <div class="datos">
+        <div class="nombre-linea1"><span id="pv_nombre1">NOMBRE</span></div>
+        <div class="nombre-linea2"><span id="pv_nombre2">APELLIDO</span></div>
+        <div class="cc"><span id="pv_cc">000.000.000</span></div>
+        <div class="rh-label">RH</div>
+        <div class="rh"><span id="pv_rh">O+</span></div>
+      </div>
+      <div class="qr">
+        <img id="qr-preview" src="" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <div class="pie">
+        <div class="regional">Regional Valle</div>
+        <div class="footer">Centro de Biotecnología<br><span class="subline">Industrial</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function previewNombre() {
+      let n = document.getElementById('nombres').value.trim().toUpperCase();
+      let a = document.getElementById('apellidos').value.trim().toUpperCase();
+      document.getElementById('pv_nombre1').textContent = n;
+      document.getElementById('pv_nombre2').textContent = a;
+    }
+    function previewCC() {
+      let ccVal = document.getElementById('cedula').value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      document.getElementById('pv_cc').textContent = ccVal;
+    }
+    function previewRH() {
+      document.getElementById('pv_rh').textContent = document.getElementById('tipo_sangre').value.toUpperCase();
+    }
+    function previewFecha() {
+      let em = document.getElementById('fecha_emision').value;
+      let ve = document.getElementById('fecha_vencimiento').value;
+      document.getElementById('pv_em').textContent = em;
+      document.getElementById('pv_ve').textContent = ve;
+    }
+    function previewFoto(input) {
+      let out = document.getElementById('pv_foto');
+      if (input.files && input.files[0]) {
+        let reader = new FileReader();
+        reader.onload = e => out.src = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    function actualizarPreview() {
+      previewNombre(); previewCC(); previewRH(); previewFecha();
+    }
+    function generarQR() {
+      const cedula = document.getElementById('cedula').value.trim();
+      const qrImg = document.getElementById('qr-preview');
+
+      if (cedula) {
+        const url = `https://oferta.senasofiaplus.edu.co/sofia-oferta/inicio-sofia-plus.html`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=180x180`;
+        qrImg.src = qrUrl;
+      } else {
+        qrImg.src = "";
+      }
+    }
+
+    document.getElementById('cedula').addEventListener('input', generarQR);
+  </script>
+</body>
+</html>

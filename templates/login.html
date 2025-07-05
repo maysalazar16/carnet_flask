@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión - Carnet SENA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f2f2;
+            margin-top: 60px;
+        }
+        form {
+            display: inline-block;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        input {
+            margin-bottom: 15px;
+            padding: 8px;
+            width: 250px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        img.logo {
+            width: 140px;
+            margin-bottom: 10px;
+        }
+        img.usuario {
+            width: 90px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='fotos/logo_sena.png') }}" alt="Logo SENA" class="logo">
+    <br>
+    <img src="{{ url_for('static', filename='fotos/usuario_sena.png') }}" alt="Usuario" class="usuario">
+
+    <h2>Sistema de Carnetización</h2>
+    <form method="POST">
+        <h3>Iniciar Sesión</h3>
+        <input type="text" name="usuario" placeholder="Usuario" required><br>
+        <input type="password" name="clave" placeholder="Contraseña" required><br>
+        <input type="submit" value="Ingresar">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <p style="color:red;">{{ messages[0] }}</p>
+          {% endif %}
+        {% endwith %}
+    </form>
+</body>
+</html>

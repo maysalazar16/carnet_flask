@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carné Generado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            padding: 40px;
+        }
+        .contenedor {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: inline-block;
+        }
+        .contenedor img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+        }
+        .botones {
+            margin-top: 20px;
+        }
+        .botones a, .botones button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 8px 5px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .botones a:hover, .botones button:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        function imprimirCarnet() {
+            const ventana = window.open('', '_blank');
+            ventana.document.write('<img src="' + document.querySelector('img').src + '" style="max-width:100%">');
+            ventana.document.close();
+            ventana.focus();
+            ventana.print();
+            ventana.close();
+        }
+
+        function compartirCarnet() {
+            const url = window.location.origin + "{{ url_for('static', filename='carnets/' + carnet) }}";
+            const mensaje = `Hola, este es mi carné digital generado automáticamente: ${url}`;
+            const enlace = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+            window.open(enlace, '_blank');
+        }
+    </script>
+</head>
+<body>
+    <div class="contenedor">
+        <h2>Carné Generado</h2>
+        <img src="{{ url_for('static', filename='carnets/' + carnet) }}" alt="Carné generado">
+        <div class="botones">
+            <a href="{{ url_for('static', filename='carnets/' + carnet) }}" download>📥 Descargar Carné</a>
+            <a href="{{ url_for('dashboard_admin') }}">🏠 Volver al Panel</a>
+            <button onclick="imprimirCarnet()">🖨️ Imprimir</button>
+            <button onclick="compartirCarnet()">🔗 Compartir</button>
+        </div>
+    </div>
+</body>
+</html

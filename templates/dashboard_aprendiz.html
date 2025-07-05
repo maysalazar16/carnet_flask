@@ -1,0 +1,109 @@
+<!-- templates/registro_aprendiz.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Aprendiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f2e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #007f3e;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+        .fixed-field {
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #007f3e;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #005f2e;
+        }
+        .flash {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registro de Datos - Aprendiz</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <label>Nombre completo:</label>
+            <input type="text" name="nombre" placeholder="Nombre completo" required>
+
+            <label>Cédula:</label>
+            <input type="text" name="cedula" placeholder="Cédula" required>
+
+            <label>Cargo:</label>
+            <div class="fixed-field">Aprendiz</div>
+            <input type="hidden" name="cargo" value="Aprendiz">
+
+            <label>Código del aprendiz:</label>
+            <input type="text" name="codigo" placeholder="Código del aprendiz" required>
+
+            <label>Fecha de inicio:</label>
+            <div class="fixed-field">{{ fecha_hoy }}</div>
+            <input type="hidden" name="fecha_emision" value="{{ fecha_hoy }}">
+
+            <label>Fecha de vencimiento:</label>
+            <input type="date" name="fecha_vencimiento" required>
+
+            <label>Tipo de sangre (Ej: O+):</label>
+            <input type="text" name="tipo_sangre" placeholder="Tipo de sangre" required>
+
+            <label>Foto (JPG o PNG):</label>
+            <input type="file" name="foto" accept="image/*" required>
+
+            <input type="submit" value="Guardar">
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash">{{ messages[0] }}</div>
+              {% endif %}
+            {% endwith %}
+        </form>
+    </div>
+</body>
+</html>
