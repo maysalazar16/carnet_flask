@@ -208,4 +208,4 @@ def generar_carnet_web():
     return render_template("generar.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)#
