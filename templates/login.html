@@ -2,61 +2,497 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión - Carnet SENA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENA Carnets - Iniciar Sesión</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f2f2f2;
-            margin-top: 60px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2e8b57 0%, #228b22 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        form {
-            display: inline-block;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #ccc;
+
+        .login-container {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 900px;
+            min-height: 600px;
         }
-        input {
-            margin-bottom: 15px;
-            padding: 8px;
-            width: 250px;
-        }
-        input[type="submit"] {
-            background-color: #28a745;
+
+        .left-panel {
+            background: linear-gradient(135deg, #2e8b57, #228b22);
             color: white;
-            border: none;
-            cursor: pointer;
+            padding: 60px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
-        input[type="submit"]:hover {
-            background-color: #218838;
+
+        .logo-circle {
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
         }
-        img.logo {
-            width: 140px;
+
+        .logo-circle svg {
+            width: 60px;
+            height: 60px;
+            fill: white;
+        }
+
+        .left-panel h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .left-panel .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .features {
+            list-style: none;
+            text-align: left;
+        }
+
+        .features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .features li::before {
+            content: '✓';
+            margin-right: 15px;
+            font-weight: bold;
+            color: #90ee90;
+        }
+
+        .right-panel {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-text h2 {
+            color: #333;
+            font-size: 2rem;
             margin-bottom: 10px;
         }
-        img.usuario {
-            width: 90px;
+
+        .welcome-text p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .alert {
+            padding: 12px 15px;
             margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2e8b57;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .remember-me input {
+            margin-right: 10px;
+        }
+
+        .remember-me label {
+            font-size: 0.9rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #2e8b57, #228b22);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 139, 87, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .credentials-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .credentials-title {
+            color: #1976d2;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .credentials-title::before {
+            content: 'ℹ️';
+            margin-right: 10px;
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e3f2fd;
+        }
+
+        .credential-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .credential-value {
+            color: #e91e63;
+            font-family: monospace;
+            background: #fce4ec;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #2e8b57;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #f0f8f0;
+        }
+
+        .security-note {
+            background: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #f57c00;
+        }
+
+        .security-note::before {
+            content: '⚠️ ';
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .left-panel, .right-panel {
+                padding: 40px 30px;
+            }
+            
+            .left-panel h1 {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <img src="{{ url_for('static', filename='fotos/logo_sena.png') }}" alt="Logo SENA" class="logo">
-    <br>
-    <img src="{{ url_for('static', filename='fotos/usuario_sena.png') }}" alt="Usuario" class="usuario">
+    <div class="login-container">
+        <!-- Panel Izquierdo -->
+        <div class="left-panel">
+            <div class="logo-circle">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                </svg>
+            </div>
+            
+            <h1>SENA</h1>
+            <p class="subtitle">Sistema de Carnets Digitales</p>
+            
+            <ul class="features">
+                <li>Genera carnets con diseño oficial</li>
+                <li>Códigos QR para verificación</li>
+                <li>Gestión completa de aprendices</li>
+                <li>Sistema seguro y confiable</li>
+                <li>Acceso desde cualquier dispositivo</li>
+            </ul>
+        </div>
 
-    <h2>Sistema de Carnetización</h2>
-    <form method="POST">
-        <h3>Iniciar Sesión</h3>
-        <input type="text" name="usuario" placeholder="Usuario" required><br>
-        <input type="password" name="clave" placeholder="Contraseña" required><br>
-        <input type="submit" value="Ingresar">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <p style="color:red;">{{ messages[0] }}</p>
-          {% endif %}
-        {% endwith %}
-    </form>
+        <!-- Panel Derecho -->
+        <div class="right-panel">
+            <div class="welcome-text">
+                <h2>¡Bienvenido de nuevo!</h2>
+                <p>Ingresa tus credenciales para acceder al sistema</p>
+            </div>
+
+            <form class="login-form" method="POST" action="{{ url_for('login') }}">
+                <!-- Mostrar errores -->
+                {% if error %}
+                <div class="alert alert-error">
+                    <strong>❌ Error:</strong> {{ error }}
+                </div>
+                {% endif %}
+
+                <!-- Mostrar mensajes flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="form-group">
+                    <label for="usuario">👤 Usuario</label>
+                    <input type="text" id="usuario" name="usuario" required 
+                           placeholder="Ingresa tu usuario" 
+                           value="{{ request.form.usuario if request.form.usuario else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">🔒 Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" required 
+                               placeholder="Ingresa tu contraseña">
+                        <span class="password-toggle" onclick="togglePassword()">👁️</span>
+                    </div>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Recordar mi sesión</label>
+                </div>
+
+                <button type="submit" class="login-btn">🚀 Iniciar Sesión</button>
+            </form>
+
+            <!-- Credenciales de Acceso -->
+            <div class="credentials-section">
+                <div class="credentials-title">
+                    Credenciales de Acceso
+                </div>
+                
+                <div class="credential-item">
+                    <span class="credential-label">Usuario:</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="credential-value">admin</span>
+                        <button class="copy-btn" onclick="copyToClipboard('admin', 'usuario')" title="Copiar usuario">📋</button>
+                    </div>
+                </div>
+                
+                <div class="credential-item">
+                    <span class="credential-label">Contraseña:</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="credential-value">admin123</span>
+                        <button class="copy-btn" onclick="copyToClipboard('admin123', 'password')" title="Copiar contraseña">📋</button>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.8rem; color: #666; margin-top: 10px; text-align: center;">
+                    💡 Puedes hacer clic en los botones de copiar para llenar automáticamente los campos.
+                </p>
+            </div>
+
+            <div class="security-note">
+                <strong>Nota de Seguridad:</strong> Se recomienda cambiar las credenciales por defecto después del primer acceso.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggle = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+
+        function copyToClipboard(text, fieldId) {
+            try {
+                // Llenar el campo automáticamente
+                document.getElementById(fieldId).value = text;
+                
+                // Copiar al portapapeles si está disponible
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                }
+                
+                // Mostrar feedback visual
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅';
+                btn.style.color = '#4caf50';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.color = '#2e8b57';
+                }, 1000);
+                
+            } catch (error) {
+                console.log('Error al copiar:', error);
+                document.getElementById(fieldId).value = text;
+            }
+        }
+
+        // Auto-focus en el primer campo
+        window.addEventListener('load', function() {
+            document.getElementById('usuario').focus();
+        });
+
+        // Animación de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.login-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.6s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // Prevenir doble envío del formulario
+        document.querySelector('.login-form').addEventListener('submit', function(e) {
+            const btn = document.querySelector('.login-btn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Ingresando...';
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = '🚀 Iniciar Sesión';
+            }, 3000);
+        });
+    </script>
 </body>
 </html>

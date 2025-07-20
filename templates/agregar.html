@@ -2,105 +2,409 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Agregar Empleado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Empleado - SENA</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e8f0fe;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .form-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 450px;
-        }
-        h2 {
-            text-align: center;
-            color: #28a745;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        input[type="submit"] {
-            background-color: #28a745;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            /* MISMO FONDO VERDE DEL MENÚ */
+            background: linear-gradient(135deg, #e0f2e9 0%, #c8e6c9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007f3e, #00a651);
             color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-        input[type="submit"]:hover {
-            background-color: #28a745;
-        }
-        .flash {
-            color: red;
+            padding: 20px 30px;
             text-align: center;
-            margin-top: 10px;
+            /* Removido position relative para el botón */
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* BOTÓN DE REGRESO AL MENÚ - SIEMPRE VISIBLE */
+        .btn-regreso {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #007f3e, #00a651);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 127, 62, 0.3);
+        }
+
+        .btn-regreso:hover {
+            background: linear-gradient(135deg, #005f2e, #007f3e);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 127, 62, 0.4);
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007f3e;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 127, 62, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px dashed #007f3e;
+            border-radius: 8px;
+            background: #f0f8f4;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            background: #e8f5e8;
+            border-color: #005f2e;
+        }
+
+        .file-input input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #007f3e, #00a651);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 127, 62, 0.3);
+        }
+
+        .alert {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .btn-regreso {
+                top: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                margin: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-regreso {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+
+            .btn-regreso span:last-child {
+                display: none; /* Solo mostrar icono en móvil */
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+
+            .btn-submit {
+                padding: 12px;
+                font-size: 1rem;
+            }
         }
     </style>
-    <script>
-        function generarCodigo() {
-            const nombres = document.getElementById('nombres').value.trim().toUpperCase();
-            const apellidos = document.getElementById('apellidos').value.trim().toUpperCase();
-            const iniciales = nombres.charAt(0) + apellidos.charAt(0);
-            const aleatorio = Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('codigo').value = iniciales + aleatorio;
-        }
-    </script>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Agregar Empleado</h2>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="text" id="nombres" name="nombres" placeholder="Nombres" oninput="generarCodigo()" required>
-            <input type="text" id="apellidos" name="apellidos" placeholder="Apellidos" oninput="generarCodigo()" required>
+    <div class="container">
+        <!-- BOTÓN DE REGRESO SIEMPRE VISIBLE -->
+        <button class="btn-regreso" onclick="regresarMenu()">
+            <span>🏠</span>
+            <span>Menú</span>
+        </button>
 
-            <label for="tipo_documento">Tipo de Documento:</label>
-            <select name="tipo_documento" required>
-                <option value="">Seleccione</option>
-                <option value="CC">Cédula de Ciudadanía</option>
-                <option value="TI">Tarjeta de Identidad</option>
-            </select>
+        <div class="header">
+            <h1>👥 Agregar Empleado</h1>
+            <p>Registra nuevos empleados en el sistema SENA</p>
+        </div>
 
-            <input type="text" name="cedula" placeholder="Número de Documento" required>
+        <div class="form-container">
+            <!-- Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'message' else category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-            <label for="cargo">Cargo:</label>
-            <select name="cargo" required>
-                <option value="Aprendiz">Aprendiz</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Administración">Administración</option>
-            </select>
+            <form method="POST" action="{{ url_for('agregar') }}" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nombres">Nombres *</label>
+                        <input type="text" id="nombres" name="nombres" required 
+                               placeholder="Ingresa los nombres" 
+                               value="{{ request.form.nombres if request.form.nombres else '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apellidos">Apellidos *</label>
+                        <input type="text" id="apellidos" name="apellidos" required 
+                               placeholder="Ingresa los apellidos"
+                               value="{{ request.form.apellidos if request.form.apellidos else '' }}">
+                    </div>
+                </div>
 
-            <input type="text" id="codigo" name="codigo" placeholder="Código generado" readonly required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tipo_documento">Tipo de Documento *</label>
+                        <select id="tipo_documento" name="tipo_documento" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="CC" {{ 'selected' if request.form.tipo_documento == 'CC' else '' }}>Cédula de Ciudadanía</option>
+                            <option value="TI" {{ 'selected' if request.form.tipo_documento == 'TI' else '' }}>Tarjeta de Identidad</option>
+                            <option value="CE" {{ 'selected' if request.form.tipo_documento == 'CE' else '' }}>Cédula de Extranjería</option>
+                            <option value="PP" {{ 'selected' if request.form.tipo_documento == 'PP' else '' }}>Pasaporte</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cedula">Número de Documento *</label>
+                        <input type="text" id="cedula" name="cedula" required 
+                               placeholder="Número de documento"
+                               value="{{ request.form.cedula if request.form.cedula else '' }}">
+                    </div>
+                </div>
 
-            <label>Fecha de emisión:</label>
-            <input type="date" name="fecha_emision" value="{{ fecha_hoy }}" readonly>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cargo">Cargo *</label>
+                        <select id="cargo" name="cargo" required>
+                            <option value="">Seleccionar cargo...</option>
+                            <option value="Aprendiz" {{ 'selected' if request.form.cargo == 'Aprendiz' else '' }}>Aprendiz</option>
+                            <option value="Instructor" {{ 'selected' if request.form.cargo == 'Instructor' else '' }}>Instructor</option>
+                            <option value="Administrador" {{ 'selected' if request.form.cargo == 'Administrador' else '' }}>Administrativo</option>
+                            <option value="Coordinador" {{ 'selected' if request.form.cargo == 'Coordinador' else '' }}>Coordinador</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo_sangre">Tipo de Sangre *</label>
+                        <select id="tipo_sangre" name="tipo_sangre" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="O+" {{ 'selected' if request.form.tipo_sangre == 'O+' else '' }}>O+</option>
+                            <option value="O-" {{ 'selected' if request.form.tipo_sangre == 'O-' else '' }}>O-</option>
+                            <option value="A+" {{ 'selected' if request.form.tipo_sangre == 'A+' else '' }}>A+</option>
+                            <option value="A-" {{ 'selected' if request.form.tipo_sangre == 'A-' else '' }}>A-</option>
+                            <option value="B+" {{ 'selected' if request.form.tipo_sangre == 'B+' else '' }}>B+</option>
+                            <option value="B-" {{ 'selected' if request.form.tipo_sangre == 'B-' else '' }}>B-</option>
+                            <option value="AB+" {{ 'selected' if request.form.tipo_sangre == 'AB+' else '' }}>AB+</option>
+                            <option value="AB-" {{ 'selected' if request.form.tipo_sangre == 'AB-' else '' }}>AB-</option>
+                        </select>
+                    </div>
+                </div>
 
-            <label>Fecha de vencimiento:</label>
-            <input type="date" name="fecha_vencimiento" value="{{ fecha_vencimiento }}" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha_vencimiento">Fecha de Vencimiento *</label>
+                        <input type="date" id="fecha_vencimiento" name="fecha_vencimiento" required
+                               value="{{ fecha_vencimiento if fecha_vencimiento else '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Código (Generado automáticamente)</label>
+                        <input type="text" placeholder="Se genera automáticamente" readonly 
+                               style="background: #f8f9fa; color: #6c757d;">
+                    </div>
+                </div>
 
-            <input type="text" name="tipo_sangre" placeholder="Tipo de sangre (Ej: O+)" required>
+                <div class="form-group">
+                    <label for="foto">Foto del Empleado *</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input">
+                            <input type="file" id="foto" name="foto" accept="image/*" required>
+                            <span>📷 Seleccionar foto (JPG, PNG)</span>
+                        </div>
+                    </div>
+                </div>
 
-            <label>Foto (JPG o PNG):</label>
-            <input type="file" name="foto" accept="image/*" required>
-
-            <input type="submit" value="Guardar">
-        </form>
-
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash">{{ messages[0] }}</div>
-          {% endif %}
-        {% endwith %}
+                <button type="submit" class="btn-submit">
+                    💾 Guardar Empleado
+                </button>
+            </form>
+        </div>
     </div>
+
+    <script>
+        // Función para regresar al menú principal
+        function regresarMenu() {
+            // Si estamos en un iframe (dentro del dashboard)
+            if (window.parent && window.parent !== window) {
+                // Llamar función del parent para volver al inicio
+                window.parent.volverInicio();
+            } else {
+                // Si estamos en ventana independiente, redirigir
+                window.location.href = "{{ url_for('dashboard_admin') }}";
+            }
+        }
+
+        // Mejorar la interfaz del input file
+        document.getElementById('foto').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            const wrapper = e.target.closest('.file-input');
+            const span = wrapper.querySelector('span');
+            
+            if (fileName) {
+                span.textContent = `📷 ${fileName}`;
+                wrapper.style.background = '#e8f5e8';
+                wrapper.style.borderColor = '#007f3e';
+            } else {
+                span.textContent = '📷 Seleccionar foto (JPG, PNG)';
+                wrapper.style.background = '#f0f8f4';
+            }
+        });
+
+        // Validación en tiempo real para el número de documento
+        document.getElementById('cedula').addEventListener('input', function(e) {
+            // Solo permitir números
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // Auto-mayúsculas para nombres y apellidos
+        ['nombres', 'apellidos'].forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+            });
+        });
+
+        // Establecer fecha mínima (hoy) para vencimiento
+        document.getElementById('fecha_vencimiento').min = new Date().toISOString().split('T')[0];
+    </script>
 </body>
 </html>

@@ -2,71 +2,262 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Generar Carné</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Carnet - DEBUG</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #eef2f3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background: linear-gradient(135deg, #e0f2e9 0%, #c8e6c9 100%);
+            padding: 20px;
+            margin: 0;
         }
-        .formulario {
-            background-color: white;
+        
+        .btn-regreso {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007f3e;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 350px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header {
             text-align: center;
+            margin-bottom: 30px;
+            color: #007f3e;
         }
-        h2 {
-            color: #28a745;
+        
+        .debug-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
         }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
         label {
             display: block;
-            margin-bottom: 5px;
-            text-align: left;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: #333;
         }
-        input[type="text"], input[type="submit"] {
+        
+        input[type="text"] {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
             box-sizing: border-box;
         }
-        input[type="submit"] {
-            background-color: #28a745;
+        
+        input[type="text"]:focus {
+            border-color: #007f3e;
+            outline: none;
+        }
+        
+        .btn-generar {
+            width: 100%;
+            background: #007f3e;
             color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background 0.3s;
         }
-        input[type="submit"]:hover {
-            background-color: #218838;
+        
+        .btn-generar:hover {
+            background: #005f2e;
         }
-        .flash {
-            color: red;
-            margin-top: 10px;
+        
+        .btn-generar:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .log-box {
+            background: #f1f1f1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <div class="formulario">
-        <h2>Generar Carné</h2>
-        <form method="POST">
-            <label for="cedula">Número de Cédula:</label>
-            <input type="text" name="cedula" id="cedula" placeholder="Ej: 1234567890" required>
-            <input type="submit" value="🎫 Generar Carné">
-        </form>
-
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash">{{ messages[0] }}</div>
-          {% endif %}
+    <button class="btn-regreso" onclick="regresarMenu()">🏠 Menú</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🆔 Generar Carnet - DEBUG</h1>
+            <p>Versión de debug para identificar problemas</p>
+        </div>
+        
+        <div class="debug-box">
+            <h4>🔧 Información de Debug:</h4>
+            <p><strong>URL actual:</strong> {{ request.url }}</p>
+            <p><strong>Método:</strong> {{ request.method }}</p>
+            <p><strong>Endpoint:</strong> {{ request.endpoint }}</p>
+            {% if request.form %}
+            <p><strong>Datos del formulario:</strong> {{ request.form.to_dict() }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Mostrar mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
+        
+        <form method="POST" action="/generar" id="form-debug">
+            <div class="form-group">
+                <label for="cedula">Número de Cédula:</label>
+                <input 
+                    type="text" 
+                    id="cedula" 
+                    name="cedula" 
+                    placeholder="Ejemplo: 1234567890"
+                    required
+                    value="{{ request.form.cedula if request.form.cedula else '' }}"
+                >
+            </div>
+            
+            <button type="submit" class="btn-generar" id="btn-submit">
+                🎯 GENERAR CARNET (DEBUG)
+            </button>
+        </form>
+        
+        <div class="log-box" id="log-box">
+            <strong>📝 Log de eventos:</strong><br>
+            <span id="log-content">Esperando acciones...</span>
+        </div>
     </div>
+
+    <script>
+        let logContent = document.getElementById('log-content');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logContent.innerHTML += `<br>[${timestamp}] ${message}`;
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        function regresarMenu() {
+            log("🏠 Regresando al menú principal");
+            if (window.parent && window.parent !== window) {
+                window.parent.volverInicio();
+            } else {
+                window.location.href = "/dashboard_admin";
+            }
+        }
+        
+        // Debug del formulario
+        document.getElementById('form-debug').addEventListener('submit', function(e) {
+            log("📋 Formulario enviándose...");
+            
+            const cedula = document.getElementById('cedula').value;
+            log(`🔍 Cédula ingresada: "${cedula}"`);
+            
+            if (!cedula.trim()) {
+                e.preventDefault();
+                log("❌ Cédula vacía - cancelando envío");
+                alert("Por favor ingresa una cédula");
+                return false;
+            }
+            
+            // Limpiar cédula
+            const cedulaLimpia = cedula.replace(/[^0-9]/g, '');
+            log(`🧹 Cédula limpia: "${cedulaLimpia}"`);
+            
+            if (cedulaLimpia.length < 7) {
+                e.preventDefault();
+                log("❌ Cédula muy corta - cancelando envío");
+                alert("La cédula debe tener al menos 7 dígitos");
+                return false;
+            }
+            
+            // Actualizar campo con cédula limpia
+            document.getElementById('cedula').value = cedulaLimpia;
+            
+            // Deshabilitar botón
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.textContent = '⏳ GENERANDO...';
+            
+            log("✅ Formulario válido - enviando a Flask");
+            log(`📤 URL destino: ${this.action}`);
+            log(`📤 Método: ${this.method}`);
+            log(`📤 Datos: cedula=${cedulaLimpia}`);
+            
+            return true;
+        });
+        
+        // Debug de carga de página
+        window.addEventListener('load', function() {
+            log("🚀 Página cargada completamente");
+            log(`📍 URL actual: ${window.location.href}`);
+            
+            // Focus en cédula
+            document.getElementById('cedula').focus();
+            log("🎯 Focus puesto en campo cédula");
+        });
+        
+        // Debug de input
+        document.getElementById('cedula').addEventListener('input', function(e) {
+            const valor = e.target.value;
+            log(`📝 Cédula cambiada: "${valor}"`);
+        });
+        
+        log("🔧 Script de debug inicializado");
+    </script>
 </body>
 </html>

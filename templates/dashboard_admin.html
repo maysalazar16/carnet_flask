@@ -2,70 +2,822 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Administración</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - SENA</title>
     <style>
-        body {
+        /* ===== VARIABLES CSS ===== */
+        :root {
+            --sena-green: #007f3e;
+            --sena-green-dark: #005f2e;
+            --sena-green-light: #e0f2e9;
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+            --accent-color: #00a651;  /* Verde SENA más vibrante */
+            --content-bg: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-strong: 0 8px 24px rgba(0,0,0,0.15);
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+        }
+
+        /* ===== RESET Y BASE ===== */
+        * {
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             display: flex;
             height: 100vh;
+            background: linear-gradient(135deg, var(--content-bg) 0%, #e9ecef 100%);
+            overflow: hidden;
         }
 
+        /* ===== SIDEBAR ===== */
         .sidebar {
-            width: 220px;
-            background-color: #2c3e50;
-            color: white;
+            width: 280px;
+            background: linear-gradient(180deg, var(--sena-green-dark) 0%, var(--sena-green) 100%);
+            color: var(--white);
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 30px 20px;
+            box-shadow: var(--shadow-strong);
+            z-index: 1000;
         }
 
-        .sidebar h2 {
-            margin-top: 0;
-            font-size: 20px;
-            margin-bottom: 20px;
+        .sidebar-header {
             text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--sena-green-light);
         }
 
-        .sidebar a {
-            color: white;
+        .sidebar-header .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--sena-green-light);
+        }
+
+        .welcome-text {
+            font-size: 0.9rem;
+            color: #e8f5e8;
+        }
+
+        .username {
+            color: var(--sena-green-light);
+            font-weight: 600;
+        }
+
+        /* ===== NAVEGACIÓN ===== */
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            color: var(--white);
             text-decoration: none;
-            padding: 12px 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            background-color: #34495e;
-            text-align: center;
+            padding: 18px 20px;
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.1);
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .sidebar a:hover {
-            background-color: #1abc9c;
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--sena-green-light);
+            transform: scaleY(0);
+            transition: var(--transition);
         }
 
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-left: 4px solid var(--sena-green-light);
+        }
+
+        /* ===== LOGOUT SECTION ===== */
+        .logout-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logout-form {
+            width: 100%;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 15px 20px;
+            background: #e74c3c;
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== CONTENIDO PRINCIPAL ===== */
         .content {
             flex: 1;
-            padding: 30px;
-            background-color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            background: var(--content-bg);
+            position: relative;
+            overflow-x: hidden; /* Evitar scroll horizontal */
+        }
+
+        .content-header {
+            background: var(--white);
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+            border-bottom: 3px solid var(--sena-green);
+            z-index: 100;
+        }
+
+        .content-header h1 {
+            color: var(--sena-green);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .content-header p {
+            color: #6c757d;
+            margin: 5px 0 0 0;
+            font-size: 1rem;
+        }
+
+        .iframe-container {
+            flex: 1;
+            position: relative;
+            margin: 15px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            min-height: calc(100vh - 140px); /* Altura mínima responsive */
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            border-radius: var(--border-radius);
+        }
+
+        /* ===== RESPONSIVE MEJORADO ===== */
+        @media (max-width: 1200px) {
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 18px;
+                padding: 8px;
+            }
+            
+            .main-dashboard {
+                padding: 15px;
+            }
+            
+            .iframe-container {
+                margin: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 15px;
+                order: 1;
+            }
+
+            .content {
+                order: 2;
+                flex: 1;
+            }
+
+            .sidebar-header {
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
+            .nav-menu {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px;
+            }
+
+            .nav-item {
+                padding: 12px 8px;
+                font-size: 0.85rem;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .nav-item .icon {
+                font-size: 1.1rem;
+            }
+
+            .btn-home {
+                grid-column: 1 / -1;
+                margin-bottom: 10px;
+            }
+
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 5px;
+            }
+
+            .card {
+                padding: 20px;
+                min-height: 180px;
+            }
+
+            .card-icon {
+                font-size: 3rem;
+            }
+
+            .card h3 {
+                font-size: 1.2rem;
+            }
+
+            .iframe-container {
+                margin: 5px;
+                min-height: calc(100vh - 280px);
+            }
+
+            .content-header {
+                padding: 15px 20px;
+            }
+
+            .content-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 10px;
+            }
+
+            .nav-menu {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .nav-item {
+                padding: 10px 6px;
+                font-size: 0.8rem;
+            }
+
+            .dashboard-cards {
+                gap: 12px;
+                padding: 3px;
+            }
+
+            .card {
+                padding: 15px;
+                min-height: 160px;
+            }
+
+            .card-icon {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
+            .card h3 {
+                font-size: 1.1rem;
+                margin-bottom: 8px;
+            }
+
+            .card p {
+                font-size: 0.85rem;
+                margin-bottom: 15px;
+            }
+
+            .card-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .content-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .content-header p {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ===== AJUSTES PARA PANTALLAS MUY PEQUEÑAS ===== */
+        @media (max-width: 360px) {
+            .nav-menu {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-item {
+                padding: 8px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            .card-icon {
+                font-size: 2.2rem;
+            }
+        }
+
+        /* ===== LOADING ANIMATION ===== */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--sena-green);
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--sena-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== IFRAME STYLES ===== */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: var(--border-radius);
+        }
+
+        /* ===== BOTÓN DE INICIO ===== */
+        .btn-home {
+            background: var(--sena-green);
+            color: white;
+            border: none;
+            padding: 18px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn-home:hover {
+            background: var(--sena-green-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-home .icon {
+            font-size: 1.2rem;
+        }
+        .main-dashboard {
+            padding: 40px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--sena-green);
+        }
+
+        .card h3 {
+            color: var(--sena-green);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            color: #6c757d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .card-btn {
+            background: linear-gradient(135deg, var(--sena-green), var(--accent-color));
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 127, 62, 0.3);
+        }
+
+        .card-btn.disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .card-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== ANIMACIONES DE ENTRADA ===== */
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .sidebar {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .content {
+            animation: fadeInRight 0.6s ease-out;
+        }
+
+        /* ===== MEJORAS VISUALES ===== */
+        .nav-item:active {
+            transform: translateX(5px) scale(0.98);
+        }
+
+        .nav-item .badge {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar -->
     <div class="sidebar">
-        <h2>Bienvenido, {{ usuario }}</h2>
-        <a href="{{ url_for('agregar') }}" target="contenido">➕ Agregar Empleado</a>
-        <a href="{{ url_for('generar_carnet_web') }}" target="contenido">🪪 Generar Carné</a>
-        <a href="{{ url_for('logout') }}">🚪 Cerrar Sesión</a>
+        <div class="sidebar-header">
+            <div class="logo">🎓</div>
+            <h2>Panel SENA Admin</h2>
+            <p class="welcome-text">Bienvenido, <span class="username">{{ usuario }}</span></p>
+        </div>
+
+        <nav class="nav-menu">
+            <!-- Botón de inicio (inicialmente oculto) -->
+            <button class="btn-home" id="btn-inicio" onclick="volverInicio()" style="display: none;">
+                <span class="icon">🏠</span>
+                <span>Inicio</span>
+            </button>
+            
+            <a href="#" class="nav-item" onclick="cargarPagina('{{ url_for('agregar') }}', 'Agregar Empleado', 'card-agregar', this)">
+                <span class="icon">👥</span>
+                <span>Agregar Empleado</span>
+            </a>
+            
+            <a href="#" class="nav-item" onclick="cargarPagina('{{ url_for('generar_carnet_web') }}', 'Generar Carné', 'card-generar', this)">
+                <span class="icon">🆔</span>
+                <span>Generar Carné</span>
+            </a>
+
+            <!-- Placeholder para futuras funciones -->
+            <a href="#" class="nav-item" onclick="comingSoon()" style="opacity: 0.6;">
+                <span class="icon">📊</span>
+                <span>Ver Reportes</span>
+                <span class="badge">Próximo</span>
+            </a>
+
+            <a href="#" class="nav-item" onclick="comingSoon()" style="opacity: 0.6;">
+                <span class="icon">⚙️</span>
+                <span>Configuración</span>
+                <span class="badge">Próximo</span>
+            </a>
+        </nav>
+
+        <div class="logout-section">
+            <form method="POST" action="{{ url_for('logout') }}" class="logout-form">
+                <button type="submit" class="logout-btn">
+                    <span>🚪</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
     </div>
 
+    <!-- Content Area -->
     <div class="content">
-        <iframe name="contenido" src="{{ url_for('agregar') }}"></iframe>
+        <div class="content-header">
+            <h1 id="page-title">🏠 Panel de Administración</h1>
+            <p id="page-description">Gestiona empleados y genera carnés del SENA</p>
+        </div>
+
+        <div class="iframe-container">
+            <div class="main-dashboard">
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <div class="card-icon">👥</div>
+                        <h3>Agregar Empleado</h3>
+                        <p>Registra nuevos empleados en el sistema</p>
+                        <a href="{{ url_for('agregar') }}" class="card-btn">Agregar</a>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon">🆔</div>
+                        <h3>Generar Carné</h3>
+                        <p>Crea carnés para empleados registrados</p>
+                        <a href="{{ url_for('generar_carnet_web') }}" class="card-btn">Generar</a>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h3>Ver Reportes</h3>
+                        <p>Consulta estadísticas y reportes</p>
+                        <button class="card-btn disabled" onclick="comingSoon()">Próximamente</button>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon">⚙️</div>
+                        <h3>Configuración</h3>
+                        <p>Ajusta la configuración del sistema</p>
+                        <button class="card-btn disabled" onclick="comingSoon()">Próximamente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Variables globales
+        let paginaActual = 'inicio';
+
+        // Función principal para cargar páginas
+        function cargarPagina(url, titulo, cardId = null, elemento = null) {
+            console.log('Cargando página:', url);
+            
+            // Mostrar loading
+            mostrarLoading();
+            
+            // Ocultar dashboard principal
+            document.getElementById('dashboard-home').style.display = 'none';
+            
+            // Mostrar y configurar iframe
+            const iframe = document.getElementById('contenido-iframe');
+            iframe.style.display = 'block';
+            iframe.src = url;
+            
+            // Mostrar botón de inicio
+            document.getElementById('btn-inicio').style.display = 'flex';
+            
+            // Destacar tarjeta activa en amarillo
+            if (cardId) {
+                destacarTarjeta(cardId);
+            }
+            
+            // Marcar elemento activo en el menú
+            if (elemento) {
+                marcarActivo(elemento);
+            }
+            
+            // Actualizar título
+            actualizarTitulo(titulo);
+            
+            // Guardar página actual
+            paginaActual = titulo;
+        }
+
+        // Función para destacar tarjeta en amarillo
+        function destacarTarjeta(cardId) {
+            // Remover destacado de todas las tarjetas
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Destacar la tarjeta seleccionada
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.add('active');
+            }
+        }
+
+        // Función para mostrar loading
+        function mostrarLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        // Función para ocultar loading (llamada cuando el iframe carga)
+        function ocultarLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Función para volver al inicio
+        function volverInicio() {
+            console.log('Volviendo al inicio');
+            
+            // Ocultar iframe
+            const iframe = document.getElementById('contenido-iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'about:blank'; // Limpiar iframe
+            
+            // Mostrar dashboard principal
+            document.getElementById('dashboard-home').style.display = 'block';
+            
+            // Ocultar botón de inicio
+            document.getElementById('btn-inicio').style.display = 'none';
+            
+            // Remover estados activos del menú
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Remover destacado de todas las tarjetas
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Restaurar título original
+            document.getElementById('page-title').textContent = '🏠 Panel de Administración';
+            document.getElementById('page-description').textContent = 'Gestiona empleados y genera carnés del SENA';
+            
+            // Resetear página actual
+            paginaActual = 'inicio';
+        }
+
+        // Función para marcar elemento activo
+        function marcarActivo(elemento) {
+            // Remover clase active de todos los items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Agregar clase active al elemento seleccionado
+            if (elemento) {
+                elemento.classList.add('active');
+            }
+        }
+
+        // Función para actualizar título
+        function actualizarTitulo(titulo) {
+            const titles = {
+                'Agregar Empleado': {
+                    title: '👥 Agregar Empleado',
+                    description: 'Registra nuevos empleados en el sistema'
+                },
+                'Generar Carné': {
+                    title: '🆔 Generar Carné',
+                    description: 'Crea carnés para empleados registrados'
+                }
+            };
+            
+            if (titles[titulo]) {
+                document.getElementById('page-title').textContent = titles[titulo].title;
+                document.getElementById('page-description').textContent = titles[titulo].description;
+            }
+        }
+
+        // Función para mensajes de próximamente
+        function comingSoon() {
+            alert('🚧 Esta funcionalidad estará disponible próximamente');
+        }
+
+        // Eventos del DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard cargado correctamente');
+            
+            // Asegurar que empezamos en el inicio
+            volverInicio();
+        });
+
+        // Manejar errores del iframe
+        window.addEventListener('message', function(event) {
+            // Manejar mensajes del iframe si es necesario
+            console.log('Mensaje del iframe:', event.data);
+        });
+
+        // Función para recargar contenido actual (útil después de guardar)
+        function recargarContenido() {
+            const iframe = document.getElementById('contenido-iframe');
+            if (iframe.src && iframe.src !== 'about:blank') {
+                mostrarLoading();
+                iframe.src = iframe.src; // Recargar iframe
+            }
+        }
+    </script>
 
 </body>
 </html>
