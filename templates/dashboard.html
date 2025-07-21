@@ -129,6 +129,26 @@
             box-shadow: 0 5px 15px rgba(46, 139, 87, 0.3);
         }
 
+        /* ✅ NUEVOS ESTILOS PARA BOTÓN SECUNDARIO */
+        .card-btn-secondary {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .card-btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+        }
+
         .success-message {
             background: #e8f5e8;
             border: 1px solid #4caf50;
@@ -214,20 +234,32 @@
         </div>
 
         <div class="dashboard-grid">
+            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">🆔</div>
                 <h3>Generar Carnet</h3>
                 <p>Crea un nuevo carnet digital con código QR para aprendices, instructores o administrativos.</p>
-                <a href="{{ url_for('generar_carnet') }}" class="card-btn">Generar Carnet</a>
+                <a href="{{ url_for('generar_carnet_web') }}" class="card-btn">Generar Carnet</a>
             </div>
 
+            <!-- ✅ TARJETA ORIGINAL ACTUALIZADA -->
             <div class="card">
-                <div class="card-icon">📋</div>
-                <h3>Gestionar Aprendices</h3>
-                <p>Administra la información de los aprendices, actualiza datos y gestiona registros.</p>
-                <a href="#" class="card-btn">Gestionar</a>
+                <div class="card-icon">👥</div>
+                <h3>Gestionar Empleados</h3>
+                <p>Administra la información de empleados y aprendices, actualiza datos y gestiona registros.</p>
+                <a href="{{ url_for('agregar') }}" class="card-btn">Agregar Empleado</a>
             </div>
 
+            <!-- ✅ NUEVA TARJETA - PLANTILLA EXCEL -->
+            <div class="card">
+                <div class="card-icon">📄</div>
+                <h3>Plantilla Excel</h3>
+                <p>Descarga la plantilla oficial de Excel con todos los empleados registrados o formato para importar datos.</p>
+                <a href="{{ url_for('descargar_plantilla') }}" class="card-btn">📄 Descargar Plantilla</a>
+                <a href="{{ url_for('descargar_plantilla_vacia') }}" class="card-btn-secondary">📋 Plantilla Vacía</a>
+            </div>
+
+            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">🔍</div>
                 <h3>Verificar Carnets</h3>
@@ -235,6 +267,7 @@
                 <a href="#" class="card-btn">Verificar</a>
             </div>
 
+            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">📊</div>
                 <h3>Reportes</h3>
@@ -242,6 +275,7 @@
                 <a href="#" class="card-btn">Ver Reportes</a>
             </div>
 
+            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">⚙️</div>
                 <h3>Configuración</h3>
@@ -249,6 +283,7 @@
                 <a href="#" class="card-btn">Configurar</a>
             </div>
 
+            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">📁</div>
                 <h3>Archivo de Carnets</h3>
