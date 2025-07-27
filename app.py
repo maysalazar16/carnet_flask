@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, send_file, jsonify
 from db import crear_base_datos, insertar_empleado, cargar_empleado, existe_codigo
 from qr import generar_qr
 from imagen import generar_carnet, combinar_anverso_reverso  # ✅ se agregó la función aquí
@@ -8,6 +8,7 @@ import random
 import traceback  # ✅ Agregado para debug
 import pandas as pd  # ✅ NUEVO: Para manejar Excel
 from werkzeug.utils import secure_filename  # ✅ NUEVO: Para archivos seguros
+import sqlite3  # ✅ NUEVO: Para la funcionalidad de cargar plantilla
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_segura'
@@ -373,7 +374,63 @@ def agregar_empleado():
     # GET request - mostrar formulario
     return render_template('agregar_empleado.html')
 
-# ✅ RUTA MEJORADA CON DEBUG SIN DAÑAR FUNCIONALIDAD ORIGINAL
+# ✅ FUNCIÓN PARA BUSCAR EMPLEADOS CON DATOS COMPLETOS SENA
+def buscar_empleado_completo(cedula):
+    """
+    Busca un empleado por cédula en la base de datos con todos los campos del SENA
+    """
+    try:
+        conn = sqlite3.connect('carnet.db')
+        cursor = conn.cursor()
+        
+        # Buscar con todos los campos SENA
+        cursor.execute("""
+            SELECT nombre, cedula, tipo_documento, cargo, codigo, 
+                   fecha_emision, fecha_vencimiento, tipo_sangre, foto,
+                   nis, primer_apellido, segundo_apellido, 
+                   nombre_programa, codigo_ficha, centro
+            FROM empleados 
+            WHERE cedula = ? 
+            ORDER BY fecha_emision DESC
+            LIMIT 1
+        """, (cedula,))
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            empleado = {
+                'nombre': row[0],
+                'cedula': row[1],
+                'tipo_documento': row[2] or 'CC',
+                'cargo': row[3] or 'APRENDIZ',
+                'codigo': row[4],
+                'fecha_emision': row[5],
+                'fecha_vencimiento': row[6],
+                'tipo_sangre': row[7] or 'O+',
+                'foto': row[8],
+                # Campos adicionales del SENA
+                'nis': row[9] or 'N/A',
+                'primer_apellido': row[10] or '',
+                'segundo_apellido': row[11] or '',
+                'nombre_programa': row[12] or 'Programa Técnico',
+                'codigo_ficha': row[13] or 'N/A',
+                'centro': row[14] or 'Centro de Biotecnología Industrial'
+            }
+            
+            print(f"✅ Empleado encontrado con datos SENA: {empleado['nombre']}")
+            print(f"📋 NIS: {empleado['nis']} | Programa: {empleado['nombre_programa']}")
+            
+            return empleado
+        else:
+            print(f"❌ No se encontró empleado con cédula: {cedula}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error buscando empleado: {e}")
+        return None
+
+# ✅ RUTA MEJORADA CON DEBUG SIN DAÑAR FUNCIONALIDAD ORIGINAL - MODIFICADA PARA USAR LA NUEVA FUNCIÓN
 @app.route('/generar', methods=['GET', 'POST'])
 def generar_carnet_web():
     print("🚀 Ruta /generar accedida")
@@ -407,7 +464,8 @@ def generar_carnet_web():
             return render_template("generar.html")
         
         print(f"🔎 Buscando empleado con cédula: {cedula_limpia}")
-        empleado = cargar_empleado(cedula_limpia)
+        # ✅ CAMBIO PRINCIPAL: Usar la nueva función que busca con datos completos SENA
+        empleado = buscar_empleado_completo(cedula_limpia)
         
         if not empleado:
             print(f"❌ Empleado no encontrado para cédula: {cedula_limpia}")
@@ -460,7 +518,6 @@ def descargar_carnet(carnet):
 def obtener_todos_empleados():
     """Función para obtener todos los empleados de la base de datos"""
     try:
-        import sqlite3
         conn = sqlite3.connect('carnet.db')  # ✅ CAMBIAR A carnet.db
         cursor = conn.cursor()
         
@@ -622,6 +679,181 @@ def descargar_plantilla_vacia():
         flash(f'Error al generar la plantilla vacía: {str(e)}', 'error')
         return redirect(url_for('dashboard_admin'))
 
+# ✅ NUEVA RUTA: CARGAR PLANTILLA EXCEL - LA FUNCIONALIDAD PRINCIPAL
+@app.route('/cargar_plantilla', methods=['GET', 'POST'])
+def cargar_plantilla():
+    """Ruta para cargar empleados desde archivo Excel"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'GET':
+        return render_template('cargar_plantilla.html')
+    
+    if request.method == 'POST':
+        try:
+            # Verificar si se subió un archivo
+            if 'excel_file' not in request.files:
+                return jsonify({'success': False, 'message': 'No se seleccionó ningún archivo'})
+            
+            file = request.files['excel_file']
+            if file.filename == '':
+                return jsonify({'success': False, 'message': 'No se seleccionó ningún archivo'})
+            
+            # Verificar extensión del archivo
+            if not file.filename.lower().endswith(('.xlsx', '.xls')):
+                return jsonify({'success': False, 'message': 'El archivo debe ser un Excel (.xlsx o .xls)'})
+            
+            # Leer el archivo Excel
+            try:
+                # Leer el Excel con pandas
+                df = pd.read_excel(file, engine='openpyxl')
+                
+                # Verificar que tenga las columnas necesarias
+                columnas_requeridas = [
+                    'NIS', 'Primer Apellido', 'Segundo Apellido', 'Nombre', 
+                    'Tipo de documento', 'Número de documento', 'Tipo de Sangre', 
+                    'Nombre del Programa', 'Código de Ficha', 'Centro', 
+                    'Fecha Finalización del Programa'
+                ]
+                
+                columnas_faltantes = []
+                for col in columnas_requeridas:
+                    if col not in df.columns:
+                        columnas_faltantes.append(col)
+                
+                if columnas_faltantes:
+                    return jsonify({
+                        'success': False, 
+                        'message': f'Faltan las siguientes columnas: {", ".join(columnas_faltantes)}'
+                    })
+                
+                # Procesar cada fila del Excel
+                created_count = 0
+                updated_count = 0
+                error_count = 0
+                errors = []
+                
+                # Conectar a la base de datos
+                conn = sqlite3.connect('carnet.db')
+                cursor = conn.cursor()
+                
+                for index, row in df.iterrows():
+                    try:
+                        # Limpiar y preparar los datos
+                        nis = str(row['NIS']).strip() if pd.notna(row['NIS']) else ''
+                        primer_apellido = str(row['Primer Apellido']).strip().upper() if pd.notna(row['Primer Apellido']) else ''
+                        segundo_apellido = str(row['Segundo Apellido']).strip().upper() if pd.notna(row['Segundo Apellido']) else ''
+                        nombre = str(row['Nombre']).strip().upper() if pd.notna(row['Nombre']) else ''
+                        tipo_documento = str(row['Tipo de documento']).strip() if pd.notna(row['Tipo de documento']) else ''
+                        numero_documento = str(row['Número de documento']).strip() if pd.notna(row['Número de documento']) else ''
+                        tipo_sangre = str(row['Tipo de Sangre']).strip().upper() if pd.notna(row['Tipo de Sangre']) else ''
+                        programa = str(row['Nombre del Programa']).strip() if pd.notna(row['Nombre del Programa']) else ''
+                        codigo_ficha = str(row['Código de Ficha']).strip() if pd.notna(row['Código de Ficha']) else ''
+                        centro = str(row['Centro']).strip() if pd.notna(row['Centro']) else 'Centro de Biotecnología Industrial'
+                        fecha_finalizacion = str(row['Fecha Finalización del Programa']).strip() if pd.notna(row['Fecha Finalización del Programa']) else ''
+                        
+                        # Validar datos mínimos requeridos
+                        if not all([nis, primer_apellido, nombre, numero_documento]):
+                            errors.append(f"Fila {index + 2}: Faltan datos obligatorios (NIS, Primer Apellido, Nombre, Número de documento)")
+                            error_count += 1
+                            continue
+                        
+                        # Construir nombre completo
+                        nombre_completo = f"{nombre} {primer_apellido}"
+                        if segundo_apellido:
+                            nombre_completo += f" {segundo_apellido}"
+                        
+                        # Verificar si el empleado ya existe (por número de documento)
+                        cursor.execute("SELECT * FROM empleados WHERE cedula = ?", (numero_documento,))
+                        empleado_existente = cursor.fetchone()
+                        
+                        # Generar código único si no existe
+                        iniciales = ''.join([parte[0] for parte in nombre_completo.split() if parte])
+                        codigo_generado = None
+                        for _ in range(10):
+                            codigo_temp = f"{iniciales}{random.randint(1000, 9999)}"
+                            cursor.execute("SELECT codigo FROM empleados WHERE codigo = ?", (codigo_temp,))
+                            if not cursor.fetchone():
+                                codigo_generado = codigo_temp
+                                break
+                        
+                        if not codigo_generado:
+                            errors.append(f"Fila {index + 2}: No se pudo generar código único")
+                            error_count += 1
+                            continue
+                        
+                        # Preparar datos para insertar/actualizar
+                        hoy = date.today()
+                        
+                        if empleado_existente:
+                            # Actualizar empleado existente
+                            cursor.execute("""
+                                UPDATE empleados SET 
+                                    nombre = ?, tipo_documento = ?, cargo = ?, codigo = ?,
+                                    fecha_emision = ?, fecha_vencimiento = ?, tipo_sangre = ?,
+                                    nis = ?, primer_apellido = ?, segundo_apellido = ?,
+                                    nombre_programa = ?, codigo_ficha = ?, centro = ?
+                                WHERE cedula = ?
+                            """, (
+                                nombre_completo, tipo_documento, 'APRENDIZ', codigo_generado,
+                                hoy.strftime("%Y-%m-%d"), fecha_finalizacion, tipo_sangre,
+                                nis, primer_apellido, segundo_apellido,
+                                programa, codigo_ficha, centro,
+                                numero_documento
+                            ))
+                            updated_count += 1
+                        else:
+                            # Crear nuevo empleado
+                            cursor.execute("""
+                                INSERT INTO empleados (
+                                    nombre, cedula, tipo_documento, cargo, codigo,
+                                    fecha_emision, fecha_vencimiento, tipo_sangre, foto,
+                                    nis, primer_apellido, segundo_apellido,
+                                    nombre_programa, codigo_ficha, centro
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (
+                                nombre_completo, numero_documento, tipo_documento, 
+                                'APRENDIZ', codigo_generado, hoy.strftime("%Y-%m-%d"), 
+                                fecha_finalizacion, tipo_sangre, None,
+                                nis, primer_apellido, segundo_apellido,
+                                programa, codigo_ficha, centro
+                            ))
+                            created_count += 1
+                        
+                        # Confirmar la transacción para cada empleado
+                        conn.commit()
+                        
+                    except Exception as e:
+                        error_count += 1
+                        errors.append(f"Fila {index + 2}: Error al procesar - {str(e)}")
+                        print(f"Error procesando fila {index + 2}: {str(e)}")
+                        continue
+                
+                # Cerrar conexión
+                conn.close()
+                
+                # Preparar respuesta
+                response_data = {
+                    'success': True,
+                    'created': created_count,
+                    'updated': updated_count,
+                    'errors': error_count,
+                    'message': f'Procesamiento completado. {created_count} empleados creados, {updated_count} actualizados.'
+                }
+                
+                if errors:
+                    response_data['error_details'] = errors[:10]  # Solo mostrar los primeros 10 errores
+                
+                return jsonify(response_data)
+                
+            except Exception as e:
+                print(f"Error leyendo Excel: {str(e)}")
+                return jsonify({'success': False, 'message': f'Error al leer el archivo Excel: {str(e)}'})
+                
+        except Exception as e:
+            print(f"Error general: {str(e)}")
+            return jsonify({'success': False, 'message': f'Error interno del servidor: {str(e)}'})
+
 # ================================================
 # ✅ FUNCIONES AUXILIARES PARA EXCEL
 # ================================================
@@ -639,7 +871,6 @@ def actualizar_base_datos_sena():
     Solo ejecutar UNA VEZ si quieres guardar los campos adicionales
     """
     try:
-        import sqlite3
         conn = sqlite3.connect('carnet.db')  # ✅ USAR carnet.db
         cursor = conn.cursor()
         

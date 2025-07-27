@@ -185,6 +185,63 @@
             color: #666;
             font-size: 0.9rem;
         }
+
+        /* ✅ ESTILOS NUEVOS PARA LA TARJETA DESTACADA */
+        .card-featured {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: 3px solid #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-featured::before {
+            content: "✨ NUEVO";
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: #ff6b35;
+            color: white;
+            padding: 5px 40px;
+            font-size: 12px;
+            font-weight: bold;
+            transform: rotate(45deg);
+        }
+
+        .card-featured .card-icon {
+            color: white;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        }
+
+        .card-featured h3 {
+            color: white;
+        }
+
+        .card-featured p {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .card-featured .card-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-featured .card-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .card-featured .card-btn-secondary {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .card-featured .card-btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.4);
+        }
     </style>
 </head>
 <body>
@@ -216,24 +273,33 @@
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number">156</div>
-                <div class="stat-label">Carnets Generados</div>
+                <div class="stat-number">{{ stats.total if stats else 156 }}</div>
+                <div class="stat-label">Empleados Registrados</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">23</div>
-                <div class="stat-label">Hoy</div>
+                <div class="stat-number">{{ stats.hoy if stats else 23 }}</div>
+                <div class="stat-label">Registrados Hoy</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">89</div>
+                <div class="stat-number">{{ stats.semana if stats else 89 }}</div>
                 <div class="stat-label">Esta Semana</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">100%</div>
+                <div class="stat-number">{{ stats.disponibilidad if stats else '100%' }}</div>
                 <div class="stat-label">Disponibilidad</div>
             </div>
         </div>
 
         <div class="dashboard-grid">
+            <!-- ✅ NUEVA TARJETA DESTACADA - CARGAR PLANTILLA EXCEL -->
+            <div class="card card-featured">
+                <div class="card-icon">📤</div>
+                <h3>Cargar Plantilla Excel</h3>
+                <p>Carga masiva de empleados desde archivo Excel. Sube tu plantilla completada y procesa múltiples empleados de una vez.</p>
+                <a href="{{ url_for('cargar_plantilla') }}" class="card-btn">📄 Cargar Excel</a>
+                <a href="{{ url_for('descargar_plantilla') }}" class="card-btn-secondary">⬇️ Descargar Plantilla</a>
+            </div>
+
             <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
             <div class="card">
                 <div class="card-icon">🆔</div>
