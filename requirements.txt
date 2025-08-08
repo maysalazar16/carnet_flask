@@ -1,0 +1,7 @@
+Flask
+pillow
+qrcode
+pandas
+openpyxl
+numpy
+matplotlib

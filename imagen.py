@@ -35,12 +35,44 @@ def generar_carnet(empleado, ruta_qr):
         draw.text((15, 15), "SENA", fill=(0, 128, 0), font=font_logo)
 
     # ========== AQUÍ ESTÁ LA FOTO - MÁS GRANDE SIN PASAR LA LÍNEA VERDE ==========
-    # Cargar foto del empleado MUCHO MÁS GRANDE - BAJADA MÁS
-    ruta_foto = os.path.join("static", "fotos", empleado['foto'])
+    # ✅ MODIFICACIÓN PRINCIPAL: Usar nueva función para obtener foto procesada
     try:
-        foto = Image.open(ruta_foto).convert("RGB")
+        # Importar función de procesamiento de fotos
+        from procesamiento_fotos import obtener_ruta_foto_final
+        ruta_foto_final = obtener_ruta_foto_final(empleado['cedula'])
+        
+        if ruta_foto_final:
+            print(f"📸 Usando foto: {ruta_foto_final}")
+            foto = Image.open(ruta_foto_final).convert("RGB")
+        else:
+            # Fallback: buscar foto con el nombre del campo 'foto' de la base de datos
+            if empleado.get('foto'):
+                ruta_foto_bd = os.path.join("static", "fotos", empleado['foto'])
+                if os.path.exists(ruta_foto_bd):
+                    foto = Image.open(ruta_foto_bd).convert("RGB")
+                    print(f"📸 Usando foto de BD: {ruta_foto_bd}")
+                else:
+                    raise Exception(f"No se encontró la foto en BD: {ruta_foto_bd}")
+            else:
+                raise Exception("No hay foto disponible para este empleado")
+                
+    except ImportError:
+        # Si no está disponible el módulo de procesamiento, usar método original
+        print("⚠️ Módulo de procesamiento no disponible, usando método original")
+        ruta_foto = os.path.join("static", "fotos", empleado['foto'])
+        try:
+            foto = Image.open(ruta_foto).convert("RGB")
+        except Exception as e:
+            raise Exception(f"No se pudo cargar la foto: {e}")
     except Exception as e:
-        raise Exception(f"No se pudo cargar la foto: {e}")
+        print(f"❌ Error obteniendo foto: {e}")
+        # Intentar método original como último recurso
+        ruta_foto = os.path.join("static", "fotos", empleado['foto'])
+        try:
+            foto = Image.open(ruta_foto).convert("RGB")
+            print(f"📸 Usando foto original como fallback: {ruta_foto}")
+        except Exception as e2:
+            raise Exception(f"No se pudo cargar la foto: {e2}")
     
     # 📸 FOTO MÁS ANCHA Y MÁS ALTA - SIN PASAR LÍNEA VERDE
     # Línea verde está en Y=330, foto empieza en Y=75, entonces máximo alto = 330-75 = 255px
