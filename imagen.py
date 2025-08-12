@@ -162,8 +162,10 @@ def generar_carnet(empleado, ruta_qr):
     # Fuente para el texto del reverso - TAMAÑO NORMAL
     try:
         font_reverso = ImageFont.truetype("arial.ttf", 19)  # Tamaño normal
+        font_programa = ImageFont.truetype("arialbd.ttf", 18)  # 🆕 Fuente para programa (negrita)
+        font_fecha = ImageFont.truetype("arial.ttf", 16)      # 🆕 Fuente para fecha
     except:
-        font_reverso = ImageFont.load_default()
+        font_reverso = font_programa = font_fecha = ImageFont.load_default()
 
     # CUADRO PRINCIPAL que encierra ambos textos
     cuadro_x, cuadro_y = 40, 80
@@ -209,6 +211,50 @@ def generar_carnet(empleado, ruta_qr):
     
     for i, line in enumerate(texto2_lines):
         draw_reverso.text((cuadro_x + 15, texto2_y + (i * 20)), line, fill=(0, 0, 0), font=font_reverso)
+
+    # 🆕🆕🆕 AGREGAR PROGRAMA Y FECHA DE FINALIZACIÓN 🆕🆕🆕
+    # Obtener datos del empleado
+    nombre_programa = empleado.get('nombre_programa', 'Programa Técnico')
+    fecha_finalizacion = empleado.get('fecha_vencimiento', '2025-12-31')
+    nivel_formacion = empleado.get('nivel_formacion', 'Técnico')
+    
+    # Formatear fecha (de YYYY-MM-DD a DD/MM/YYYY)
+    try:
+        from datetime import datetime
+        if '-' in fecha_finalizacion:  # Formato YYYY-MM-DD
+            fecha_obj = datetime.strptime(fecha_finalizacion, '%Y-%m-%d')
+            fecha_formateada = fecha_obj.strftime('%d/%m/%Y')
+        else:
+            fecha_formateada = fecha_finalizacion  # Ya está formateada
+    except:
+        fecha_formateada = fecha_finalizacion
+    
+    # Posición para el programa y fecha (debajo del cuadro principal)
+    info_adicional_y = cuadro_y + cuadro_alto + 30
+    
+    # 🎯 NOMBRE DEL PROGRAMA (con nivel de formación)
+    programa_completo = f"{nivel_formacion} en {nombre_programa}"
+    
+    # Dividir el programa en líneas si es muy largo
+    if len(programa_completo) > 45:  # Si es muy largo, dividir
+        palabras = programa_completo.split()
+        linea1_programa = " ".join(palabras[:4])  # Primeras 4 palabras
+        linea2_programa = " ".join(palabras[4:])  # Resto
+        
+        draw_reverso.text((cuadro_x, info_adicional_y), "PROGRAMA:", fill=(0, 0, 0), font=font_programa)
+        draw_reverso.text((cuadro_x, info_adicional_y + 25), linea1_programa, fill=(0, 100, 0), font=font_programa)
+        if linea2_programa:
+            draw_reverso.text((cuadro_x, info_adicional_y + 50), linea2_programa, fill=(0, 100, 0), font=font_programa)
+        siguiente_info_y = info_adicional_y + 80
+    else:
+        draw_reverso.text((cuadro_x, info_adicional_y), "PROGRAMA:", fill=(0, 0, 0), font=font_programa)
+        draw_reverso.text((cuadro_x, info_adicional_y + 25), programa_completo, fill=(0, 100, 0), font=font_programa)
+        siguiente_info_y = info_adicional_y + 55
+    
+    # 📅 FECHA DE FINALIZACIÓN
+    draw_reverso.text((cuadro_x, siguiente_info_y), "FECHA DE FINALIZACIÓN:", fill=(0, 0, 0), font=font_programa)
+    draw_reverso.text((cuadro_x, siguiente_info_y + 25), fecha_formateada, fill=(200, 0, 0), font=font_fecha)
+    # 🆕🆕🆕 FIN DE PROGRAMA Y FECHA 🆕🆕🆕
 
     # INFORMACIÓN ADICIONAL EN EL FONDO DEL CARNET CON FIRMA
     # Línea de firma (en el fondo)
@@ -270,10 +316,12 @@ def generar_carnet(empleado, ruta_qr):
     info_y = cargo_y + 30
     draw_reverso.text((cuadro_x + 100, info_y), "0000", fill=(0, 0, 0), font=font_info)
     
-    # FICHA y CADUCIDAD en el fondo
+    # 🆕 FICHA y CADUCIDAD ACTUALIZADAS CON DATOS REALES
     ficha_y = info_y + 25
-    draw_reverso.text((cuadro_x + 50, ficha_y), "FICHA: 0000", fill=(0, 0, 0), font=font_bold)
-    draw_reverso.text((cuadro_x + 200, ficha_y), "CADUCIDAD: 2025-12-31", fill=(0, 0, 0), font=font_bold)
+    # Usar código de ficha real del empleado
+    codigo_ficha_real = empleado.get('codigo_ficha', '0000')
+    draw_reverso.text((cuadro_x + 50, ficha_y), f"FICHA: {codigo_ficha_real}", fill=(0, 0, 0), font=font_bold)
+    draw_reverso.text((cuadro_x + 200, ficha_y), f"CADUCIDAD: {fecha_formateada}", fill=(0, 0, 0), font=font_bold)
 
     ruta_reverso = os.path.join("static", "carnets", f"reverso_{empleado['cedula']}.png")
     reverso.save(ruta_reverso, dpi=(300, 300))
