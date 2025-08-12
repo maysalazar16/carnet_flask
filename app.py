@@ -100,7 +100,7 @@ def dashboard_aprendiz():
         return redirect(url_for('login'))
     return render_template("dashboard_aprendiz.html", usuario=session['usuario'])
 
-# 🔥🔥🔥 FUNCIÓN AGREGAR ARREGLADA QUE SÍ FUNCIONA 🔥🔥🔥
+# 🔥🔥🔥 FUNCIÓN AGREGAR ACTUALIZADA CON NIVEL_FORMACION 🔥🔥🔥
 @app.route('/agregar', methods=['GET', 'POST'])
 def agregar():
     print(f"🔥🔥🔥 RUTA AGREGAR ACCEDIDA - MÉTODO: {request.method}")
@@ -129,10 +129,14 @@ def agregar():
             nombre_programa = request.form.get('nombre_programa', '').strip()
             codigo_ficha = request.form.get('codigo_ficha', '').strip()
             
-            print(f"🔥 CAMPOS EXTRAÍDOS: NIS={nis}, Nombres={nombres}, Primer Apellido={primer_apellido}")
+            # 🆕 NUEVO CAMPO - Nivel de Formación
+            nivel_formacion = request.form.get('nivel_formacion', '').strip()
             
-            # ✅ VALIDACIONES BÁSICAS
-            if not all([nis, primer_apellido, nombres, tipo_documento, cedula, tipo_sangre, fecha_vencimiento, nombre_programa, codigo_ficha]):
+            print(f"🔥 CAMPOS EXTRAÍDOS: NIS={nis}, Nombres={nombres}, Nivel={nivel_formacion}")
+            
+            # ✅ VALIDACIONES BÁSICAS (ahora incluye nivel_formacion)
+            if not all([nis, primer_apellido, nombres, tipo_documento, cedula, tipo_sangre, 
+                       fecha_vencimiento, nombre_programa, codigo_ficha, nivel_formacion]):
                 flash("❌ Todos los campos obligatorios deben estar completos.", 'error')
                 print("❌ VALIDACIÓN FALLIDA - Campos faltantes")
                 return render_template('agregar.html', fecha_hoy=hoy.strftime("%Y-%m-%d"), fecha_vencimiento=vencimiento.strftime("%Y-%m-%d"))
@@ -176,7 +180,7 @@ def agregar():
                 print("❌ FOTO FALTANTE")
                 return render_template('agregar.html', fecha_hoy=hoy.strftime("%Y-%m-%d"), fecha_vencimiento=vencimiento.strftime("%Y-%m-%d"))
             
-            # ✅ PREPARAR DATOS PARA INSERTAR
+            # ✅ PREPARAR DATOS PARA INSERTAR (CON NIVEL_FORMACION)
             datos = {
                 'nombre': nombre_completo,
                 'cedula': cedula,
@@ -192,7 +196,8 @@ def agregar():
                 'segundo_apellido': segundo_apellido,
                 'nombre_programa': nombre_programa,
                 'codigo_ficha': codigo_ficha,
-                'centro': centro
+                'centro': centro,
+                'nivel_formacion': nivel_formacion  # 🆕 NUEVO CAMPO
             }
             
             print("🔥 DATOS PREPARADOS PARA INSERTAR:")
@@ -205,7 +210,7 @@ def agregar():
             print("🔥 ✅ EMPLEADO INSERTADO CORRECTAMENTE")
             
             # ✅ MENSAJE DE ÉXITO Y REDIRECCIÓN
-            flash(f"✅ ¡Empleado {nombre_completo} registrado correctamente!", 'success')
+            flash(f"✅ ¡Empleado {nombre_completo} registrado correctamente! Nivel: {nivel_formacion}", 'success')
             return redirect(url_for('agregar'))
             
         except Exception as e:
@@ -299,13 +304,17 @@ def agregar_empleado():
             tipo_sangre = request.form.get('tipo_sangre', '').strip().upper()
             nombre_programa = request.form.get('nombre_programa', '').strip()
             codigo_ficha = request.form.get('codigo_ficha', '').strip()
+            
+            # 🆕 NUEVO CAMPO - Nivel de Formación
+            nivel_formacion = request.form.get('nivel_formacion', '').strip()
+            
             # ✅ CENTRO FIJO
             centro = "Centro de Biotecnología Industrial"
             fecha_finalizacion = request.form.get('fecha_finalizacion', '').strip()
             
-            # Validaciones básicas (sin red_tecnologica)
+            # Validaciones básicas (ahora incluye nivel_formacion)
             if not all([nis, primer_apellido, nombre, tipo_documento, numero_documento, 
-                       tipo_sangre, nombre_programa, codigo_ficha, fecha_finalizacion]):
+                       tipo_sangre, nombre_programa, codigo_ficha, fecha_finalizacion, nivel_formacion]):
                 flash('Todos los campos obligatorios deben estar completos.', 'error')
                 return render_template('agregar_empleado.html')
             
@@ -338,13 +347,14 @@ def agregar_empleado():
                 'fecha_vencimiento': fecha_finalizacion,
                 'tipo_sangre': tipo_sangre,
                 'foto': None,
-                # Campos adicionales SENA (sin red_tecnologica)
+                # Campos adicionales SENA
                 'nis': nis,
                 'primer_apellido': primer_apellido,
                 'segundo_apellido': segundo_apellido,
                 'nombre_programa': nombre_programa,
                 'codigo_ficha': codigo_ficha,
-                'centro': centro
+                'centro': centro,
+                'nivel_formacion': nivel_formacion  # 🆕 NUEVO CAMPO
             }
             
             # Manejar foto
@@ -360,7 +370,7 @@ def agregar_empleado():
             
             # Insertar en base de datos (usa tu función existente)
             insertar_empleado(datos)
-            flash(f"Empleado {nombre_completo} registrado correctamente en el sistema SENA.", 'success')
+            flash(f"Empleado {nombre_completo} registrado correctamente en el sistema SENA. Nivel: {nivel_formacion}", 'success')
             return redirect(url_for('dashboard_admin'))
             
         except ValueError as ve:
@@ -374,7 +384,7 @@ def agregar_empleado():
     # GET request - mostrar formulario
     return render_template('agregar_empleado.html')
 
-# ✅ FUNCIÓN PARA BUSCAR EMPLEADOS CON DATOS COMPLETOS SENA
+# ✅ FUNCIÓN PARA BUSCAR EMPLEADOS CON DATOS COMPLETOS SENA (ACTUALIZADA CON NIVEL_FORMACION)
 def buscar_empleado_completo(cedula):
     """
     Busca un empleado por cédula en la base de datos con todos los campos del SENA
@@ -383,12 +393,12 @@ def buscar_empleado_completo(cedula):
         conn = sqlite3.connect('carnet.db')
         cursor = conn.cursor()
         
-        # Buscar con todos los campos SENA
+        # Buscar con todos los campos SENA (INCLUYENDO nivel_formacion)
         cursor.execute("""
             SELECT nombre, cedula, tipo_documento, cargo, codigo, 
                    fecha_emision, fecha_vencimiento, tipo_sangre, foto,
                    nis, primer_apellido, segundo_apellido, 
-                   nombre_programa, codigo_ficha, centro
+                   nombre_programa, codigo_ficha, centro, nivel_formacion
             FROM empleados 
             WHERE cedula = ? 
             ORDER BY fecha_emision DESC
@@ -415,11 +425,12 @@ def buscar_empleado_completo(cedula):
                 'segundo_apellido': row[11] or '',
                 'nombre_programa': row[12] or 'Programa Técnico',
                 'codigo_ficha': row[13] or 'N/A',
-                'centro': row[14] or 'Centro de Biotecnología Industrial'
+                'centro': row[14] or 'Centro de Biotecnología Industrial',
+                'nivel_formacion': row[15] or 'Técnico'  # 🆕 NUEVO CAMPO
             }
             
             print(f"✅ Empleado encontrado con datos SENA: {empleado['nombre']}")
-            print(f"📋 NIS: {empleado['nis']} | Programa: {empleado['nombre_programa']}")
+            print(f"📋 NIS: {empleado['nis']} | Programa: {empleado['nombre_programa']} | Nivel: {empleado['nivel_formacion']}")
             
             return empleado
         else:
@@ -493,7 +504,7 @@ def generar_carnet_web():
             print(f"✅ Archivo combinado: {archivo_combinado}")
             
             print("🎉 ¡Carnet generado exitosamente!")
-            flash(f"Carnet generado exitosamente para {empleado['nombre']}", 'success')
+            flash(f"Carnet generado exitosamente para {empleado['nombre']} (Nivel: {empleado['nivel_formacion']})", 'success')
             return render_template("ver_carnet.html", carnet=archivo_combinado, empleado=empleado)
             
         except Exception as e:
@@ -512,18 +523,20 @@ def descargar_carnet(carnet):
     return send_from_directory('static/carnets', carnet, as_attachment=True)
 
 # ================================================
-# ✅ NUEVAS FUNCIONES PARA PLANTILLA EXCEL
+# ✅ NUEVAS FUNCIONES PARA PLANTILLA EXCEL (ACTUALIZADAS CON NIVEL_FORMACION)
 # ================================================
 
 def obtener_todos_empleados():
     """Función para obtener todos los empleados de la base de datos"""
     try:
-        conn = sqlite3.connect('carnet.db')  # ✅ CAMBIAR A carnet.db
+        conn = sqlite3.connect('carnet.db')
         cursor = conn.cursor()
         
         cursor.execute("""
             SELECT nombre, cedula, tipo_documento, cargo, codigo, 
-                   fecha_emision, fecha_vencimiento, tipo_sangre, foto
+                   fecha_emision, fecha_vencimiento, tipo_sangre, foto,
+                   nis, primer_apellido, segundo_apellido, 
+                   nombre_programa, codigo_ficha, centro, nivel_formacion
             FROM empleados
         """)
         
@@ -538,7 +551,15 @@ def obtener_todos_empleados():
                 'fecha_emision': row[5],
                 'fecha_vencimiento': row[6],
                 'tipo_sangre': row[7],
-                'foto': row[8]
+                'foto': row[8],
+                # Campos adicionales SENA
+                'nis': row[9] or 'N/A',
+                'primer_apellido': row[10] or '',
+                'segundo_apellido': row[11] or '',
+                'nombre_programa': row[12] or 'Programa Técnico',
+                'codigo_ficha': row[13] or 'N/A',
+                'centro': row[14] or 'Centro de Biotecnología Industrial',
+                'nivel_formacion': row[15] or 'Técnico'  # 🆕 NUEVO CAMPO
             }
             empleados.append(empleado)
         
@@ -560,7 +581,7 @@ def descargar_plantilla():
         empleados = obtener_todos_empleados()
         
         if empleados:
-            # Crear plantilla con datos reales (SIN red tecnológica)
+            # Crear plantilla con datos reales (CON nivel_formacion)
             data = {
                 'NIS': [],
                 'Primer Apellido': [],
@@ -570,6 +591,7 @@ def descargar_plantilla():
                 'Número de documento': [],
                 'Tipo de Sangre': [],
                 'Nombre del Programa': [],
+                'Nivel de Formación': [],  # 🆕 NUEVA COLUMNA
                 'Código de Ficha': [],
                 'Centro': [],
                 'Fecha Finalización del Programa': []
@@ -592,23 +614,24 @@ def descargar_plantilla():
                     primer_apellido = ''
                     segundo_apellido = ''
                 
-                data['NIS'].append(empleado['codigo'])  # Usar código como NIS
+                data['NIS'].append(empleado['nis'])
                 data['Primer Apellido'].append(primer_apellido)
                 data['Segundo Apellido'].append(segundo_apellido)
                 data['Nombre'].append(nombres)
                 data['Tipo de documento'].append(empleado['tipo_documento'])
                 data['Número de documento'].append(empleado['cedula'])
                 data['Tipo de Sangre'].append(empleado['tipo_sangre'])
-                data['Nombre del Programa'].append(f"Programa {empleado['cargo']}")
-                data['Código de Ficha'].append(empleado['codigo'])
-                data['Centro'].append('Centro de Biotecnología Industrial')
+                data['Nombre del Programa'].append(empleado['nombre_programa'])
+                data['Nivel de Formación'].append(empleado['nivel_formacion'])  # 🆕 NUEVO CAMPO
+                data['Código de Ficha'].append(empleado['codigo_ficha'])
+                data['Centro'].append(empleado['centro'])
                 data['Fecha Finalización del Programa'].append(empleado['fecha_vencimiento'])
             
             filename = f'empleados_sena_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
             flash(f'✅ Se descargó la plantilla con {len(empleados)} empleados registrados', 'success')
             
         else:
-            # Plantilla con datos de ejemplo si no hay empleados (SIN red tecnológica)
+            # Plantilla con datos de ejemplo si no hay empleados (CON nivel_formacion)
             data = {
                 'NIS': ['12345678901', '12345678902', '12345678903'],
                 'Primer Apellido': ['PEREZ', 'GARCIA', 'MARTINEZ'],
@@ -622,6 +645,7 @@ def descargar_plantilla():
                     'Biotecnología Industrial',
                     'Gestión Empresarial'
                 ],
+                'Nivel de Formación': ['Técnico', 'Tecnólogo', 'Técnico'],  # 🆕 NUEVA COLUMNA
                 'Código de Ficha': ['2024001', '2024002', '2024003'],
                 'Centro': [
                     'Centro de Biotecnología Industrial',
@@ -652,7 +676,7 @@ def descargar_plantilla_vacia():
         return redirect(url_for('login'))
     
     try:
-        # Crear plantilla solo con cabeceras y una fila de ejemplo (SIN red tecnológica)
+        # Crear plantilla solo con cabeceras y una fila de ejemplo (CON nivel_formacion)
         data = {
             'NIS': ['Ejemplo: 12345678901'],
             'Primer Apellido': ['Ejemplo: PEREZ'],
@@ -662,6 +686,7 @@ def descargar_plantilla_vacia():
             'Número de documento': ['Ejemplo: 12345678'],
             'Tipo de Sangre': ['O+, O-, A+, A-, B+, B-, AB+, AB-'],
             'Nombre del Programa': ['Ejemplo: Análisis y Desarrollo de Sistemas'],
+            'Nivel de Formación': ['Técnico o Tecnólogo'],  # 🆕 NUEVA COLUMNA
             'Código de Ficha': ['Ejemplo: 2024001'],
             'Centro': ['Centro de Biotecnología Industrial'],
             'Fecha Finalización del Programa': ['Formato: DD/MM/AAAA']
@@ -679,7 +704,7 @@ def descargar_plantilla_vacia():
         flash(f'Error al generar la plantilla vacía: {str(e)}', 'error')
         return redirect(url_for('dashboard_admin'))
 
-# ✅ NUEVA RUTA: CARGAR PLANTILLA EXCEL - LA FUNCIONALIDAD PRINCIPAL
+# ✅ NUEVA RUTA: CARGAR PLANTILLA EXCEL - LA FUNCIONALIDAD PRINCIPAL (ACTUALIZADA CON NIVEL_FORMACION)
 @app.route('/cargar_plantilla', methods=['GET', 'POST'])
 def cargar_plantilla():
     """Ruta para cargar empleados desde archivo Excel"""
@@ -708,12 +733,12 @@ def cargar_plantilla():
                 # Leer el Excel con pandas
                 df = pd.read_excel(file, engine='openpyxl')
                 
-                # Verificar que tenga las columnas necesarias
+                # Verificar que tenga las columnas necesarias (CON nivel_formacion)
                 columnas_requeridas = [
                     'NIS', 'Primer Apellido', 'Segundo Apellido', 'Nombre', 
                     'Tipo de documento', 'Número de documento', 'Tipo de Sangre', 
-                    'Nombre del Programa', 'Código de Ficha', 'Centro', 
-                    'Fecha Finalización del Programa'
+                    'Nombre del Programa', 'Nivel de Formación', 'Código de Ficha', 
+                    'Centro', 'Fecha Finalización del Programa'
                 ]
                 
                 columnas_faltantes = []
@@ -739,7 +764,7 @@ def cargar_plantilla():
                 
                 for index, row in df.iterrows():
                     try:
-                        # Limpiar y preparar los datos
+                        # Limpiar y preparar los datos (CON nivel_formacion)
                         nis = str(row['NIS']).strip() if pd.notna(row['NIS']) else ''
                         primer_apellido = str(row['Primer Apellido']).strip().upper() if pd.notna(row['Primer Apellido']) else ''
                         segundo_apellido = str(row['Segundo Apellido']).strip().upper() if pd.notna(row['Segundo Apellido']) else ''
@@ -748,6 +773,7 @@ def cargar_plantilla():
                         numero_documento = str(row['Número de documento']).strip() if pd.notna(row['Número de documento']) else ''
                         tipo_sangre = str(row['Tipo de Sangre']).strip().upper() if pd.notna(row['Tipo de Sangre']) else ''
                         programa = str(row['Nombre del Programa']).strip() if pd.notna(row['Nombre del Programa']) else ''
+                        nivel_formacion = str(row['Nivel de Formación']).strip() if pd.notna(row['Nivel de Formación']) else 'Técnico'  # 🆕 NUEVO CAMPO
                         codigo_ficha = str(row['Código de Ficha']).strip() if pd.notna(row['Código de Ficha']) else ''
                         centro = str(row['Centro']).strip() if pd.notna(row['Centro']) else 'Centro de Biotecnología Industrial'
                         fecha_finalizacion = str(row['Fecha Finalización del Programa']).strip() if pd.notna(row['Fecha Finalización del Programa']) else ''
@@ -786,37 +812,37 @@ def cargar_plantilla():
                         hoy = date.today()
                         
                         if empleado_existente:
-                            # Actualizar empleado existente
+                            # Actualizar empleado existente (CON nivel_formacion)
                             cursor.execute("""
                                 UPDATE empleados SET 
                                     nombre = ?, tipo_documento = ?, cargo = ?, codigo = ?,
                                     fecha_emision = ?, fecha_vencimiento = ?, tipo_sangre = ?,
                                     nis = ?, primer_apellido = ?, segundo_apellido = ?,
-                                    nombre_programa = ?, codigo_ficha = ?, centro = ?
+                                    nombre_programa = ?, codigo_ficha = ?, centro = ?, nivel_formacion = ?
                                 WHERE cedula = ?
                             """, (
                                 nombre_completo, tipo_documento, 'APRENDIZ', codigo_generado,
                                 hoy.strftime("%Y-%m-%d"), fecha_finalizacion, tipo_sangre,
                                 nis, primer_apellido, segundo_apellido,
-                                programa, codigo_ficha, centro,
+                                programa, codigo_ficha, centro, nivel_formacion,  # 🆕 NUEVO CAMPO
                                 numero_documento
                             ))
                             updated_count += 1
                         else:
-                            # Crear nuevo empleado
+                            # Crear nuevo empleado (CON nivel_formacion)
                             cursor.execute("""
                                 INSERT INTO empleados (
                                     nombre, cedula, tipo_documento, cargo, codigo,
                                     fecha_emision, fecha_vencimiento, tipo_sangre, foto,
                                     nis, primer_apellido, segundo_apellido,
-                                    nombre_programa, codigo_ficha, centro
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    nombre_programa, codigo_ficha, centro, nivel_formacion
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """, (
                                 nombre_completo, numero_documento, tipo_documento, 
                                 'APRENDIZ', codigo_generado, hoy.strftime("%Y-%m-%d"), 
                                 fecha_finalizacion, tipo_sangre, None,
                                 nis, primer_apellido, segundo_apellido,
-                                programa, codigo_ficha, centro
+                                programa, codigo_ficha, centro, nivel_formacion  # 🆕 NUEVO CAMPO
                             ))
                             created_count += 1
                         
@@ -867,21 +893,22 @@ def allowed_file(filename):
 
 def actualizar_base_datos_sena():
     """
-    Función opcional para agregar nuevas columnas SENA a la base de datos existente
+    Función para agregar nuevas columnas SENA a la base de datos existente
     Solo ejecutar UNA VEZ si quieres guardar los campos adicionales
     """
     try:
-        conn = sqlite3.connect('carnet.db')  # ✅ USAR carnet.db
+        conn = sqlite3.connect('carnet.db')
         cursor = conn.cursor()
         
-        # Agregar nuevas columnas si no existen (SIN red_tecnologica)
+        # Agregar nuevas columnas si no existen (CON nivel_formacion)
         nuevas_columnas = [
             'nis TEXT',
             'primer_apellido TEXT',
             'segundo_apellido TEXT', 
             'nombre_programa TEXT',
             'codigo_ficha TEXT',
-            'centro TEXT'
+            'centro TEXT',
+            'nivel_formacion TEXT DEFAULT "Técnico"'  # 🆕 NUEVA COLUMNA
         ]
         
         for columna in nuevas_columnas:
@@ -896,7 +923,7 @@ def actualizar_base_datos_sena():
         
         conn.commit()
         conn.close()
-        print("✅ Base de datos actualizada correctamente")
+        print("✅ Base de datos actualizada correctamente con nivel_formacion")
         
     except Exception as e:
         print(f"❌ Error actualizando base de datos: {e}")
@@ -940,7 +967,7 @@ def verificar_carnet():
         empleado = cargar_empleado(codigo_qr)
         
         if empleado:
-            flash(f"✅ Carnet VÁLIDO - {empleado['nombre']}", 'success')
+            flash(f"✅ Carnet VÁLIDO - {empleado['nombre']} (Nivel: {empleado.get('nivel_formacion', 'N/A')})", 'success')
             return render_template('verificar.html', empleado=empleado, valido=True)
         else:
             flash("❌ Carnet NO VÁLIDO - No se encontró en el sistema", 'error')
@@ -968,7 +995,7 @@ def configuracion():
         return redirect(url_for('login'))
     return render_template('configuracion.html')
 
-# ✅ RUTA PARA REPORTES
+# ✅ RUTA PARA REPORTES (ACTUALIZADA CON NIVEL_FORMACION)
 @app.route('/reportes')
 def reportes():
     """Ruta para generar reportes del sistema"""
@@ -987,6 +1014,12 @@ def reportes():
             cargo = emp.get('cargo', 'Sin cargo')
             cargos[cargo] = cargos.get(cargo, 0) + 1
         
+        # 🆕 Contar por nivel de formación
+        niveles = {}
+        for emp in empleados:
+            nivel = emp.get('nivel_formacion', 'Sin nivel')
+            niveles[nivel] = niveles.get(nivel, 0) + 1
+        
         # Empleados registrados hoy
         hoy = date.today().strftime("%Y-%m-%d")
         empleados_hoy = len([emp for emp in empleados if emp.get('fecha_emision') == hoy])
@@ -995,6 +1028,7 @@ def reportes():
             'total_empleados': total_empleados,
             'empleados_hoy': empleados_hoy,
             'cargos': cargos,
+            'niveles_formacion': niveles,  # 🆕 NUEVA ESTADÍSTICA
             'empleados': empleados
         }
         
@@ -1015,8 +1049,10 @@ def pagina_no_encontrada(e):
 def error_interno(e):
     return render_template('500.html'), 500
 
-# ✅ Descomenta la siguiente línea SOLO UNA VEZ para actualizar tu DB
+# ✅ Ejecutar actualización de base de datos al iniciar
+print("🚀 INICIANDO APLICACIÓN CON NIVEL DE FORMACIÓN...")
 actualizar_base_datos_sena()
+print("✅ Base de datos verificada y actualizada")
 
 if __name__ == "__main__":
     app.run(debug=True)

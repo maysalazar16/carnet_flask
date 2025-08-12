@@ -335,12 +335,40 @@
                     
                     <div class="form-group">
                         <label for="nombre_programa">Nombre del Programa <span class="required">*</span></label>
-                        <input type="text" id="nombre_programa" name="nombre_programa" placeholder="Ingresa el nombre del programa" required>
+                        <select id="nombre_programa" name="nombre_programa" required>
+                            <option value="">Selecciona un programa...</option>
+                            <option value="Actividad Física">Actividad Física</option>
+                            <option value="Redes">Redes</option>
+                            <option value="Cosmetología">Cosmetología</option>
+                            <option value="Panadería">Panadería</option>
+                            <option value="Contabilidad">Contabilidad</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="Sistemas">Sistemas</option>
+                            <option value="Recursos Humanos">Recursos Humanos</option>
+                            <option value="Archivo">Archivo</option>
+                            <option value="Alimentos">Alimentos</option>
+                            <option value="Sector Agroempresarial">Sector Agroempresarial</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nivel_formacion">Nivel de Formación <span class="required">*</span></label>
+                        <select id="nivel_formacion" name="nivel_formacion" required>
+                            <option value="">Selecciona el nivel...</option>
+                            <option value="Técnico">Técnico</option>
+                            <option value="Tecnólogo">Tecnólogo</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="codigo_ficha">Código de Ficha <span class="required">*</span></label>
-                        <input type="text" id="codigo_ficha" name="codigo_ficha" placeholder="Ingresa el código de ficha" required>
+                        <select id="codigo_ficha" name="codigo_ficha" required>
+                            <option value="">Selecciona un código...</option>
+                            <option value="3245678">3245678</option>
+                            <option value="546789">546789</option>
+                            <option value="1239870">1239870</option>
+                            <option value="6757890">6757890</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -395,6 +423,35 @@
             console.log("✅ Fecha establecida:", fechaFormateada);
         });
         
+        // ✅ MANEJAR NIVEL DE FORMACIÓN Y CALCULAR FECHA AUTOMÁTICAMENTE
+        document.getElementById('nivel_formacion').addEventListener('change', function() {
+            const nivelSeleccionado = this.value;
+            const fechaVencimiento = document.getElementById('fecha_vencimiento');
+            
+            if (nivelSeleccionado) {
+                const hoy = new Date();
+                let fechaFinal = new Date(hoy);
+                
+                if (nivelSeleccionado === 'Técnico') {
+                    // Técnico: 1 año más
+                    fechaFinal.setFullYear(hoy.getFullYear() + 1);
+                    console.log("✅ Técnico seleccionado: +1 año");
+                } else if (nivelSeleccionado === 'Tecnólogo') {
+                    // Tecnólogo: 2 años más
+                    fechaFinal.setFullYear(hoy.getFullYear() + 2);
+                    console.log("✅ Tecnólogo seleccionado: +2 años");
+                }
+                
+                // Formatear fecha para input date (YYYY-MM-DD)
+                const fechaFormateada = fechaFinal.toISOString().split('T')[0];
+                fechaVencimiento.value = fechaFormateada;
+                
+                console.log(`✅ Fecha de finalización establecida: ${fechaFormateada}`);
+            } else {
+                fechaVencimiento.value = '';
+            }
+        });
+        
         // ✅ COMBINAR APELLIDOS AUTOMÁTICAMENTE
         function actualizarApellidos() {
             const primerApellido = document.getElementById('primer_apellido').value;
@@ -432,6 +489,9 @@
             
             // Restablecer centro
             document.getElementById('centro').value = "Centro de Biotecnología Industrial";
+            
+            // Limpiar fecha de vencimiento
+            document.getElementById('fecha_vencimiento').value = '';
             
             // Restablecer texto de foto
             document.querySelector('.photo-text').textContent = '📷 Seleccionar foto (JPG, PNG)';

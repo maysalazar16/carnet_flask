@@ -9,7 +9,7 @@ def crear_base_datos():
         conexion = sqlite3.connect(DB_PATH, timeout=10)
         cursor = conexion.cursor()
         
-        # ✅ TABLA ACTUALIZADA CON TODOS LOS CAMPOS SENA
+        # ✅ TABLA ACTUALIZADA CON TODOS LOS CAMPOS SENA + nivel_formacion
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS empleados (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +27,8 @@ def crear_base_datos():
                 segundo_apellido TEXT,
                 nombre_programa TEXT,
                 codigo_ficha TEXT,
-                centro TEXT
+                centro TEXT,
+                nivel_formacion TEXT DEFAULT 'Técnico'
             )
         ''')
         conexion.commit()
@@ -50,7 +51,8 @@ def agregar_columnas_sena(cursor):
         'segundo_apellido TEXT',
         'nombre_programa TEXT',
         'codigo_ficha TEXT',
-        'centro TEXT'
+        'centro TEXT',
+        'nivel_formacion TEXT DEFAULT "Técnico"'  # 🆕 NUEVA COLUMNA
     ]
     
     for columna in nuevas_columnas:
@@ -75,14 +77,14 @@ def insertar_empleado(datos):
         conexion = sqlite3.connect(DB_PATH, timeout=10)
         cursor = conexion.cursor()
         
-        # ✅ INSERT ACTUALIZADO CON TODOS LOS CAMPOS SENA
+        # ✅ INSERT ACTUALIZADO CON TODOS LOS CAMPOS SENA + nivel_formacion
         cursor.execute('''
             INSERT INTO empleados (
                 nombre, cedula, tipo_documento, cargo,
                 codigo, fecha_emision, fecha_vencimiento,
                 tipo_sangre, foto, nis, primer_apellido,
-                segundo_apellido, nombre_programa, codigo_ficha, centro
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                segundo_apellido, nombre_programa, codigo_ficha, centro, nivel_formacion
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             datos['nombre'],
             datos['cedula'],
@@ -98,10 +100,11 @@ def insertar_empleado(datos):
             datos.get('segundo_apellido', ''),
             datos.get('nombre_programa', ''),
             datos.get('codigo_ficha', ''),
-            datos.get('centro', 'Centro de Biotecnología Industrial')
+            datos.get('centro', 'Centro de Biotecnología Industrial'),
+            datos.get('nivel_formacion', 'Técnico')  # 🆕 NUEVO CAMPO
         ))
         conexion.commit()
-        print(f"✅ Empleado {datos['nombre']} insertado correctamente")
+        print(f"✅ Empleado {datos['nombre']} insertado correctamente - Nivel: {datos.get('nivel_formacion', 'Técnico')}")
         
     except Exception as e:
         print(f"❌ Error insertando empleado: {e}")
@@ -117,14 +120,18 @@ def cargar_empleado(cedula):
         cursor.execute('SELECT * FROM empleados WHERE cedula = ?', (cedula,))
         fila = cursor.fetchone()
         if fila:
-            # ✅ COLUMNAS ACTUALIZADAS CON CAMPOS SENA
+            # ✅ COLUMNAS ACTUALIZADAS CON CAMPOS SENA + nivel_formacion
             columnas = [
                 'id', 'nombre', 'cedula', 'tipo_documento', 'cargo',
                 'codigo', 'fecha_emision', 'fecha_vencimiento',
                 'tipo_sangre', 'foto', 'nis', 'primer_apellido',
-                'segundo_apellido', 'nombre_programa', 'codigo_ficha', 'centro'
+                'segundo_apellido', 'nombre_programa', 'codigo_ficha', 'centro', 'nivel_formacion'
             ]
-            return dict(zip(columnas, fila))
+            empleado = dict(zip(columnas, fila))
+            # Asegurar que nivel_formacion tenga un valor por defecto
+            if not empleado.get('nivel_formacion'):
+                empleado['nivel_formacion'] = 'Técnico'
+            return empleado
         return None
     except Exception as e:
         print(f"❌ Error cargando empleado: {e}")
@@ -146,10 +153,13 @@ def obtener_todos_empleados():
                 'id', 'nombre', 'cedula', 'tipo_documento', 'cargo',
                 'codigo', 'fecha_emision', 'fecha_vencimiento',
                 'tipo_sangre', 'foto', 'nis', 'primer_apellido',
-                'segundo_apellido', 'nombre_programa', 'codigo_ficha', 'centro'
+                'segundo_apellido', 'nombre_programa', 'codigo_ficha', 'centro', 'nivel_formacion'
             ]
             for fila in filas:
                 empleado = dict(zip(columnas, fila))
+                # Asegurar que nivel_formacion tenga un valor por defecto
+                if not empleado.get('nivel_formacion'):
+                    empleado['nivel_formacion'] = 'Técnico'
                 empleados.append(empleado)
         
         return empleados
@@ -199,7 +209,7 @@ def actualizar_empleado(cedula, datos):
                 nombre = ?, tipo_documento = ?, cargo = ?,
                 fecha_vencimiento = ?, tipo_sangre = ?, foto = ?,
                 nis = ?, primer_apellido = ?, segundo_apellido = ?,
-                nombre_programa = ?, codigo_ficha = ?, centro = ?
+                nombre_programa = ?, codigo_ficha = ?, centro = ?, nivel_formacion = ?
             WHERE cedula = ?
         ''', (
             datos['nombre'],
@@ -214,6 +224,7 @@ def actualizar_empleado(cedula, datos):
             datos.get('nombre_programa', ''),
             datos.get('codigo_ficha', ''),
             datos.get('centro', ''),
+            datos.get('nivel_formacion', 'Técnico'),  # 🆕 NUEVO CAMPO
             cedula
         ))
         conexion.commit()
@@ -261,6 +272,10 @@ def obtener_estadisticas():
         cursor.execute('SELECT cargo, COUNT(*) FROM empleados GROUP BY cargo')
         por_cargo = dict(cursor.fetchall())
         
+        # 🆕 Empleados por nivel de formación
+        cursor.execute('SELECT nivel_formacion, COUNT(*) FROM empleados GROUP BY nivel_formacion')
+        por_nivel = dict(cursor.fetchall())
+        
         # Empleados registrados hoy
         from datetime import date
         hoy = date.today().strftime("%Y-%m-%d")
@@ -270,12 +285,13 @@ def obtener_estadisticas():
         return {
             'total': total,
             'por_cargo': por_cargo,
+            'por_nivel_formacion': por_nivel,  # 🆕 NUEVA ESTADÍSTICA
             'registrados_hoy': hoy_count
         }
         
     except Exception as e:
         print(f"❌ Error obteniendo estadísticas: {e}")
-        return {'total': 0, 'por_cargo': {}, 'registrados_hoy': 0}
+        return {'total': 0, 'por_cargo': {}, 'por_nivel_formacion': {}, 'registrados_hoy': 0}
     finally:
         conexion.close()
 
@@ -305,8 +321,103 @@ def migrar_base_datos():
     finally:
         conexion.close()
 
-# ✅ EJECUTAR MIGRACIÓN AL IMPORTAR (SEGURO)
+# 🆕 NUEVA FUNCIÓN: Verificar estructura de la base de datos
+def verificar_estructura_db():
+    """
+    Verifica que la base de datos tenga todos los campos necesarios
+    """
+    try:
+        conexion = sqlite3.connect(DB_PATH, timeout=10)
+        cursor = conexion.cursor()
+        
+        cursor.execute("PRAGMA table_info(empleados)")
+        columnas = cursor.fetchall()
+        
+        print("🔍 ESTRUCTURA ACTUAL DE LA BASE DE DATOS:")
+        print("-" * 50)
+        
+        campos_esperados = [
+            'id', 'nombre', 'cedula', 'tipo_documento', 'cargo', 'codigo',
+            'fecha_emision', 'fecha_vencimiento', 'tipo_sangre', 'foto',
+            'nis', 'primer_apellido', 'segundo_apellido', 'nombre_programa',
+            'codigo_ficha', 'centro', 'nivel_formacion'
+        ]
+        
+        campos_existentes = [col[1] for col in columnas]
+        
+        for campo in campos_esperados:
+            if campo in campos_existentes:
+                print(f"✅ {campo}")
+            else:
+                print(f"❌ {campo} - FALTA")
+        
+        # Verificar específicamente nivel_formacion
+        if 'nivel_formacion' in campos_existentes:
+            print("\n🎯 ¡Campo 'nivel_formacion' encontrado! La base de datos está lista.")
+        else:
+            print("\n⚠️ Falta el campo 'nivel_formacion'. Ejecutando actualización...")
+            agregar_columnas_sena(cursor)
+            conexion.commit()
+            print("✅ Campo 'nivel_formacion' agregado exitosamente")
+            
+    except Exception as e:
+        print(f"❌ Error verificando estructura: {e}")
+    finally:
+        conexion.close()
+
+# 🆕 NUEVA FUNCIÓN: Actualizar empleados existentes para que tengan nivel_formacion
+def actualizar_empleados_sin_nivel():
+    """
+    Actualiza empleados existentes que no tienen nivel_formacion definido
+    """
+    try:
+        conexion = sqlite3.connect(DB_PATH, timeout=10)
+        cursor = conexion.cursor()
+        
+        # Buscar empleados sin nivel_formacion o con valor NULL
+        cursor.execute("SELECT cedula, nombre FROM empleados WHERE nivel_formacion IS NULL OR nivel_formacion = ''")
+        empleados_sin_nivel = cursor.fetchall()
+        
+        if empleados_sin_nivel:
+            print(f"🔄 Actualizando {len(empleados_sin_nivel)} empleados sin nivel de formación...")
+            
+            # Asignar 'Técnico' por defecto
+            cursor.execute("UPDATE empleados SET nivel_formacion = 'Técnico' WHERE nivel_formacion IS NULL OR nivel_formacion = ''")
+            conexion.commit()
+            
+            print("✅ Empleados actualizados con nivel 'Técnico' por defecto")
+            
+            for cedula, nombre in empleados_sin_nivel:
+                print(f"   - {nombre} (Cédula: {cedula})")
+        else:
+            print("✅ Todos los empleados ya tienen nivel de formación definido")
+            
+    except Exception as e:
+        print(f"❌ Error actualizando empleados: {e}")
+    finally:
+        conexion.close()
+
+# ✅ EJECUTAR VERIFICACIÓN Y ACTUALIZACIÓN AL IMPORTAR
 if __name__ == "__main__":
-    # Solo para testing
+    print("🚀 INICIALIZANDO BASE DE DATOS...")
     crear_base_datos()
-    print("Base de datos inicializada correctamente")
+    verificar_estructura_db()
+    actualizar_empleados_sin_nivel()
+    print("✅ Base de datos inicializada correctamente con nivel_formacion")
+else:
+    # Cuando se importe desde app.py, verificar silenciosamente
+    try:
+        conexion = sqlite3.connect(DB_PATH, timeout=5)
+        cursor = conexion.cursor()
+        cursor.execute("PRAGMA table_info(empleados)")
+        columnas = [col[1] for col in cursor.fetchall()]
+        
+        if 'nivel_formacion' not in columnas:
+            print("🔄 Agregando campo nivel_formacion...")
+            agregar_columnas_sena(cursor)
+            conexion.commit()
+            print("✅ Campo nivel_formacion agregado")
+        
+        conexion.close()
+    except:
+        pass  # Silenciosamente continuar si hay problemas
