@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from db import crear_base_datos, insertar_empleado, cargar_empleado, existe_codigo
 from qr import generar_qr
 from imagen import generar_carnet, combinar_anverso_reverso  # ✅ se agregó la función aquí
+from procesador_fotos import procesar_foto_aprendiz  # 🆕 NUEVO IMPORT PARA PROCESAMIENTO DE FOTOS
 from datetime import date, timedelta, datetime
 import os
 import random
@@ -100,7 +101,7 @@ def dashboard_aprendiz():
         return redirect(url_for('login'))
     return render_template("dashboard_aprendiz.html", usuario=session['usuario'])
 
-# 🔥🔥🔥 FUNCIÓN AGREGAR ACTUALIZADA CON NIVEL_FORMACION 🔥🔥🔥
+# 🔥🔥🔥 FUNCIÓN AGREGAR ACTUALIZADA CON NIVEL_FORMACION Y PROCESAMIENTO DE FOTOS 🔥🔥🔥
 @app.route('/agregar', methods=['GET', 'POST'])
 def agregar():
     print(f"🔥🔥🔥 RUTA AGREGAR ACCEDIDA - MÉTODO: {request.method}")
@@ -165,16 +166,21 @@ def agregar():
             
             print(f"🔥 CÓDIGO GENERADO: {codigo}")
             
-            # ✅ MANEJAR FOTO OBLIGATORIA
+            # ✅ MANEJAR FOTO OBLIGATORIA CON PROCESAMIENTO AUTOMÁTICO
             archivo_foto = request.files.get('foto')
             nombre_archivo_foto = None
             
             if archivo_foto and archivo_foto.filename != '':
-                extension = os.path.splitext(archivo_foto.filename)[1]
-                nombre_archivo_foto = f"{cedula}{extension}"
-                ruta_guardar = os.path.join('static/fotos', nombre_archivo_foto)
-                archivo_foto.save(ruta_guardar)
-                print(f"🔥 FOTO GUARDADA: {nombre_archivo_foto}")
+                # 🆕 PROCESAR LA FOTO AUTOMÁTICAMENTE (3x4, fondo blanco, tamaño carnet)
+                exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula)
+                
+                if not exito:
+                    flash(f"❌ Error procesando la foto: {mensaje}", 'error')
+                    print("❌ ERROR PROCESANDO FOTO")
+                    return render_template('agregar.html', fecha_hoy=hoy.strftime("%Y-%m-%d"), fecha_vencimiento=vencimiento.strftime("%Y-%m-%d"))
+                
+                print(f"🔥 FOTO PROCESADA AUTOMÁTICAMENTE: {nombre_archivo_foto}")
+                flash("📸 Foto procesada automáticamente: 3x4, fondo blanco, optimizada para carnet", 'info')
             else:
                 flash("❌ Debe subir una foto.", 'error')
                 print("❌ FOTO FALTANTE")
@@ -1038,6 +1044,292 @@ def reportes():
         print(f"Error generando reportes: {e}")
         flash('Error al generar reportes.', 'error')
         return redirect(url_for('dashboard_admin'))
+
+# ================================================
+# 🆕🆕🆕 NUEVAS RUTAS PARA CONSULTA DE APRENDICES 🆕🆕🆕
+# ================================================
+
+@app.route('/consultar_datos', methods=['GET', 'POST'])
+def consultar_datos_aprendiz():
+    """Ruta para que los aprendices consulten sus datos con cédula"""
+    if 'usuario' not in session or session.get('rol') != 'aprendiz':
+        flash('Debes iniciar sesión como aprendiz para acceder.', 'error')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        cedula = request.form.get('cedula', '').strip()
+        
+        if not cedula:
+            flash('Por favor ingresa tu número de cédula.', 'error')
+            return render_template('consultar_datos.html')
+        
+        # Limpiar cédula
+        cedula_limpia = ''.join(filter(str.isdigit, cedula))
+        
+        if len(cedula_limpia) < 7 or len(cedula_limpia) > 10:
+            flash('La cédula debe tener entre 7 y 10 dígitos.', 'error')
+            return render_template('consultar_datos.html')
+        
+        # Buscar aprendiz en la base de datos
+        try:
+            aprendiz = buscar_empleado_completo(cedula_limpia)
+            
+            if aprendiz:
+                # Aprendiz encontrado - redirigir a cargar foto
+                session['aprendiz_cedula'] = cedula_limpia
+                session['aprendiz_datos'] = aprendiz
+                flash(f'¡Datos encontrados! Hola {aprendiz["nombre"]}', 'success')
+                return redirect(url_for('cargar_foto_aprendiz'))
+            else:
+                # Aprendiz no encontrado
+                flash('No se encontraron tus datos en el sistema. Por favor comunícate con el área administrativa para registrarte.', 'error')
+                return render_template('consultar_datos.html', no_encontrado=True)
+                
+        except Exception as e:
+            print(f"Error consultando aprendiz: {e}")
+            flash('Error al consultar los datos. Intenta de nuevo.', 'error')
+            return render_template('consultar_datos.html')
+    
+    # GET request - mostrar formulario
+    return render_template('consultar_datos.html')
+
+@app.route('/cargar_foto_aprendiz', methods=['GET', 'POST'])
+def cargar_foto_aprendiz():
+    """Ruta para que el aprendiz cargue su foto y genere el carnet CON PROCESAMIENTO AUTOMÁTICO"""
+    if 'usuario' not in session or session.get('rol') != 'aprendiz':
+        flash('Debes iniciar sesión como aprendiz para acceder.', 'error')
+        return redirect(url_for('login'))
+    
+    # Verificar que tenga datos de consulta
+    aprendiz_cedula = session.get('aprendiz_cedula')
+    aprendiz_datos = session.get('aprendiz_datos')
+    
+    if not aprendiz_cedula or not aprendiz_datos:
+        flash('Primero debes consultar tus datos.', 'error')
+        return redirect(url_for('consultar_datos_aprendiz'))
+    
+    if request.method == 'POST':
+        try:
+            # Validar que se subió una foto
+            archivo_foto = request.files.get('foto')
+            if not archivo_foto or archivo_foto.filename == '':
+                flash('Debes seleccionar una foto para generar tu carnet.', 'error')
+                return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
+            
+            # 🆕 PROCESAR LA FOTO AUTOMÁTICAMENTE (3x4, fondo blanco, tamaño carnet)
+            exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, aprendiz_cedula)
+            
+            if not exito:
+                flash(f'Error procesando la foto: {mensaje}', 'error')
+                return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
+            
+            print(f"✅ Foto procesada automáticamente: {nombre_archivo_foto}")
+            flash(f'📸 Foto procesada automáticamente: proporción 3x4, fondo blanco, tamaño optimizado', 'success')
+            
+            # Actualizar datos del aprendiz con la nueva foto
+            from db import actualizar_empleado
+            datos_actualizados = aprendiz_datos.copy()
+            datos_actualizados['foto'] = nombre_archivo_foto
+            
+            actualizar_empleado(aprendiz_cedula, datos_actualizados)
+            
+            # Generar carnet automáticamente
+            try:
+                # Generar QR
+                ruta_qr = generar_qr(aprendiz_cedula)
+                
+                # Generar carnet
+                ruta_carnet = generar_carnet(datos_actualizados, ruta_qr)
+                
+                # Combinar anverso y reverso
+                reverso_path = f"reverso_{aprendiz_cedula}.png"
+                archivo_combinado = combinar_anverso_reverso(
+                    os.path.basename(ruta_carnet), 
+                    reverso_path, 
+                    datos_actualizados['nombre']
+                )
+                
+                # Limpiar session data
+                session.pop('aprendiz_cedula', None)
+                session.pop('aprendiz_datos', None)
+                
+                flash(f'¡Carnet generado exitosamente! Tu carnet está listo.', 'success')
+                return render_template("ver_carnet.html", carnet=archivo_combinado, empleado=datos_actualizados)
+                
+            except Exception as e:
+                print(f"Error generando carnet: {e}")
+                flash(f'Error al generar el carnet: {str(e)}', 'error')
+                return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
+            
+        except Exception as e:
+            print(f"Error en cargar_foto_aprendiz: {e}")
+            flash(f'Error al procesar la foto: {str(e)}', 'error')
+            return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
+    
+    # GET request - mostrar formulario para cargar foto
+    return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
+
+@app.route('/cancelar_consulta')
+def cancelar_consulta():
+    """Cancelar consulta y limpiar session"""
+    session.pop('aprendiz_cedula', None)
+    session.pop('aprendiz_datos', None)
+    flash('Consulta cancelada.', 'info')
+    return redirect(url_for('dashboard_aprendiz'))
+
+# ================================================
+# 🆕🆕🆕 NUEVAS RUTAS PARA ARCHIVO DE CARNETS 🆕🆕🆕
+# ================================================
+
+@app.route('/archivo_carnets')
+def archivo_carnets():
+    """Ruta para mostrar carnets generados agrupados por programa o ficha"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        flash('Acceso denegado. Solo administradores.', 'error')
+        return redirect(url_for('login'))
+    
+    # Obtener parámetro de agrupación (por defecto: programa)
+    agrupar_por = request.args.get('agrupar', 'programa')  # 'programa' o 'ficha'
+    
+    try:
+        # Obtener todos los aprendices con carnets generados (que tengan foto)
+        conn = sqlite3.connect('carnet.db')
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT nombre, cedula, tipo_documento, cargo, codigo, 
+                   fecha_emision, fecha_vencimiento, tipo_sangre, foto,
+                   nis, primer_apellido, segundo_apellido, 
+                   nombre_programa, codigo_ficha, centro, nivel_formacion
+            FROM empleados 
+            WHERE foto IS NOT NULL AND foto != ''
+            ORDER BY fecha_emision DESC
+        """)
+        
+        aprendices_con_carnet = []
+        for row in cursor.fetchall():
+            aprendiz = {
+                'nombre': row[0],
+                'cedula': row[1],
+                'tipo_documento': row[2] or 'CC',
+                'cargo': row[3] or 'APRENDIZ',
+                'codigo': row[4],
+                'fecha_emision': row[5],
+                'fecha_vencimiento': row[6],
+                'tipo_sangre': row[7] or 'O+',
+                'foto': row[8],
+                'nis': row[9] or 'N/A',
+                'primer_apellido': row[10] or '',
+                'segundo_apellido': row[11] or '',
+                'nombre_programa': row[12] or 'Programa General',
+                'codigo_ficha': row[13] or 'Sin Ficha',
+                'centro': row[14] or 'Centro de Biotecnología Industrial',
+                'nivel_formacion': row[15] or 'Técnico'
+            }
+            
+            # Verificar si el carnet realmente existe en el sistema de archivos
+            carnet_existe = False
+            posibles_carnets = [
+                f"static/carnets/carnet_{aprendiz['cedula']}.png",
+                f"static/carnets/carnet_combinado_{aprendiz['cedula']}.png",
+                f"static/carnets/{aprendiz['nombre']}_{aprendiz['cedula']}.png"
+            ]
+            
+            for carnet_path in posibles_carnets:
+                if os.path.exists(carnet_path):
+                    aprendiz['carnet_archivo'] = os.path.basename(carnet_path)
+                    carnet_existe = True
+                    break
+            
+            if carnet_existe:
+                aprendices_con_carnet.append(aprendiz)
+        
+        conn.close()
+        
+        # Agrupar los datos
+        grupos = {}
+        
+        if agrupar_por == 'programa':
+            for aprendiz in aprendices_con_carnet:
+                programa = aprendiz['nombre_programa']
+                if programa not in grupos:
+                    grupos[programa] = []
+                grupos[programa].append(aprendiz)
+        else:  # agrupar por ficha
+            for aprendiz in aprendices_con_carnet:
+                ficha = aprendiz['codigo_ficha']
+                if ficha not in grupos:
+                    grupos[ficha] = []
+                grupos[ficha].append(aprendiz)
+        
+        # Estadísticas básicas
+        total_carnets = len(aprendices_con_carnet)
+        total_grupos = len(grupos)
+        
+        # Contar por nivel de formación
+        niveles_count = {}
+        for aprendiz in aprendices_con_carnet:
+            nivel = aprendiz['nivel_formacion']
+            niveles_count[nivel] = niveles_count.get(nivel, 0) + 1
+        
+        estadisticas = {
+            'total_carnets': total_carnets,
+            'total_grupos': total_grupos,
+            'niveles_count': niveles_count,
+            'agrupar_por': agrupar_por
+        }
+        
+        return render_template('archivo_carnets.html', 
+                             grupos=grupos, 
+                             estadisticas=estadisticas,
+                             agrupar_por=agrupar_por)
+        
+    except Exception as e:
+        print(f"Error en archivo_carnets: {e}")
+        flash('Error al cargar el archivo de carnets.', 'error')
+        return redirect(url_for('dashboard_admin'))
+
+@app.route('/ver_carnet_archivo/<cedula>')
+def ver_carnet_archivo(cedula):
+    """Ver un carnet específico desde el archivo"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        flash('Acceso denegado. Solo administradores.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        # Buscar el aprendiz por cédula
+        aprendiz = buscar_empleado_completo(cedula)
+        
+        if not aprendiz:
+            flash(f'No se encontró aprendiz con cédula {cedula}', 'error')
+            return redirect(url_for('archivo_carnets'))
+        
+        # Buscar el archivo del carnet
+        posibles_carnets = [
+            f"carnet_{cedula}.png",
+            f"carnet_combinado_{cedula}.png",
+            f"{aprendiz['nombre']}_{cedula}.png"
+        ]
+        
+        carnet_encontrado = None
+        for carnet_nombre in posibles_carnets:
+            if os.path.exists(f"static/carnets/{carnet_nombre}"):
+                carnet_encontrado = carnet_nombre
+                break
+        
+        if not carnet_encontrado:
+            flash(f'No se encontró el archivo del carnet para {aprendiz["nombre"]}', 'error')
+            return redirect(url_for('archivo_carnets'))
+        
+        return render_template("ver_carnet.html", 
+                             carnet=carnet_encontrado, 
+                             empleado=aprendiz,
+                             desde_archivo=True)
+        
+    except Exception as e:
+        print(f"Error viendo carnet individual: {e}")
+        flash('Error al mostrar el carnet.', 'error')
+        return redirect(url_for('archivo_carnets'))
 
 # ✅ MANEJO DE ERRORES 404
 @app.errorhandler(404)

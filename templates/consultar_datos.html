@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Datos - SENA Aprendices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4f1d4 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            font-weight: 500;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border: 2px solid #bbdefb;
+            color: #1976d2;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box h3 {
+            color: #28a745;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .info-box p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #28a745;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545862;
+            transform: translateY(-2px);
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .no-encontrado {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .no-encontrado h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .no-encontrado p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .no-encontrado .contacto {
+            background: #fff;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .contacto h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .contacto p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                max-width: 95%;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .header h1 {
+                font-size: 1.7rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Consultar mis Datos</h1>
+            <p>Verifica tu información registrada</p>
+        </div>
+
+        <div class="content">
+            <!-- Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'info' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="info-box">
+                <h3>📋 ¿Cómo funciona?</h3>
+                <p>• Ingresa tu número de cédula para verificar si estás registrado en el sistema</p>
+                <p>• Si tus datos están registrados, podrás cargar tu foto y generar tu carnet</p>
+                <p>• Si no apareces registrado, deberás contactar al área administrativa</p>
+            </div>
+
+            <form method="POST" id="consultaForm">
+                <div class="form-group">
+                    <label for="cedula">
+                        🆔 Número de Cédula <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="cedula" 
+                        name="cedula" 
+                        placeholder="Ejemplo: 1234567890"
+                        required
+                        maxlength="10"
+                        pattern="[0-9]+"
+                        title="Solo se permiten números"
+                        value="{{ request.form.cedula if request.form.cedula else '' }}"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btnConsultar">
+                    🔎 Consultar mis Datos
+                    <span class="loading" id="loading">⏳</span>
+                </button>
+            </form>
+
+            {% if no_encontrado %}
+            <div class="no-encontrado">
+                <h3>❌ Datos no encontrados</h3>
+                <p>No se encontraron tus datos en el sistema. Esto puede deberse a que:</p>
+                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                    <li>Aún no has sido registrado en el sistema</li>
+                    <li>Tu información está pendiente de procesamiento</li>
+                    <li>Hay un error en el número de cédula ingresado</li>
+                </ul>
+                
+                <div class="contacto">
+                    <h4>📞 Contacta al Área Administrativa</h4>
+                    <p><strong>Para registrarte o actualizar tus datos:</strong></p>
+                    <p>• Dirígete al área administrativa del centro</p>
+                    <p>• Presenta tu documento de identidad</p>
+                    <p>• Solicita tu registro en el sistema de carnets</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="actions">
+                <a href="{{ url_for('dashboard_aprendiz') }}" class="btn btn-secondary">
+                    🏠 Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Formateo automático de cédula (solo números)
+        document.getElementById('cedula').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+            e.target.value = value;
+        });
+
+        // Manejo del envío del formulario
+        document.getElementById('consultaForm').addEventListener('submit', function(e) {
+            const cedula = document.getElementById('cedula').value.trim();
+            const btn = document.getElementById('btnConsultar');
+            const loading = document.getElementById('loading');
+
+            // Validación
+            if (!cedula) {
+                e.preventDefault();
+                alert('Por favor ingresa tu número de cédula');
+                return false;
+            }
+
+            if (cedula.length < 7) {
+                e.preventDefault();
+                alert('La cédula debe tener al menos 7 dígitos');
+                return false;
+            }
+
+            // Efectos visuales
+            btn.disabled = true;
+            loading.classList.add('show');
+            btn.innerHTML = '🔄 Consultando... <span class="loading show">⏳</span>';
+
+            // Restaurar botón después de un tiempo (por si hay error)
+            setTimeout(() => {
+                btn.disabled = false;
+                loading.classList.remove('show');
+                btn.innerHTML = '🔎 Consultar mis Datos';
+            }, 5000);
+
+            return true;
+        });
+
+        // Auto-focus en cédula
+        window.addEventListener('load', function() {
+            document.getElementById('cedula').focus();
+        });
+
+        // Limpiar mensajes después de 5 segundos
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

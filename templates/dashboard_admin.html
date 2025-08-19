@@ -269,12 +269,12 @@
             {% endif %}
         {% endwith %}
 
-        <h2>Panel de Control</h2>
+        <h2>Panel de Control Administrativo</h2>
 
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{{ stats.total if stats else 156 }}</div>
-                <div class="stat-label">Empleados Registrados</div>
+                <div class="stat-label">Aprendices Registrados</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">{{ stats.hoy if stats else 23 }}</div>
@@ -291,69 +291,45 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- ✅ NUEVA TARJETA DESTACADA - CARGAR PLANTILLA EXCEL -->
+            <!-- ✅ TARJETA DESTACADA PRINCIPAL - CARGAR PLANTILLA EXCEL -->
             <div class="card card-featured">
                 <div class="card-icon">📤</div>
                 <h3>Cargar Plantilla Excel</h3>
-                <p>Carga masiva de empleados desde archivo Excel. Sube tu plantilla completada y procesa múltiples empleados de una vez.</p>
+                <p>Carga masiva de aprendices desde archivo Excel. Sube tu plantilla completada y procesa múltiples aprendices de una vez.</p>
                 <a href="{{ url_for('cargar_plantilla') }}" class="card-btn">📄 Cargar Excel</a>
                 <a href="{{ url_for('descargar_plantilla') }}" class="card-btn-secondary">⬇️ Descargar Plantilla</a>
             </div>
 
-            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
+            <!-- ✅ GENERAR CARNET -->
             <div class="card">
                 <div class="card-icon">🆔</div>
                 <h3>Generar Carnet</h3>
-                <p>Crea un nuevo carnet digital con código QR para aprendices, instructores o administrativos.</p>
+                <p>Crea un nuevo carnet digital con código QR para aprendices ya registrados en el sistema.</p>
                 <a href="{{ url_for('generar_carnet_web') }}" class="card-btn">Generar Carnet</a>
             </div>
 
-            <!-- ✅ TARJETA ORIGINAL ACTUALIZADA -->
+            <!-- ✅ GESTIONAR APRENDICES -->
             <div class="card">
                 <div class="card-icon">👥</div>
-                <h3>Gestionar Empleados</h3>
-                <p>Administra la información de empleados y aprendices, actualiza datos y gestiona registros.</p>
-                <a href="{{ url_for('agregar') }}" class="card-btn">Agregar Empleado</a>
+                <h3>Gestionar Aprendices</h3>
+                <p>Administra la información de aprendices, registra nuevos estudiantes y actualiza datos existentes.</p>
+                <a href="{{ url_for('agregar') }}" class="card-btn">Agregar Aprendiz</a>
             </div>
 
-            <!-- ✅ NUEVA TARJETA - PLANTILLA EXCEL (COMO EN TU IMAGEN) -->
-            <div class="card">
-                <div class="card-icon">📄</div>
-                <h3>Plantilla Excel</h3>
-                <p>Descarga la plantilla oficial de Excel con el formato correcto para importar datos.</p>
-                <a href="{{ url_for('descargar_plantilla') }}" class="card-btn">Descargar Plantilla</a>
-            </div>
-
-            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
-            <div class="card">
-                <div class="card-icon">🔍</div>
-                <h3>Verificar Carnets</h3>
-                <p>Verifica la autenticidad de los carnets digitales mediante códigos QR.</p>
-                <a href="#" class="card-btn">Verificar</a>
-            </div>
-
-            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
-            <div class="card">
-                <div class="card-icon">📊</div>
-                <h3>Reportes</h3>
-                <p>Genera reportes detallados sobre carnets emitidos, estadísticas y más.</p>
-                <a href="#" class="card-btn">Ver Reportes</a>
-            </div>
-
-            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
+            <!-- ✅ CONFIGURACIÓN -->
             <div class="card">
                 <div class="card-icon">⚙️</div>
                 <h3>Configuración</h3>
                 <p>Ajusta la configuración del sistema, usuarios y preferencias.</p>
-                <a href="#" class="card-btn">Configurar</a>
+                <a href="{{ url_for('configuracion') }}" class="card-btn">Configurar</a>
             </div>
 
-            <!-- ✅ TARJETA ORIGINAL SIN CAMBIOS -->
+            <!-- ✅ ARCHIVO DE CARNETS -->
             <div class="card">
                 <div class="card-icon">📁</div>
                 <h3>Archivo de Carnets</h3>
                 <p>Consulta y descarga carnets previamente generados.</p>
-                <a href="#" class="card-btn">Ver Archivo</a>
+                <a href="{{ url_for('archivo_carnets') }}" class="card-btn">Ver Archivo</a>
             </div>
         </div>
     </div>
