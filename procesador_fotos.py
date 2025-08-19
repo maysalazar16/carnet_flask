@@ -1,20 +1,20 @@
-from PIL import Image, ImageFilter, ImageEnhance
+from PIL import Image, ImageFilter, ImageEnhance, ImageOps, ImageDraw
 import numpy as np
 import os
 import cv2
 
-def procesar_foto_carnet(ruta_imagen, ruta_salida, ancho_carnet=300, alto_carnet=400):
+def procesar_foto_carnet(ruta_imagen, ruta_salida, ancho_carnet=220, alto_carnet=270):
     """
-    Procesa una foto para carnet:
-    1. Convierte a proporción 3:4
-    2. Ajusta al tamaño del carnet
+    Procesa una foto para carnet SENA:
+    1. Convierte a proporción correcta para el carnet
+    2. Ajusta al tamaño del carnet (220x270 para tu imagen.py)
     3. Cambia el fondo a blanco automáticamente
     
     Args:
         ruta_imagen: Ruta de la imagen original
         ruta_salida: Ruta donde guardar la imagen procesada
-        ancho_carnet: Ancho en píxeles para el carnet (default: 300px)
-        alto_carnet: Alto en píxeles para el carnet (default: 400px)
+        ancho_carnet: Ancho en píxeles para el carnet (220px para SENA)
+        alto_carnet: Alto en píxeles para el carnet (270px para SENA)
     """
     try:
         print(f"🖼️ Procesando foto: {ruta_imagen}")
@@ -30,17 +30,17 @@ def procesar_foto_carnet(ruta_imagen, ruta_salida, ancho_carnet=300, alto_carnet
         # 3. Mejorar la calidad de la imagen
         imagen = mejorar_calidad_imagen(imagen)
         
-        # 4. Remover el fondo y ponerlo blanco
-        imagen_sin_fondo = remover_fondo_simple(imagen)
+        # 4. MEJORADO: Remover el fondo usando múltiples métodos
+        imagen_sin_fondo = remover_fondo_avanzado(imagen)
         
-        # 5. Redimensionar manteniendo proporción 3:4
-        imagen_redimensionada = redimensionar_3x4(imagen_sin_fondo, ancho_carnet, alto_carnet)
+        # 5. Redimensionar manteniendo proporción correcta
+        imagen_redimensionada = redimensionar_para_carnet(imagen_sin_fondo, ancho_carnet, alto_carnet)
         
         # 6. Aplicar mejoras finales
         imagen_final = aplicar_mejoras_finales(imagen_redimensionada)
         
         # 7. Guardar la imagen procesada
-        imagen_final.save(ruta_salida, 'JPEG', quality=95, optimize=True)
+        imagen_final.save(ruta_salida, 'PNG', quality=95, optimize=True)
         
         print(f"✅ Foto procesada guardada en: {ruta_salida}")
         print(f"📏 Dimensiones finales: {imagen_final.size}")
@@ -70,111 +70,260 @@ def mejorar_calidad_imagen(imagen):
     except:
         return imagen
 
+def remover_fondo_avanzado(imagen):
+    """
+    MEJORADO: Intenta remover el fondo usando múltiples métodos
+    """
+    try:
+        # Primero intentar con rembg si está disponible
+        try:
+            from rembg import remove
+            print("🎯 Usando rembg para remover fondo...")
+            
+            # Convertir PIL a bytes
+            import io
+            img_byte_arr = io.BytesIO()
+            imagen.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+            
+            # Remover fondo
+            output = remove(img_byte_arr)
+            
+            # Convertir de vuelta a PIL
+            imagen_sin_fondo = Image.open(io.BytesIO(output))
+            
+            # Agregar fondo blanco
+            if imagen_sin_fondo.mode == 'RGBA':
+                # Crear imagen con fondo blanco
+                fondo_blanco = Image.new('RGB', imagen_sin_fondo.size, 'white')
+                fondo_blanco.paste(imagen_sin_fondo, mask=imagen_sin_fondo.split()[3])
+                print("✅ Fondo removido con rembg exitosamente")
+                return fondo_blanco
+            else:
+                return imagen_sin_fondo
+                
+        except ImportError:
+            print("⚠️ rembg no disponible, usando método OpenCV...")
+            # Si rembg no está disponible, usar método OpenCV mejorado
+            return remover_fondo_opencv_mejorado(imagen)
+            
+    except Exception as e:
+        print(f"⚠️ Error en remoción avanzada, usando método simple: {e}")
+        return remover_fondo_simple(imagen)
+
+def remover_fondo_opencv_mejorado(imagen):
+    """
+    MEJORADO: Método OpenCV más avanzado para remover fondo
+    """
+    try:
+        # Convertir PIL a numpy array
+        imagen_np = np.array(imagen)
+        imagen_bgr = cv2.cvtColor(imagen_np, cv2.COLOR_RGB2BGR)
+        
+        # Método 1: Usar GrabCut para segmentación
+        print("🔍 Aplicando GrabCut para segmentación...")
+        
+        height, width = imagen_bgr.shape[:2]
+        
+        # Definir rectángulo inicial (asumiendo que la persona está en el centro)
+        margin = 20
+        rect = (margin, margin, width - margin*2, height - margin*2)
+        
+        # Inicializar máscara y modelos
+        mask = np.zeros((height, width), np.uint8)
+        bgdModel = np.zeros((1, 65), np.float64)
+        fgdModel = np.zeros((1, 65), np.float64)
+        
+        # Aplicar GrabCut
+        cv2.grabCut(imagen_bgr, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+        
+        # Modificar la máscara
+        mask2 = np.where((mask == 2) | (mask == 0), 0, 255).astype('uint8')
+        
+        # Aplicar morfología para limpiar la máscara
+        kernel = np.ones((5, 5), np.uint8)
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernel)
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel)
+        
+        # Suavizar los bordes de la máscara
+        mask2 = cv2.GaussianBlur(mask2, (5, 5), 0)
+        
+        # Crear imagen con fondo blanco
+        resultado = np.ones_like(imagen_bgr) * 255  # Fondo blanco
+        
+        # Aplicar la máscara
+        mask3d = cv2.cvtColor(mask2, cv2.COLOR_GRAY2BGR) / 255.0
+        resultado = (imagen_bgr * mask3d + resultado * (1 - mask3d)).astype(np.uint8)
+        
+        # Convertir de BGR a RGB y luego a PIL
+        resultado_rgb = cv2.cvtColor(resultado, cv2.COLOR_BGR2RGB)
+        
+        print("✅ Fondo removido con GrabCut")
+        return Image.fromarray(resultado_rgb)
+        
+    except Exception as e:
+        print(f"⚠️ Error con GrabCut, intentando método de detección facial: {e}")
+        return remover_fondo_con_deteccion_facial(imagen)
+
+def remover_fondo_con_deteccion_facial(imagen):
+    """
+    Método que detecta la cara y construye la máscara alrededor
+    """
+    try:
+        imagen_np = np.array(imagen)
+        imagen_bgr = cv2.cvtColor(imagen_np, cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2GRAY)
+        
+        # Cargar el clasificador de caras
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        
+        # Detectar caras
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        
+        if len(faces) > 0:
+            print("👤 Cara detectada, construyendo máscara...")
+            
+            # Tomar la primera cara detectada
+            (x, y, w, h) = faces[0]
+            
+            # Expandir el área para incluir hombros y cabello
+            expand_ratio = 2.0
+            x_new = max(0, int(x - w * (expand_ratio - 1) / 2))
+            y_new = max(0, int(y - h * 0.3))
+            w_new = min(imagen_bgr.shape[1] - x_new, int(w * expand_ratio))
+            h_new = min(imagen_bgr.shape[0] - y_new, int(h * 2.5))
+            
+            # Crear máscara elíptica alrededor de la persona
+            mask = np.zeros(gray.shape, np.uint8)
+            center = (x_new + w_new // 2, y_new + h_new // 2)
+            axes = (w_new // 2, h_new // 2)
+            cv2.ellipse(mask, center, axes, 0, 0, 360, 255, -1)
+            
+            # Suavizar la máscara
+            mask = cv2.GaussianBlur(mask, (21, 21), 0)
+            
+            # Aplicar la máscara
+            resultado = np.ones_like(imagen_bgr) * 255  # Fondo blanco
+            mask3d = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR) / 255.0
+            resultado = (imagen_bgr * mask3d + resultado * (1 - mask3d)).astype(np.uint8)
+            
+            resultado_rgb = cv2.cvtColor(resultado, cv2.COLOR_BGR2RGB)
+            print("✅ Fondo removido usando detección facial")
+            return Image.fromarray(resultado_rgb)
+        else:
+            print("⚠️ No se detectó cara, usando método simple")
+            return remover_fondo_simple(imagen)
+            
+    except Exception as e:
+        print(f"⚠️ Error en detección facial: {e}")
+        return remover_fondo_simple(imagen)
+
 def remover_fondo_simple(imagen):
     """
-    Intenta remover el fondo y ponerlo blanco usando técnicas simples
+    Método simple mejorado: Remover fondo basado en color dominante
     """
     try:
         # Convertir PIL a numpy array para OpenCV
         imagen_np = np.array(imagen)
-        
-        # Convertir RGB a BGR para OpenCV
         imagen_bgr = cv2.cvtColor(imagen_np, cv2.COLOR_RGB2BGR)
         
-        # Método 1: Detección de bordes para encontrar la persona
-        gray = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2GRAY)
+        # Convertir a HSV para mejor detección de color
+        hsv = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2HSV)
         
-        # Aplicar blur para suavizar
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        # Detectar el color dominante en los bordes
+        height, width = imagen_bgr.shape[:2]
+        border_size = 20
         
-        # Detectar bordes
-        edges = cv2.Canny(blurred, 50, 150)
+        # Obtener píxeles del borde
+        border_pixels = []
+        border_pixels.extend(hsv[0:border_size, :].reshape(-1, 3))
+        border_pixels.extend(hsv[height-border_size:height, :].reshape(-1, 3))
+        border_pixels.extend(hsv[:, 0:border_size].reshape(-1, 3))
+        border_pixels.extend(hsv[:, width-border_size:width].reshape(-1, 3))
         
-        # Encontrar contornos
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        border_pixels = np.array(border_pixels)
         
-        if contours:
-            # Encontrar el contorno más grande (probablemente la persona)
-            largest_contour = max(contours, key=cv2.contourArea)
-            
-            # Crear máscara
-            mask = np.zeros(gray.shape, np.uint8)
-            cv2.fillPoly(mask, [largest_contour], 255)
-            
-            # Suavizar la máscara
-            mask = cv2.GaussianBlur(mask, (5, 5), 0)
-            
-            # Aplicar la máscara a la imagen original
-            resultado = imagen_bgr.copy()
-            
-            # Poner fondo blanco donde la máscara es 0
-            resultado[mask == 0] = [255, 255, 255]
-            
-            # Convertir de BGR a RGB y luego a PIL
-            resultado_rgb = cv2.cvtColor(resultado, cv2.COLOR_BGR2RGB)
-            return Image.fromarray(resultado_rgb)
-        else:
-            # Si no se detectan contornos, aplicar método alternativo
-            return remover_fondo_por_color(imagen)
-            
+        # Calcular el color promedio del borde
+        mean_color = np.mean(border_pixels, axis=0).astype(int)
+        
+        # Crear máscara basada en rango de colores
+        tolerance = 30
+        lower = np.array([max(0, mean_color[0] - tolerance), 50, 50])
+        upper = np.array([min(179, mean_color[0] + tolerance), 255, 255])
+        
+        # Crear máscara
+        mask = cv2.inRange(hsv, lower, upper)
+        
+        # Invertir la máscara (queremos mantener lo que NO es fondo)
+        mask_inv = cv2.bitwise_not(mask)
+        
+        # Limpiar la máscara con operaciones morfológicas
+        kernel = np.ones((5, 5), np.uint8)
+        mask_inv = cv2.morphologyEx(mask_inv, cv2.MORPH_CLOSE, kernel)
+        mask_inv = cv2.morphologyEx(mask_inv, cv2.MORPH_OPEN, kernel)
+        
+        # Suavizar bordes
+        mask_inv = cv2.GaussianBlur(mask_inv, (5, 5), 0)
+        
+        # Aplicar la máscara
+        resultado = np.ones_like(imagen_bgr) * 255  # Fondo blanco
+        mask3d = cv2.cvtColor(mask_inv, cv2.COLOR_GRAY2BGR) / 255.0
+        resultado = (imagen_bgr * mask3d + resultado * (1 - mask3d)).astype(np.uint8)
+        
+        # Convertir de BGR a RGB y luego a PIL
+        resultado_rgb = cv2.cvtColor(resultado, cv2.COLOR_BGR2RGB)
+        print("✅ Fondo removido con método simple")
+        return Image.fromarray(resultado_rgb)
+        
     except Exception as e:
-        print(f"⚠️ Error en remoción de fondo avanzada, usando método simple: {e}")
-        return remover_fondo_por_color(imagen)
+        print(f"⚠️ Error en remoción simple, aplicando fondo blanco directo: {e}")
+        # Como último recurso, aclarar el fondo
+        return aplicar_fondo_blanco_suave(imagen)
 
-def remover_fondo_por_color(imagen):
+def aplicar_fondo_blanco_suave(imagen):
     """
-    Método alternativo: Remover fondo basado en colores predominantes en los bordes
+    Último recurso: Aclarar el fondo gradualmente
     """
     try:
         # Convertir a array numpy
         img_array = np.array(imagen)
         
-        # Obtener dimensiones
+        # Crear una máscara radial desde el centro
         height, width = img_array.shape[:2]
+        center_x, center_y = width // 2, height // 3  # Centro un poco arriba (para la cara)
         
-        # Analizar colores en los bordes (probablemente fondo)
-        borde_superior = img_array[0:10, :].reshape(-1, 3)
-        borde_inferior = img_array[height-10:height, :].reshape(-1, 3)
-        borde_izquierdo = img_array[:, 0:10].reshape(-1, 3)
-        borde_derecho = img_array[:, width-10:width].reshape(-1, 3)
+        # Crear gradiente radial
+        Y, X = np.ogrid[:height, :width]
+        dist_from_center = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
+        max_dist = np.sqrt(center_x**2 + center_y**2)
         
-        # Combinar todos los bordes
-        colores_borde = np.vstack([borde_superior, borde_inferior, borde_izquierdo, borde_derecho])
+        # Normalizar distancia
+        mask = 1 - (dist_from_center / max_dist)
+        mask = np.clip(mask, 0.3, 1)  # Mantener mínimo 30% de la imagen
         
-        # Calcular color promedio del borde (probablemente el fondo)
-        color_fondo = np.mean(colores_borde, axis=0).astype(int)
+        # Expandir máscara a 3 canales
+        mask_3d = np.stack([mask, mask, mask], axis=2)
         
-        print(f"🎨 Color de fondo detectado: {color_fondo}")
+        # Mezclar con blanco
+        white_bg = np.ones_like(img_array) * 255
+        resultado = img_array * mask_3d + white_bg * (1 - mask_3d)
         
-        # Crear máscara para píxeles similares al color de fondo
-        tolerancia = 40  # Ajustable según necesidad
-        
-        # Calcular diferencia de color
-        diff = np.abs(img_array - color_fondo).sum(axis=2)
-        mask = diff < tolerancia
-        
-        # Aplicar fondo blanco
-        resultado = img_array.copy()
-        resultado[mask] = [255, 255, 255]  # Blanco
-        
-        return Image.fromarray(resultado)
+        print("✅ Fondo aclarado con método suave")
+        return Image.fromarray(resultado.astype(np.uint8))
         
     except Exception as e:
-        print(f"⚠️ Error en remoción por color, devolviendo imagen original: {e}")
+        print(f"⚠️ Error aplicando fondo blanco suave: {e}")
         return imagen
 
-def redimensionar_3x4(imagen, ancho_objetivo, alto_objetivo):
+def redimensionar_para_carnet(imagen, ancho_objetivo, alto_objetivo):
     """
-    Redimensiona la imagen manteniendo proporción 3:4 y ajustando al tamaño del carnet
+    Redimensiona la imagen para el carnet SENA manteniendo la cara centrada
     """
-    # Calcular las dimensiones para proporción 3:4
-    # Si el carnet es 300x400, la proporción es 3:4
-    
     # Obtener dimensiones actuales
     ancho_actual, alto_actual = imagen.size
     
-    # Calcular nueva proporción 3:4
-    proporcion_objetivo = ancho_objetivo / alto_objetivo  # 300/400 = 0.75 (3:4)
+    # Calcular proporción objetivo
+    proporcion_objetivo = ancho_objetivo / alto_objetivo
     proporcion_actual = ancho_actual / alto_actual
     
     if proporcion_actual > proporcion_objetivo:
@@ -211,7 +360,38 @@ def aplicar_mejoras_finales(imagen):
         enhancer = ImageEnhance.Contrast(imagen)
         imagen = enhancer.enhance(1.05)
         
+        # Asegurar que los bordes sean blancos
+        imagen = agregar_borde_blanco(imagen)
+        
         return imagen
+    except:
+        return imagen
+
+def agregar_borde_blanco(imagen, grosor=2):
+    """
+    Agrega un borde blanco delgado para asegurar fondo limpio
+    """
+    try:
+        # Crear nueva imagen un poco más grande
+        ancho, alto = imagen.size
+        nueva_imagen = Image.new('RGB', (ancho, alto), 'white')
+        
+        # Pegar la imagen original dejando borde blanco
+        nueva_imagen.paste(imagen, (0, 0))
+        
+        # Pintar los bordes de blanco
+        draw = ImageDraw.Draw(nueva_imagen)
+        
+        # Borde superior
+        draw.rectangle([(0, 0), (ancho, grosor)], fill='white')
+        # Borde inferior
+        draw.rectangle([(0, alto-grosor), (ancho, alto)], fill='white')
+        # Borde izquierdo
+        draw.rectangle([(0, 0), (grosor, alto)], fill='white')
+        # Borde derecho
+        draw.rectangle([(ancho-grosor, 0), (ancho, alto)], fill='white')
+        
+        return nueva_imagen
     except:
         return imagen
 
@@ -246,6 +426,7 @@ def validar_imagen(ruta_imagen):
 def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
     """
     Función principal para procesar fotos de aprendices
+    IMPORTANTE: Guarda como foto_{cedula}.png para compatibilidad con imagen.py
     
     Args:
         archivo_foto: Objeto de archivo de Flask
@@ -266,7 +447,8 @@ def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
         
         # Nombres de archivos
         nombre_temp = f"temp_{cedula}{extension}"
-        nombre_final = f"{cedula}.jpg"  # Siempre guardar como JPG
+        # IMPORTANTE: Guardar como foto_{cedula}.png para que imagen.py lo encuentre
+        nombre_final = f"foto_{cedula}.png"  # Cambiado para compatibilidad
         
         ruta_temp = os.path.join(carpeta_fotos, nombre_temp)
         ruta_final = os.path.join(carpeta_fotos, nombre_final)
@@ -280,15 +462,16 @@ def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
             os.remove(ruta_temp)
             return False, None, mensaje_validacion
         
-        # Procesar la imagen
-        exito = procesar_foto_carnet(ruta_temp, ruta_final, ancho_carnet=300, alto_carnet=400)
+        # Procesar la imagen con dimensiones correctas para el carnet SENA
+        exito = procesar_foto_carnet(ruta_temp, ruta_final, ancho_carnet=220, alto_carnet=270)
         
         # Eliminar archivo temporal
         if os.path.exists(ruta_temp):
             os.remove(ruta_temp)
         
         if exito:
-            return True, nombre_final, "Foto procesada correctamente"
+            print(f"✅ Foto guardada como: {nombre_final}")
+            return True, nombre_final, "Foto procesada correctamente con fondo blanco"
         else:
             return False, None, "Error procesando la foto"
             
@@ -307,7 +490,8 @@ def verificar_dependencias():
     dependencias = {
         'PIL': True,
         'numpy': True,
-        'cv2': True
+        'cv2': True,
+        'rembg': True
     }
     
     try:
@@ -328,8 +512,57 @@ def verificar_dependencias():
         dependencias['PIL'] = False
         print("⚠️ Pillow no está instalado. Instalar con: pip install Pillow")
     
-    return all(dependencias.values())
+    try:
+        from rembg import remove
+        print("✅ rembg disponible - se usará para mejor remoción de fondo")
+    except ImportError:
+        dependencias['rembg'] = False
+        print("💡 rembg no está instalado. Para mejor remoción de fondo instalar con: pip install rembg")
+        print("   (El sistema funcionará sin rembg usando métodos alternativos)")
+    
+    return dependencias['PIL'] and dependencias['numpy'] and dependencias['cv2']
+
+# Función de prueba directa
+def probar_procesamiento(ruta_imagen_prueba):
+    """
+    Función para probar el procesamiento con una imagen
+    """
+    if not os.path.exists(ruta_imagen_prueba):
+        print(f"❌ No existe el archivo: {ruta_imagen_prueba}")
+        return
+    
+    print(f"🧪 Probando con: {ruta_imagen_prueba}")
+    
+    # Simular el objeto de archivo de Flask
+    class ArchivoSimulado:
+        def __init__(self, ruta):
+            self.filename = os.path.basename(ruta)
+            self.ruta = ruta
+        
+        def save(self, destino):
+            import shutil
+            shutil.copy(self.ruta, destino)
+    
+    archivo = ArchivoSimulado(ruta_imagen_prueba)
+    exito, nombre, mensaje = procesar_foto_aprendiz(archivo, "12345678")
+    
+    if exito:
+        print(f"✅ Prueba exitosa: {mensaje}")
+        print(f"📁 Archivo guardado: static/fotos/{nombre}")
+    else:
+        print(f"❌ Prueba fallida: {mensaje}")
 
 if __name__ == "__main__":
-    print("🧪 Probando procesador de fotos...")
-    verificar_dependencias()
+    print("🧪 Verificando procesador de fotos para SENA...")
+    print("=" * 60)
+    
+    if verificar_dependencias():
+        print("\n✅ Todas las dependencias básicas están instaladas")
+        print("\n💡 Para probar con una imagen, ejecuta:")
+        print('   python procesador_fotos.py "ruta/a/tu/imagen.jpg"')
+        
+        import sys
+        if len(sys.argv) > 1:
+            probar_procesamiento(sys.argv[1])
+    else:
+        print("\n❌ Faltan dependencias. Instala las faltantes antes de usar el sistema.")

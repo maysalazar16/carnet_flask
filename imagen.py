@@ -35,44 +35,72 @@ def generar_carnet(empleado, ruta_qr):
         draw.text((15, 15), "SENA", fill=(0, 128, 0), font=font_logo)
 
     # ========== AQUÍ ESTÁ LA FOTO - MÁS GRANDE SIN PASAR LA LÍNEA VERDE ==========
-    # ✅ MODIFICACIÓN PRINCIPAL: Usar nueva función para obtener foto procesada
-    try:
-        # Importar función de procesamiento de fotos
-        from procesamiento_fotos import obtener_ruta_foto_final
-        ruta_foto_final = obtener_ruta_foto_final(empleado['cedula'])
-        
-        if ruta_foto_final:
-            print(f"📸 Usando foto: {ruta_foto_final}")
-            foto = Image.open(ruta_foto_final).convert("RGB")
-        else:
-            # Fallback: buscar foto con el nombre del campo 'foto' de la base de datos
-            if empleado.get('foto'):
-                ruta_foto_bd = os.path.join("static", "fotos", empleado['foto'])
-                if os.path.exists(ruta_foto_bd):
-                    foto = Image.open(ruta_foto_bd).convert("RGB")
-                    print(f"📸 Usando foto de BD: {ruta_foto_bd}")
-                else:
-                    raise Exception(f"No se encontró la foto en BD: {ruta_foto_bd}")
-            else:
-                raise Exception("No hay foto disponible para este empleado")
-                
-    except ImportError:
-        # Si no está disponible el módulo de procesamiento, usar método original
-        print("⚠️ Módulo de procesamiento no disponible, usando método original")
-        ruta_foto = os.path.join("static", "fotos", empleado['foto'])
+    # ✅ MEJORADA: Búsqueda inteligente de la foto del aprendiz
+    foto_encontrada = False
+    foto = None
+    
+    # Lista de posibles rutas donde buscar la foto
+    posibles_rutas = []
+    
+    # 1. Buscar foto procesada con prefijo "foto_"
+    if empleado.get('cedula'):
+        posibles_rutas.append(os.path.join("static", "fotos", f"foto_{empleado['cedula']}.png"))
+        posibles_rutas.append(os.path.join("static", "fotos", f"foto_{empleado['cedula']}.jpg"))
+    
+    # 2. Buscar foto con el nombre almacenado en la base de datos
+    if empleado.get('foto'):
+        posibles_rutas.append(os.path.join("static", "fotos", empleado['foto']))
+        # Si el nombre no tiene extensión, probar con varias
+        if not empleado['foto'].endswith(('.png', '.jpg', '.jpeg')):
+            posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['foto']}.png"))
+            posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['foto']}.jpg"))
+    
+    # 3. Buscar foto con solo la cédula como nombre
+    if empleado.get('cedula'):
+        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.png"))
+        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.jpg"))
+        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.jpeg"))
+    
+    # Intentar cargar la foto de las posibles rutas
+    for ruta in posibles_rutas:
+        if os.path.exists(ruta):
+            try:
+                print(f"📸 Intentando cargar foto desde: {ruta}")
+                foto = Image.open(ruta).convert("RGB")
+                foto_encontrada = True
+                print(f"✅ Foto cargada exitosamente desde: {ruta}")
+                break
+            except Exception as e:
+                print(f"⚠️ No se pudo cargar foto desde {ruta}: {e}")
+                continue
+    
+    # Si no se encontró foto por las rutas normales, intentar con el módulo de procesamiento
+    if not foto_encontrada:
         try:
-            foto = Image.open(ruta_foto).convert("RGB")
+            from procesamiento_fotos import obtener_ruta_foto_final
+            ruta_foto_final = obtener_ruta_foto_final(empleado['cedula'])
+            
+            if ruta_foto_final and os.path.exists(ruta_foto_final):
+                print(f"📸 Usando foto procesada: {ruta_foto_final}")
+                foto = Image.open(ruta_foto_final).convert("RGB")
+                foto_encontrada = True
+        except ImportError:
+            print("⚠️ Módulo de procesamiento no disponible")
         except Exception as e:
-            raise Exception(f"No se pudo cargar la foto: {e}")
-    except Exception as e:
-        print(f"❌ Error obteniendo foto: {e}")
-        # Intentar método original como último recurso
-        ruta_foto = os.path.join("static", "fotos", empleado['foto'])
+            print(f"⚠️ Error con módulo de procesamiento: {e}")
+    
+    # Si aún no hay foto, crear un placeholder
+    if not foto_encontrada:
+        print(f"❌ No se encontró ninguna foto para el empleado {empleado.get('nombre', 'desconocido')}")
+        # Crear imagen placeholder
+        foto = Image.new("RGB", (220, 270), (240, 240, 240))
+        draw_placeholder = ImageDraw.Draw(foto)
         try:
-            foto = Image.open(ruta_foto).convert("RGB")
-            print(f"📸 Usando foto original como fallback: {ruta_foto}")
-        except Exception as e2:
-            raise Exception(f"No se pudo cargar la foto: {e2}")
+            font_placeholder = ImageFont.truetype("arial.ttf", 20)
+        except:
+            font_placeholder = ImageFont.load_default()
+        draw_placeholder.text((60, 120), "SIN FOTO", fill=(150, 150, 150), font=font_placeholder)
+        print("⚠️ Usando placeholder para la foto")
     
     # 📸 FOTO MÁS ANCHA Y MÁS ALTA - SIN PASAR LÍNEA VERDE
     # Línea verde está en Y=330, foto empieza en Y=75, entonces máximo alto = 330-75 = 255px
