@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Aprendiz - SENA</title>
     <style>
-        :root {
-            --sena-green: #007f3e;
-            --sena-green-dark: #005f2e;
-            --sena-green-light: #e0f2e9;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -18,8 +12,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, var(--sena-green-light) 0%, #f0f8f4 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -27,21 +21,20 @@
             padding: 20px;
         }
 
-        .dashboard {
+        .container {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 600px;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
             width: 100%;
-            animation: slideUp 0.6s ease;
+            padding: 50px 40px;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        @keyframes slideUp {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -49,68 +42,52 @@
             }
         }
 
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
         .logo {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            animation: bounce 2s infinite;
+            width: 80px;
+            height: 80px;
+            background: #39A935;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
         }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
-        }
-
-        h2 {
-            color: var(--sena-green);
-            font-size: 2rem;
-            margin-bottom: 15px;
-            font-weight: 700;
+        h1 {
+            color: #2E7D32;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .welcome-text {
             color: #666;
-            margin-bottom: 35px;
-            font-size: 1.2rem;
-            line-height: 1.6;
+            font-size: 16px;
         }
 
-        .username {
-            color: var(--sena-green);
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-
-        .info-cards {
-            display: grid;
-            gap: 20px;
-            margin-bottom: 35px;
+        .welcome-user {
+            color: #39A935;
+            font-weight: 600;
         }
 
         .info-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 25px;
+            background: linear-gradient(135deg, #F5FFF5 0%, #E8F5E9 100%);
+            border-left: 5px solid #39A935;
             border-radius: 15px;
-            border-left: 5px solid var(--sena-green);
-            text-align: left;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
+            padding: 25px;
+            margin-bottom: 30px;
         }
 
-        .info-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .info-card h3 {
-            color: var(--sena-green);
+        .info-card h2 {
+            color: #2E7D32;
+            font-size: 20px;
             margin-bottom: 15px;
-            font-size: 1.3rem;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -118,292 +95,272 @@
 
         .info-card p {
             color: #555;
-            line-height: 1.6;
-            font-size: 1rem;
-        }
-
-        .info-card .highlight {
-            background: var(--sena-green-light);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            color: var(--sena-green-dark);
-        }
-
-        .opciones {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 18px 30px;
-            background: var(--sena-green);
-            color: white;
-            text-decoration: none;
-            border-radius: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 127, 62, 0.2);
-        }
-
-        .btn:hover {
-            background: var(--sena-green-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 127, 62, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--sena-green) 0%, #20c997 100%);
-            font-size: 1.2rem;
-            padding: 20px 35px;
-            font-weight: 700;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--sena-green-dark) 0%, #17a2b8 100%);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            font-size: 1rem;
-            padding: 15px 25px;
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #545862 0%, #343a40 100%);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-        }
-
-        .logout-form {
-            margin-top: 35px;
-            padding-top: 35px;
-            border-top: 2px solid #e9ecef;
-        }
-
-        .steps-info {
-            background: #e3f2fd;
-            border: 2px solid #bbdefb;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            text-align: left;
-        }
-
-        .steps-info h4 {
-            color: #1976d2;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-
-        .steps-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .steps-list li {
-            color: #1976d2;
+            line-height: 1.8;
             margin-bottom: 10px;
-            padding-left: 35px;
-            position: relative;
-            font-size: 1rem;
-            line-height: 1.5;
+            font-size: 15px;
         }
 
-        .steps-list li::before {
-            content: attr(data-step);
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-card li {
+            color: #555;
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 15px;
+        }
+
+        .info-card li:before {
+            content: "•";
             position: absolute;
-            left: 0;
-            top: 0;
-            background: #1976d2;
-            color: white;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
+            left: 8px;
+            color: #39A935;
             font-weight: bold;
         }
 
-        @media (max-width: 768px) {
-            .dashboard {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-
-            h2 {
-                font-size: 1.7rem;
-            }
-
-            .welcome-text {
-                font-size: 1.1rem;
-            }
-
-            .username {
-                font-size: 1.2rem;
-            }
-
-            .btn {
-                padding: 15px 25px;
-                font-size: 1rem;
-            }
-
-            .btn-primary {
-                padding: 18px 30px;
-                font-size: 1.1rem;
-            }
-
-            .info-card {
-                padding: 20px;
-            }
-
-            .steps-info {
-                padding: 20px;
-            }
-
-            .steps-list li {
-                padding-left: 30px;
-                font-size: 0.95rem;
-            }
+        .instructions-card {
+            background: #E3F2FD;
+            border-left: 5px solid #2196F3;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
         }
 
-        /* Efectos de hover mejorados */
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
+        .instructions-card h2 {
+            color: #1976D2;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .btn:hover::before {
-            left: 100%;
+        .instructions-card ol {
+            padding-left: 20px;
+            color: #555;
+        }
+
+        .instructions-card li {
+            padding: 8px 0;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 25px;
+            height: 25px;
+            background: #2196F3;
+            color: white;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: bold;
+            margin-right: 10px;
         }
 
         .btn {
-            position: relative;
-            overflow: hidden;
+            display: block;
+            width: 100%;
+            padding: 18px 30px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 50px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
+        }
+
+        .btn-secondary {
+            background: #757575;
+            color: white;
+            box-shadow: 0 4px 15px rgba(117, 117, 117, 0.2);
+            display: none; /* OCULTO COMO SOLICITASTE */
+        }
+
+        .btn-secondary:hover {
+            background: #616161;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(117, 117, 117, 0.3);
+        }
+
+        .btn-logout {
+            background: #F44336;
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .btn-logout:hover {
+            background: #D32F2F;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            color: #2E7D32;
+        }
+
+        .alert-error {
+            background: #FFEBEE;
+            border-left: 4px solid #F44336;
+            color: #C62828;
+        }
+
+        .alert-info {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            color: #1976D2;
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E0E0;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .btn {
+                padding: 15px 20px;
+                font-size: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="logo">🎓</div>
-        <h2>Dashboard Aprendiz SENA</h2>
-        <p class="welcome-text">
-            ¡Bienvenido, <span class="username">{{ usuario }}</span>!<br>
-            Aquí puedes generar tu carnet estudiantil
-        </p>
-        
-        <div class="info-cards">
-            <div class="info-card">
-                <h3>🆔 Tu Carnet Digital</h3>
-                <p>Genera tu carnet estudiantil oficial del SENA. Solo necesitas:</p>
-                <p>• Estar <span class="highlight">registrado en el sistema</span></p>
-                <p>• Tener una <span class="highlight">foto tipo documento</span></p>
-                <p>• Seguir el proceso paso a paso</p>
-            </div>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎓</div>
+            <h1>Dashboard Aprendiz SENA</h1>
+            <p class="welcome-text">¡Bienvenido, <span class="welcome-user">{{ session.get('usuario', 'aprendiz') }}</span>!</p>
+            <p class="welcome-text">Aquí puedes generar tu carnet estudiantil</p>
         </div>
 
-        <div class="steps-info">
-            <h4>📋 ¿Cómo generar tu carnet?</h4>
-            <ol class="steps-list">
-                <li data-step="1">Consulta tus datos con tu número de cédula</li>
-                <li data-step="2">Si estás registrado, sube tu foto</li>
-                <li data-step="3">El sistema genera tu carnet automáticamente</li>
-                <li data-step="4">Descarga e imprime tu carnet</li>
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'error' else 'info' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="info-card">
+            <h2>
+                <span>🆔</span>
+                Tu Carnet Digital
+            </h2>
+            <p>Genera tu carnet estudiantil oficial del SENA. Solo necesitas:</p>
+            <ul>
+                <li>Estar <strong>registrado en el sistema</strong></li>
+                <li>Tener una <strong>foto tipo documento</strong></li>
+                <li>Seguir el proceso paso a paso</li>
+            </ul>
+        </div>
+
+        <div class="instructions-card">
+            <h2>
+                <span>📋</span>
+                ¿Cómo generar tu carnet?
+            </h2>
+            <ol>
+                <li>
+                    <span class="step-number">1</span>
+                    Consulta tus datos con tu número de cédula
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    Si estás registrado, sube tu foto
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    El sistema enviará tus datos al administrador
+                </li>
             </ol>
         </div>
-        
-        <div class="opciones">
-            <a href="{{ url_for('consultar_datos_aprendiz') }}" class="btn btn-primary">
-                🔍 Consultar mis Datos y Generar Carnet
-            </a>
-            
-            <a href="{{ url_for('registro_aprendiz') }}" class="btn btn-secondary">
-                📝 Registrar mis Datos (Si no estoy en el sistema)
-            </a>
-        </div>
 
-        <form method="POST" action="{{ url_for('logout') }}" class="logout-form">
-            <button type="submit" class="btn btn-danger">
-                🚪 Cerrar Sesión
+        <!-- BOTÓN ACTUALIZADO: Solo dice "Consultar mis Datos" -->
+        <a href="{{ url_for('consultar_datos_aprendiz') }}" class="btn btn-primary">
+            <span class="btn-icon">🔍</span>
+            Consultar mis Datos
+        </a>
+
+        <!-- BOTÓN ELIMINADO/OCULTO como solicitaste -->
+        <a href="#" class="btn btn-secondary" style="display: none;">
+            <span class="btn-icon">📝</span>
+            Registrar mis Datos (Si no estoy en el sistema)
+        </a>
+
+        <form action="{{ url_for('logout') }}" method="POST" style="margin-top: 20px;">
+            <button type="submit" class="btn btn-logout">
+                <span class="btn-icon">🚪</span>
+                Cerrar Sesión
             </button>
         </form>
+
+        <div class="footer-info">
+            <p>Sistema de Carnetización Digital SENA</p>
+            <p>© 2024 - Todos los derechos reservados</p>
+        </div>
     </div>
-
-    <script>
-        // Efectos visuales adicionales
-        document.addEventListener('DOMContentLoaded', function() {
-            // Efecto de typing en el nombre de usuario
-            const username = document.querySelector('.username');
-            const originalText = username.textContent;
-            username.textContent = '';
-            
-            let i = 0;
-            const typeEffect = setInterval(() => {
-                if (i < originalText.length) {
-                    username.textContent += originalText.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(typeEffect);
-                }
-            }, 100);
-
-            // Efecto de conteo en los pasos
-            const steps = document.querySelectorAll('.steps-list li');
-            steps.forEach((step, index) => {
-                step.style.opacity = '0';
-                step.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    step.style.transition = 'all 0.5s ease';
-                    step.style.opacity = '1';
-                    step.style.transform = 'translateX(0)';
-                }, (index + 1) * 200);
-            });
-
-            // Efecto de aparición en las tarjetas
-            const cards = document.querySelectorAll('.info-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'all 0.6s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 500 + (index * 200));
-            });
-        });
-
-        // Confirmación al cerrar sesión
-        document.querySelector('.logout-form').addEventListener('submit', function(e) {
-            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                e.preventDefault();
-            }
-        });
-    </script>
 </body>
 </html>

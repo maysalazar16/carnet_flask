@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargar Foto - Generar Carnet SENA</title>
+    <title>Cargar Foto - SENA</title>
     <style>
         * {
             margin: 0;
@@ -13,255 +13,227 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e8f5e8 0%, #d4f1d4 100%);
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            animation: slideUp 0.6s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .content {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
             padding: 40px;
         }
 
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            border-radius: 10px;
-            font-weight: 500;
+        .header {
             text-align: center;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border: 2px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .datos-encontrados {
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            border-radius: 15px;
-            padding: 25px;
             margin-bottom: 30px;
-            animation: fadeIn 0.6s ease;
         }
 
-        .datos-encontrados h3 {
-            color: #155724;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            text-align: center;
+        h2 {
+            color: #39A935;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
 
-        .datos-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .subtitle {
+            color: #666;
+            font-size: 16px;
             margin-bottom: 20px;
         }
 
-        .dato-item {
-            background: white;
+        .info-box {
+            background: #E8F5E9;
+            border-left: 4px solid #39A935;
             padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #28a745;
-        }
-
-        .dato-item strong {
-            color: #28a745;
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .dato-item span {
-            color: #333;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .form-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .form-section h3 {
-            color: #28a745;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            text-align: center;
-        }
-
-        .instrucciones {
-            background: #e3f2fd;
-            border: 2px solid #bbdefb;
-            border-radius: 10px;
-            padding: 20px;
             margin-bottom: 25px;
+            border-radius: 5px;
         }
 
-        .instrucciones h4 {
-            color: #1976d2;
+        .info-box h3 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .upload-area {
+            border: 3px dashed #39A935;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #F5FFF5;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            background: #E8F5E9;
+            border-color: #2E7D32;
+        }
+
+        .upload-area.dragover {
+            background: #C8E6C9;
+            border-color: #2E7D32;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
             margin-bottom: 15px;
-            font-size: 1.1rem;
         }
 
-        .instrucciones ul {
+        .upload-text {
+            color: #39A935;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-selected {
+            background: #E8F5E9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-selected.show {
+            display: block;
+        }
+
+        .file-name {
+            color: #2E7D32;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* BOTÓN PRINCIPAL - TEXTO ACTUALIZADO */
+        .btn-submit {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #cccccc;
+        }
+
+        .btn-cancel {
+            background: #757575;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #616161;
+            transform: translateY(-2px);
+        }
+
+        .requirements {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .requirements h4 {
+            color: #E65100;
+            margin-bottom: 10px;
+        }
+
+        .requirements ul {
             list-style: none;
-            padding: 0;
+            padding-left: 0;
         }
 
-        .instrucciones li {
-            color: #1976d2;
-            margin-bottom: 8px;
+        .requirements li {
+            color: #666;
+            padding: 5px 0;
             padding-left: 25px;
             position: relative;
         }
 
-        .instrucciones li::before {
-            content: '✅';
+        .requirements li:before {
+            content: "✓";
             position: absolute;
             left: 0;
-            color: #28a745;
+            color: #FF9800;
             font-weight: bold;
         }
 
-        .magic-note {
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
         }
 
-        .magic-note h4 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+        .alert-error {
+            background: #FFEBEE;
+            border-left: 4px solid #F44336;
+            color: #C62828;
         }
 
-        .magic-note p {
-            font-size: 1rem;
-            opacity: 0.95;
+        .alert-warning {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            color: #E65100;
         }
 
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .required {
-            color: #dc3545;
-        }
-
-        .photo-upload {
-            border: 3px dashed #28a745;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .photo-upload:hover {
-            background: #e8f5e8;
-            border-color: #20c997;
-            transform: translateY(-2px);
-        }
-
-        .photo-upload.dragover {
-            background: #e8f5e8;
-            border-color: #20c997;
-            transform: scale(1.02);
-        }
-
-        .photo-upload input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-        }
-
-        .photo-content {
-            pointer-events: none;
-        }
-
-        .photo-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #28a745;
-        }
-
-        .photo-text {
-            font-weight: 600;
-            color: #28a745;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .photo-subtitle {
-            color: #666;
-            font-size: 0.9rem;
+        .alert-success {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            color: #2E7D32;
         }
 
         .preview-container {
@@ -272,86 +244,34 @@
 
         .preview-container.show {
             display: block;
-            animation: fadeIn 0.5s ease;
         }
 
-        .photo-preview {
+        .preview-image {
             max-width: 200px;
-            max-height: 200px;
+            max-height: 250px;
+            border: 3px solid #39A935;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: 3px solid #28a745;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            min-width: 150px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-primary:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #545862;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-
-        .actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-            flex-wrap: wrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .loading {
             display: none;
+            text-align: center;
+            padding: 20px;
         }
 
         .loading.show {
-            display: inline-block;
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #39A935;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -359,347 +279,226 @@
             100% { transform: rotate(360deg); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .ejemplo-fotos {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .ejemplo-item {
+        .success-message {
+            display: none;
+            background: #E8F5E9;
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 30px;
             text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
+            margin-bottom: 20px;
         }
 
-        .ejemplo-item.bueno {
-            border-color: #28a745;
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
         }
 
-        .ejemplo-item.malo {
-            border-color: #dc3545;
+        .success-message h3 {
+            color: #2E7D32;
+            font-size: 24px;
+            margin-bottom: 15px;
         }
 
-        .ejemplo-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .success-message p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
         }
 
-        .ejemplo-text {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                max-width: 95%;
-            }
-
-            .content {
-                padding: 25px 20px;
-            }
-
-            .header {
-                padding: 25px 20px;
-            }
-
-            .header h1 {
-                font-size: 1.7rem;
-            }
-
-            .datos-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-section {
-                padding: 20px 15px;
-            }
-
-            .actions {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-
-            .photo-upload {
-                padding: 25px 15px;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📷 Cargar tu Foto</h1>
-            <p>Último paso para generar tu carnet automáticamente</p>
+            <h2>📸 Cargar Foto para Carnet</h2>
+            <p class="subtitle">Sistema de Carnetización SENA</p>
         </div>
 
-        <div class="content">
-            <!-- Mostrar mensajes flash -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        {% if aprendiz %}
+        <div class="info-box">
+            <h3>Información del Aprendiz</h3>
+            <p><strong>Nombre:</strong> {{ aprendiz.nombre }}</p>
+            <p><strong>Cédula:</strong> {{ aprendiz.cedula }}</p>
+            <p><strong>Programa:</strong> {{ aprendiz.nombre_programa }}</p>
+            <p><strong>Ficha:</strong> {{ aprendiz.codigo_ficha }}</p>
+        </div>
+        {% endif %}
 
-            <!-- Datos encontrados -->
-            <div class="datos-encontrados">
-                <h3>✅ Tus datos han sido encontrados</h3>
-                <div class="datos-grid">
-                    <div class="dato-item">
-                        <strong>Nombre Completo:</strong>
-                        <span>{{ aprendiz.nombre }}</span>
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
                     </div>
-                    <div class="dato-item">
-                        <strong>Documento:</strong>
-                        <span>{{ aprendiz.tipo_documento }} {{ aprendiz.cedula }}</span>
-                    </div>
-                    <div class="dato-item">
-                        <strong>Tipo de Sangre:</strong>
-                        <span>{{ aprendiz.tipo_sangre }}</span>
-                    </div>
-                    <div class="dato-item">
-                        <strong>Programa:</strong>
-                        <span>{{ aprendiz.nombre_programa }}</span>
-                    </div>
-                    <div class="dato-item">
-                        <strong>Nivel:</strong>
-                        <span>{{ aprendiz.nivel_formacion }}</span>
-                    </div>
-                    <div class="dato-item">
-                        <strong>Ficha:</strong>
-                        <span>{{ aprendiz.codigo_ficha }}</span>
-                    </div>
-                </div>
-                <p style="text-align: center; color: #155724; font-weight: 500; margin-top: 15px;">
-                    📋 Ahora solo necesitas cargar tu foto para generar tu carnet automáticamente
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Mensaje de éxito (oculto por defecto) -->
+        <div class="success-message" id="successMessage">
+            <h3>✅ ¡Gracias por cargar tu foto!</h3>
+            <p>La entidad generará tu carnet próximamente.</p>
+            <p>Recibirás una notificación cuando esté listo.</p>
+        </div>
+
+        <div class="requirements">
+            <h4>📋 Requisitos de la foto:</h4>
+            <ul>
+                <li>Formato JPG o PNG</li>
+                <li>Tamaño mínimo: 200x200 píxeles</li>
+                <li>Tamaño máximo del archivo: 10MB</li>
+                <li>Foto tipo documento (de frente)</li>
+                <li>Buena iluminación</li>
+                <li>Cualquier fondo (se procesará si no es blanco)</li>
+            </ul>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📷</div>
+                <p class="upload-text">Haz clic para seleccionar una foto</p>
+                <p class="upload-subtext">o arrastra y suelta tu imagen aquí</p>
+                <input type="file" name="foto" id="foto" accept="image/jpeg,image/jpg,image/png" required>
+            </div>
+
+            <div class="file-selected" id="fileSelected">
+                <p class="file-name">
+                    <span>✅</span>
+                    <span id="fileName"></span>
                 </p>
             </div>
 
-            <!-- Nota especial sobre procesamiento automático -->
-            <div class="magic-note">
-                <h4>✨ ¡El sistema procesará tu foto automáticamente!</h4>
-                <p>Puedes subir cualquier foto (selfie, casual, etc.) y nuestro sistema la convertirá a una foto de carnet profesional</p>
+            <div class="preview-container" id="previewContainer">
+                <img id="previewImage" class="preview-image" alt="Vista previa">
             </div>
 
-            <!-- Formulario para cargar foto -->
-            <div class="form-section">
-                <h3>📸 Sube tu Fotografía</h3>
-                
-                <div class="instrucciones">
-                    <h4>🤖 El sistema procesará automáticamente tu foto:</h4>
-                    <ul>
-                        <li>Convertirá a proporción 3x4 (tamaño carnet)</li>
-                        <li>Cambiará el fondo a blanco automáticamente</li>
-                        <li>Ajustará al tamaño perfecto para el carnet</li>
-                        <li>Optimizará calidad y nitidez</li>
-                        <li>Sube cualquier foto - ¡no necesita ser perfecta!</li>
-                        <li>Formatos: JPG o PNG (máximo 10MB)</li>
-                    </ul>
-                </div>
-
-                <!-- Ejemplos de fotos -->
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h4 style="text-align: center; color: #28a745; margin-bottom: 15px;">📋 Tipos de fotos que puedes usar:</h4>
-                    <div class="ejemplo-fotos">
-                        <div class="ejemplo-item bueno">
-                            <div class="ejemplo-icon">🤳</div>
-                            <div class="ejemplo-text">Selfies</div>
-                        </div>
-                        <div class="ejemplo-item bueno">
-                            <div class="ejemplo-icon">📱</div>
-                            <div class="ejemplo-text">Fotos del celular</div>
-                        </div>
-                        <div class="ejemplo-item bueno">
-                            <div class="ejemplo-icon">🎨</div>
-                            <div class="ejemplo-text">Cualquier fondo</div>
-                        </div>
-                        <div class="ejemplo-item bueno">
-                            <div class="ejemplo-icon">📐</div>
-                            <div class="ejemplo-text">Cualquier tamaño</div>
-                        </div>
-                    </div>
-                    <p style="text-align: center; color: #28a745; margin-top: 15px; font-weight: 600;">
-                        ✨ ¡El sistema se encarga de todo el resto!
-                    </p>
-                </div>
-
-                <form method="POST" enctype="multipart/form-data" id="fotoForm">
-                    <div class="form-group">
-                        <label for="foto">
-                            📷 Selecciona tu foto <span class="required">*</span>
-                        </label>
-                        <div class="photo-upload" id="photoUpload">
-                            <input type="file" id="foto" name="foto" accept="image/jpeg,image/jpg,image/png" required>
-                            <div class="photo-content">
-                                <div class="photo-icon">📷</div>
-                                <div class="photo-text">Haz clic para seleccionar una foto</div>
-                                <div class="photo-subtitle">o arrastra y suelta tu imagen aquí</div>
-                            </div>
-                        </div>
-                        <div class="preview-container" id="previewContainer">
-                            <p style="margin-bottom: 10px; color: #28a745; font-weight: 600;">Vista previa:</p>
-                            <img id="photoPreview" class="photo-preview" alt="Vista previa">
-                            <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">
-                                📸 Esta foto será procesada automáticamente al generar el carnet
-                            </p>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" id="btnGenerar">
-                        🎯 Generar mi Carnet Automáticamente
-                        <span class="loading" id="loading">⏳</span>
-                    </button>
-                </form>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #39A935; font-size: 16px; font-weight: 600;">Procesando tu foto...</p>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                    Esto puede tomar unos segundos
+                </p>
             </div>
 
-            <div class="actions">
-                <a href="{{ url_for('consultar_datos_aprendiz') }}" class="btn btn-secondary">
-                    ⬅️ Volver a Consultar
-                </a>
-                <a href="{{ url_for('cancelar_consulta') }}" class="btn btn-danger">
-                    ❌ Cancelar
-                </a>
-            </div>
-        </div>
+            <!-- BOTÓN CON TEXTO CORRECTO: "Subir Foto" -->
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                📤 Subir Foto
+            </button>
+        </form>
+
+        <form action="{{ url_for('cancelar_consulta') }}" method="GET">
+            <button type="submit" class="btn-cancel">
+                Cancelar
+            </button>
+        </form>
     </div>
 
     <script>
-        const photoUpload = document.getElementById('photoUpload');
-        const photoInput = document.getElementById('foto');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('foto');
+        const fileSelected = document.getElementById('fileSelected');
+        const fileName = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
         const previewContainer = document.getElementById('previewContainer');
-        const photoPreview = document.getElementById('photoPreview');
-        const photoContent = document.querySelector('.photo-content');
+        const previewImage = document.getElementById('previewImage');
+        const successMessage = document.getElementById('successMessage');
 
-        // Manejar selección de archivo
-        photoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                handlePhotoSelection(file);
-            }
+        // Click en área de carga
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
         });
 
-        // Manejar drag and drop
-        photoUpload.addEventListener('dragover', function(e) {
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            photoUpload.classList.add('dragover');
+            uploadArea.classList.add('dragover');
         });
 
-        photoUpload.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            photoUpload.classList.remove('dragover');
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
         });
 
-        photoUpload.addEventListener('drop', function(e) {
+        uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
-            photoUpload.classList.remove('dragover');
+            uploadArea.classList.remove('dragover');
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('image/')) {
-                    photoInput.files = files;
-                    handlePhotoSelection(file);
-                } else {
-                    alert('Por favor selecciona un archivo de imagen válido (JPG o PNG)');
-                }
+                fileInput.files = files;
+                handleFileSelect();
             }
         });
 
-        function handlePhotoSelection(file) {
-            // Validar tipo de archivo
-            if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-                alert('Por favor selecciona un archivo JPG o PNG');
-                photoInput.value = '';
-                return;
-            }
+        // Selección de archivo
+        fileInput.addEventListener('change', handleFileSelect);
 
-            // Validar tamaño (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                alert('La imagen es muy grande. El tamaño máximo es 10MB');
-                photoInput.value = '';
-                return;
-            }
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                // Validar tipo de archivo
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Por favor selecciona una imagen JPG o PNG');
+                    fileInput.value = '';
+                    return;
+                }
 
-            // Mostrar vista previa
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                photoPreview.src = e.target.result;
-                previewContainer.classList.add('show');
-                
-                // Actualizar texto del upload
-                photoContent.innerHTML = `
-                    <div class="photo-icon">✅</div>
-                    <div class="photo-text">Foto seleccionada: ${file.name}</div>
-                    <div class="photo-subtitle">El sistema la procesará automáticamente</div>
-                `;
-            };
-            reader.readAsDataURL(file);
+                // Validar tamaño
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('El archivo es muy grande. Máximo 10MB');
+                    fileInput.value = '';
+                    return;
+                }
+
+                fileName.textContent = file.name;
+                fileSelected.classList.add('show');
+                submitBtn.disabled = false;
+
+                // Vista previa
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.add('show');
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
-        // Manejar envío del formulario
-        document.getElementById('fotoForm').addEventListener('submit', function(e) {
-            const foto = document.getElementById('foto').files[0];
-            const btn = document.getElementById('btnGenerar');
-            const loading = document.getElementById('loading');
-
-            if (!foto) {
-                e.preventDefault();
-                alert('Por favor selecciona una foto antes de generar el carnet');
-                return false;
-            }
-
-            // Efectos visuales
-            btn.disabled = true;
+        // Envío del formulario
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Ocultar elementos del formulario
+            uploadArea.style.display = 'none';
+            fileSelected.style.display = 'none';
+            previewContainer.style.display = 'none';
+            submitBtn.style.display = 'none';
+            
+            // Mostrar loading
             loading.classList.add('show');
-            btn.innerHTML = '🤖 Procesando foto automáticamente... <span class="loading show">⏳</span>';
-
-            // Mensaje de espera
+            
+            // Simular procesamiento
             setTimeout(() => {
-                if (btn.disabled) {
-                    btn.innerHTML = '🎨 Convirtiendo a foto de carnet... <span class="loading show">⏳</span>';
-                }
-            }, 3000);
-
-            setTimeout(() => {
-                if (btn.disabled) {
-                    btn.innerHTML = '🖼️ Generando carnet final... <span class="loading show">⏳</span>';
-                }
-            }, 6000);
-
-            return true;
+                // Ocultar loading
+                loading.classList.remove('show');
+                
+                // Mostrar mensaje de éxito
+                successMessage.classList.add('show');
+                
+                // Enviar el formulario real después de 3 segundos
+                setTimeout(() => {
+                    uploadForm.submit();
+                }, 3000);
+            }, 2000);
         });
-
-        // Auto-focus en archivo
-        window.addEventListener('load', function() {
-            photoInput.focus();
-        });
-
-        // Limpiar mensajes después de 5 segundos
-        setTimeout(() => {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 5000);
     </script>
 </body>
 </html>

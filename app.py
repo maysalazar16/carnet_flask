@@ -1051,7 +1051,7 @@ def reportes():
 
 @app.route('/consultar_datos', methods=['GET', 'POST'])
 def consultar_datos_aprendiz():
-    """Ruta para que los aprendices consulten sus datos con cédula"""
+    """Ruta para que los aprendices consulten TODOS sus datos con cédula"""
     if 'usuario' not in session or session.get('rol') != 'aprendiz':
         flash('Debes iniciar sesión como aprendiz para acceder.', 'error')
         return redirect(url_for('login'))
@@ -1063,34 +1063,83 @@ def consultar_datos_aprendiz():
             flash('Por favor ingresa tu número de cédula.', 'error')
             return render_template('consultar_datos.html')
         
-        # Limpiar cédula
+        # Limpiar cédula - solo números
         cedula_limpia = ''.join(filter(str.isdigit, cedula))
         
         if len(cedula_limpia) < 7 or len(cedula_limpia) > 10:
             flash('La cédula debe tener entre 7 y 10 dígitos.', 'error')
             return render_template('consultar_datos.html')
         
-        # Buscar aprendiz en la base de datos
+        # Buscar aprendiz en la base de datos con TODOS los campos
         try:
-            aprendiz = buscar_empleado_completo(cedula_limpia)
+            # Importar la función específica si existe
+            try:
+                from imagen import buscar_empleado_completo
+                aprendiz = buscar_empleado_completo(cedula_limpia)
+            except ImportError:
+                # Si no existe, usar cargar_empleado
+                from db import cargar_empleado
+                aprendiz = cargar_empleado(cedula_limpia)
             
             if aprendiz:
-                # Aprendiz encontrado - redirigir a cargar foto
+                # Asegurar que todos los campos estén presentes
+                # Si algún campo no existe, agregarlo con valor por defecto
+                campos_requeridos = {
+                    'nis': 'No registrado',
+                    'primer_apellido': '',
+                    'segundo_apellido': '',
+                    'nombre_programa': 'Programa Técnico',
+                    'codigo_ficha': 'No registrado',
+                    'centro': 'Centro de Biotecnología Industrial',
+                    'nivel_formacion': 'Técnico',
+                    'cargo': 'APRENDIZ',
+                    'codigo': '',
+                    'fecha_emision': '',
+                    'fecha_vencimiento': '',
+                    'tipo_sangre': 'O+',
+                    'tipo_documento': 'CC'
+                }
+                
+                # Agregar campos faltantes con valores por defecto
+                for campo, valor_defecto in campos_requeridos.items():
+                    if campo not in aprendiz or aprendiz[campo] is None:
+                        aprendiz[campo] = valor_defecto
+                
+                # Si el aprendiz tiene foto, verificar si existe el archivo
+                if aprendiz.get('foto'):
+                    ruta_foto = os.path.join('static/fotos', aprendiz['foto'])
+                    if not os.path.exists(ruta_foto):
+                        # Buscar con formato foto_{cedula}.png
+                        ruta_foto_alt = os.path.join('static/fotos', f'foto_{cedula_limpia}.png')
+                        if os.path.exists(ruta_foto_alt):
+                            aprendiz['foto'] = f'foto_{cedula_limpia}.png'
+                        else:
+                            aprendiz['foto'] = None
+                
+                # Guardar datos en sesión para el siguiente paso
                 session['aprendiz_cedula'] = cedula_limpia
                 session['aprendiz_datos'] = aprendiz
-                flash(f'¡Datos encontrados! Hola {aprendiz["nombre"]}', 'success')
-                return redirect(url_for('cargar_foto_aprendiz'))
+                
+                # Mensaje de éxito
+                flash(f'✅ Datos encontrados para: {aprendiz["nombre"]}', 'success')
+                
+                # Renderizar template con TODOS los datos
+                return render_template('consultar_datos.html', 
+                                     aprendiz_encontrado=True,
+                                     aprendiz=aprendiz)
             else:
                 # Aprendiz no encontrado
-                flash('No se encontraron tus datos en el sistema. Por favor comunícate con el área administrativa para registrarte.', 'error')
-                return render_template('consultar_datos.html', no_encontrado=True)
+                flash('❌ No se encontraron tus datos en el sistema.', 'error')
+                return render_template('consultar_datos.html', 
+                                     no_encontrado=True,
+                                     cedula_buscada=cedula_limpia)
                 
         except Exception as e:
             print(f"Error consultando aprendiz: {e}")
             flash('Error al consultar los datos. Intenta de nuevo.', 'error')
             return render_template('consultar_datos.html')
     
-    # GET request - mostrar formulario
+    # GET request - mostrar formulario de búsqueda
     return render_template('consultar_datos.html')
 
 @app.route('/cargar_foto_aprendiz', methods=['GET', 'POST'])

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultar Datos - SENA Aprendices</title>
+    <title>Consultar Datos - SENA</title>
     <style>
         * {
             margin: 0;
@@ -13,27 +13,25 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e8f5e8 0%, #d4f1d4 100%);
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
+            margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            animation: slideUp 0.6s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
         }
 
-        @keyframes slideUp {
+        @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
@@ -42,203 +40,99 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            border-radius: 10px;
-            font-weight: 500;
-            text-align: center;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border: 2px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .alert-info {
-            background: #e3f2fd;
-            border: 2px solid #bbdefb;
-            color: #1976d2;
-        }
-
-        .info-box {
-            background: #f8f9fa;
-            border-left: 4px solid #28a745;
-            padding: 20px;
             margin-bottom: 30px;
-            border-radius: 0 8px 8px 0;
         }
 
-        .info-box h3 {
-            color: #28a745;
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: #39A935;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 50px;
+            color: white;
+        }
+
+        h1 {
+            color: #39A935;
+            font-size: 32px;
             margin-bottom: 10px;
-            font-size: 1.2rem;
         }
 
-        .info-box p {
+        .subtitle {
             color: #666;
-            line-height: 1.6;
-            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* Formulario de consulta */
+        .search-form {
+            background: #F5FFF5;
+            border: 2px solid #39A935;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
+            color: #2E7D32;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-size: 16px;
         }
 
-        .required {
-            color: #dc3545;
-        }
-
-        input[type="text"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            border: 2px solid #E0E0E0;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 16px;
             transition: all 0.3s ease;
-            background: #f8f9fa;
         }
 
-        input[type="text"]:focus {
+        input[type="text"]:focus,
+        input[type="number"]:focus {
             outline: none;
-            border-color: #28a745;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+            border-color: #39A935;
+            box-shadow: 0 0 0 3px rgba(57, 169, 53, 0.1);
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px 30px;
+        .btn-buscar {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
+            padding: 15px 40px;
+            font-size: 18px;
             font-weight: 600;
+            border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            min-width: 150px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
             width: 100%;
-            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
         }
 
-        .btn-primary:hover {
+        .btn-buscar:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
         }
 
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #545862;
-            transform: translateY(-2px);
-        }
-
-        .actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .no-encontrado {
-            background: #fff3cd;
-            border: 2px solid #ffeaa7;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .no-encontrado h3 {
-            color: #856404;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .no-encontrado p {
-            color: #856404;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .no-encontrado .contacto {
-            background: #fff;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .contacto h4 {
-            color: #28a745;
-            margin-bottom: 10px;
-        }
-
-        .contacto p {
-            color: #666;
-            font-size: 0.95rem;
-        }
-
-        .loading {
+        /* Datos del aprendiz */
+        .datos-container {
             display: none;
+            animation: fadeIn 0.5s ease;
         }
 
-        .loading.show {
-            display: inline-block;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .datos-container.show {
+            display: block;
         }
 
         @keyframes fadeIn {
@@ -246,32 +140,189 @@
             to { opacity: 1; }
         }
 
-        @media (max-width: 768px) {
+        .datos-header {
+            background: #E8F5E9;
+            border-left: 5px solid #39A935;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        .datos-header h2 {
+            color: #2E7D32;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .datos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .dato-item {
+            background: #FAFAFA;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #39A935;
+            transition: all 0.3s ease;
+        }
+
+        .dato-item:hover {
+            background: #F5F5F5;
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .dato-label {
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .dato-value {
+            color: #2E7D32;
+            font-size: 18px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .dato-value.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Sección especial para información importante */
+        .info-importante {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            border: 2px solid #FF9800;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .info-importante h3 {
+            color: #E65100;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-importante .datos-grid {
+            margin-bottom: 0;
+        }
+
+        .info-importante .dato-item {
+            background: white;
+            border-left-color: #FF9800;
+        }
+
+        /* Botones de acción */
+        .acciones {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
+        }
+
+        .btn-secondary {
+            background: #757575;
+            color: white;
+            box-shadow: 0 4px 15px rgba(117, 117, 117, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: #616161;
+            transform: translateY(-2px);
+        }
+
+        /* Mensajes de alerta */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: #FFEBEE;
+            border-left: 4px solid #F44336;
+            color: #C62828;
+        }
+
+        .alert-warning {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            color: #E65100;
+        }
+
+        .alert-success {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            color: #2E7D32;
+        }
+
+        .no-encontrado {
+            text-align: center;
+            padding: 40px;
+            background: #FFEBEE;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .no-encontrado h3 {
+            color: #C62828;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .no-encontrado p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
             .container {
-                margin: 10px;
-                max-width: 95%;
+                padding: 20px;
             }
 
-            .content {
-                padding: 25px 20px;
+            .datos-grid {
+                grid-template-columns: 1fr;
             }
 
-            .header {
-                padding: 25px 20px;
-            }
-
-            .header h1 {
-                font-size: 1.7rem;
-            }
-
-            .actions {
+            .acciones {
                 flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
             }
         }
     </style>
@@ -279,139 +330,202 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Consultar mis Datos</h1>
-            <p>Verifica tu información registrada</p>
+            <div class="logo">🎓</div>
+            <h1>Consultar Datos de Aprendiz</h1>
+            <p class="subtitle">Sistema de Carnetización SENA</p>
         </div>
 
-        <div class="content">
-            <!-- Mostrar mensajes flash -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'info' }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-            <div class="info-box">
-                <h3>📋 ¿Cómo funciona?</h3>
-                <p>• Ingresa tu número de cédula para verificar si estás registrado en el sistema</p>
-                <p>• Si tus datos están registrados, podrás cargar tu foto y generar tu carnet</p>
-                <p>• Si no apareces registrado, deberás contactar al área administrativa</p>
-            </div>
-
-            <form method="POST" id="consultaForm">
+        <!-- Formulario de búsqueda -->
+        {% if not aprendiz_encontrado %}
+        <div class="search-form">
+            <form method="POST">
                 <div class="form-group">
-                    <label for="cedula">
-                        🆔 Número de Cédula <span class="required">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="cedula" 
-                        name="cedula" 
-                        placeholder="Ejemplo: 1234567890"
-                        required
-                        maxlength="10"
-                        pattern="[0-9]+"
-                        title="Solo se permiten números"
-                        value="{{ request.form.cedula if request.form.cedula else '' }}"
-                    >
+                    <label for="cedula">Número de Cédula:</label>
+                    <input type="text" 
+                           id="cedula" 
+                           name="cedula" 
+                           placeholder="Ingresa tu número de cédula"
+                           pattern="[0-9]*"
+                           maxlength="10"
+                           required>
                 </div>
-
-                <button type="submit" class="btn btn-primary" id="btnConsultar">
-                    🔎 Consultar mis Datos
-                    <span class="loading" id="loading">⏳</span>
+                <button type="submit" class="btn-buscar">
+                    🔍 Consultar mis Datos
                 </button>
             </form>
+        </div>
+        {% endif %}
 
-            {% if no_encontrado %}
-            <div class="no-encontrado">
-                <h3>❌ Datos no encontrados</h3>
-                <p>No se encontraron tus datos en el sistema. Esto puede deberse a que:</p>
-                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                    <li>Aún no has sido registrado en el sistema</li>
-                    <li>Tu información está pendiente de procesamiento</li>
-                    <li>Hay un error en el número de cédula ingresado</li>
-                </ul>
-                
-                <div class="contacto">
-                    <h4>📞 Contacta al Área Administrativa</h4>
-                    <p><strong>Para registrarte o actualizar tus datos:</strong></p>
-                    <p>• Dirígete al área administrativa del centro</p>
-                    <p>• Presenta tu documento de identidad</p>
-                    <p>• Solicita tu registro en el sistema de carnets</p>
+        <!-- Datos del aprendiz encontrado -->
+        {% if aprendiz_encontrado %}
+        <div class="datos-container show">
+            <div class="datos-header">
+                <h2>📋 Información del Aprendiz</h2>
+                <p>Datos registrados en el sistema SENA</p>
+            </div>
+
+            <!-- Información Personal -->
+            <div class="info-importante">
+                <h3>👤 Información Personal</h3>
+                <div class="datos-grid">
+                    <div class="dato-item">
+                        <div class="dato-label">NIS</div>
+                        <div class="dato-value">{{ aprendiz.nis or 'No registrado' }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Primer Apellido</div>
+                        <div class="dato-value">{{ aprendiz.primer_apellido or 'No registrado' }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Segundo Apellido</div>
+                        <div class="dato-value">{{ aprendiz.segundo_apellido or 'No registrado' }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Nombres</div>
+                        <div class="dato-value">{{ aprendiz.nombre }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Tipo de Documento</div>
+                        <div class="dato-value">{{ aprendiz.tipo_documento }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Número de Documento</div>
+                        <div class="dato-value">{{ aprendiz.cedula }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Tipo de Sangre</div>
+                        <div class="dato-value">{{ aprendiz.tipo_sangre }}</div>
+                    </div>
+
+                    <div class="dato-item">
+                        <div class="dato-label">Código</div>
+                        <div class="dato-value">{{ aprendiz.codigo }}</div>
+                    </div>
                 </div>
             </div>
-            {% endif %}
 
-            <div class="actions">
+            <!-- Información Académica -->
+            <div class="info-importante" style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border-color: #2196F3;">
+                <h3 style="color: #1565C0;">🎓 Información Académica</h3>
+                <div class="datos-grid">
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Nombre del Programa</div>
+                        <div class="dato-value">{{ aprendiz.nombre_programa or 'No especificado' }}</div>
+                    </div>
+
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Nivel de Formación</div>
+                        <div class="dato-value">{{ aprendiz.nivel_formacion or 'Técnico' }}</div>
+                    </div>
+
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Código de Ficha</div>
+                        <div class="dato-value">{{ aprendiz.codigo_ficha or 'No registrado' }}</div>
+                    </div>
+
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Centro</div>
+                        <div class="dato-value">{{ aprendiz.centro or 'Centro de Biotecnología Industrial' }}</div>
+                    </div>
+
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Fecha de Emisión</div>
+                        <div class="dato-value">{{ aprendiz.fecha_emision }}</div>
+                    </div>
+
+                    <div class="dato-item" style="border-left-color: #2196F3;">
+                        <div class="dato-label">Fecha Finalización del Programa</div>
+                        <div class="dato-value">{{ aprendiz.fecha_vencimiento }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado de la foto -->
+            <div class="info-importante" style="background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); border-color: #9C27B0;">
+                <h3 style="color: #6A1B9A;">📸 Estado del Carnet</h3>
+                <div class="datos-grid">
+                    <div class="dato-item" style="border-left-color: #9C27B0;">
+                        <div class="dato-label">Foto Cargada</div>
+                        <div class="dato-value {% if not aprendiz.foto %}empty{% endif %}">
+                            {% if aprendiz.foto %}
+                                ✅ Sí - {{ aprendiz.foto }}
+                            {% else %}
+                                ❌ No - Debes cargar tu foto
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="dato-item" style="border-left-color: #9C27B0;">
+                        <div class="dato-label">Cargo</div>
+                        <div class="dato-value">{{ aprendiz.cargo or 'APRENDIZ' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones disponibles -->
+            <div class="acciones">
+                {% if not aprendiz.foto %}
+                <form method="POST" action="{{ url_for('cargar_foto_aprendiz') }}" style="flex: 1;">
+                    <input type="hidden" name="cedula" value="{{ aprendiz.cedula }}">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        📸 Cargar mi Foto
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-success" style="flex: 1; text-align: center;">
+                    ✅ Ya tienes una foto cargada. El administrador generará tu carnet.
+                </div>
+                {% endif %}
+                
                 <a href="{{ url_for('dashboard_aprendiz') }}" class="btn btn-secondary">
-                    🏠 Volver al Inicio
+                    ← Volver al Dashboard
                 </a>
             </div>
         </div>
+        {% endif %}
+
+        <!-- No encontrado -->
+        {% if no_encontrado %}
+        <div class="no-encontrado">
+            <h3>❌ No se encontraron tus datos</h3>
+            <p>
+                No existe un registro con la cédula <strong>{{ cedula_buscada }}</strong> en el sistema.<br>
+                Por favor verifica el número o comunícate con el área administrativa para registrarte.
+            </p>
+            <div class="acciones" style="margin-top: 25px;">
+                <a href="{{ url_for('consultar_datos_aprendiz') }}" class="btn btn-primary">
+                    Intentar de Nuevo
+                </a>
+                <a href="{{ url_for('dashboard_aprendiz') }}" class="btn btn-secondary">
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <script>
-        // Formateo automático de cédula (solo números)
-        document.getElementById('cedula').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
-            if (value.length > 10) {
-                value = value.slice(0, 10);
-            }
-            e.target.value = value;
+        // Validar que solo se ingresen números
+        document.getElementById('cedula')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
-
-        // Manejo del envío del formulario
-        document.getElementById('consultaForm').addEventListener('submit', function(e) {
-            const cedula = document.getElementById('cedula').value.trim();
-            const btn = document.getElementById('btnConsultar');
-            const loading = document.getElementById('loading');
-
-            // Validación
-            if (!cedula) {
-                e.preventDefault();
-                alert('Por favor ingresa tu número de cédula');
-                return false;
-            }
-
-            if (cedula.length < 7) {
-                e.preventDefault();
-                alert('La cédula debe tener al menos 7 dígitos');
-                return false;
-            }
-
-            // Efectos visuales
-            btn.disabled = true;
-            loading.classList.add('show');
-            btn.innerHTML = '🔄 Consultando... <span class="loading show">⏳</span>';
-
-            // Restaurar botón después de un tiempo (por si hay error)
-            setTimeout(() => {
-                btn.disabled = false;
-                loading.classList.remove('show');
-                btn.innerHTML = '🔎 Consultar mis Datos';
-            }, 5000);
-
-            return true;
-        });
-
-        // Auto-focus en cédula
-        window.addEventListener('load', function() {
-            document.getElementById('cedula').focus();
-        });
-
-        // Limpiar mensajes después de 5 segundos
-        setTimeout(() => {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 5000);
     </script>
 </body>
 </html>

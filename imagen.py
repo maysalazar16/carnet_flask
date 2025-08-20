@@ -389,6 +389,7 @@ def combinar_anverso_reverso(nombre_archivo_anverso, nombre_archivo_reverso, nom
     
     # Etiquetas centradas bajo cada carnet
     draw.text((anverso.width//2 - 40, anverso.height + 20), "ANVERSO", fill=(0, 0, 0), font=font_label)
+    #durante la ejecucion de la funcion, se verifica si el reverso tiene el mismo ancho que el anverso
     draw.text((anverso.width + 40 + reverso.width//2 - 40, reverso.height + 20), "REVERSO", fill=(0, 0, 0), font=font_label)
 
     nombre_archivo = f"{nombre_aprendiz.replace(' ', '_')}_completo.png"

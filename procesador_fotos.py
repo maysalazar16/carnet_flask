@@ -422,6 +422,68 @@ def validar_imagen(ruta_imagen):
     except Exception as e:
         return False, f"Error validando imagen: {str(e)}"
 
+# ========== FUNCIONES NUEVAS AGREGADAS ==========
+
+def detectar_si_fondo_es_blanco(imagen):
+    """
+    Detecta si el fondo de la imagen ya es blanco
+    Retorna True si el fondo es mayormente blanco
+    """
+    try:
+        # Convertir a array numpy
+        img_array = np.array(imagen)
+        height, width = img_array.shape[:2]
+        
+        # Tomar muestras del borde (probable fondo)
+        border_size = 20
+        
+        # Muestras de los 4 bordes
+        muestras = []
+        muestras.extend(img_array[0:border_size, :].reshape(-1, 3))  # Superior
+        muestras.extend(img_array[height-border_size:height, :].reshape(-1, 3))  # Inferior
+        muestras.extend(img_array[:, 0:border_size].reshape(-1, 3))  # Izquierdo
+        muestras.extend(img_array[:, width-border_size:width].reshape(-1, 3))  # Derecho
+        
+        muestras = np.array(muestras)
+        
+        # Calcular el promedio de los bordes
+        promedio = np.mean(muestras, axis=0)
+        
+        # Si el promedio de todos los canales es > 240, es prácticamente blanco
+        es_blanco = all(promedio > 240)
+        
+        if es_blanco:
+            print("✅ Fondo detectado como BLANCO - No se procesará")
+        else:
+            print(f"🔍 Fondo detectado NO blanco (RGB promedio: {promedio.astype(int)}) - Se procesará")
+        
+        return es_blanco
+        
+    except Exception as e:
+        print(f"⚠️ Error detectando fondo: {e}")
+        return False
+
+def verificar_si_foto_existe(cedula, carpeta_fotos="static/fotos"):
+    """
+    Verifica si ya existe una foto para esta cédula
+    """
+    posibles_nombres = [
+        f"foto_{cedula}.png",
+        f"foto_{cedula}.jpg",
+        f"{cedula}.png",
+        f"{cedula}.jpg"
+    ]
+    
+    for nombre in posibles_nombres:
+        ruta = os.path.join(carpeta_fotos, nombre)
+        if os.path.exists(ruta):
+            print(f"⚠️ Ya existe una foto para la cédula {cedula}: {ruta}")
+            return True, ruta
+    
+    return False, None
+
+# ========== FIN DE FUNCIONES NUEVAS ==========
+
 # Función principal para usar en el app.py
 def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
     """
@@ -437,6 +499,11 @@ def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
         tuple: (éxito, nombre_archivo, mensaje)
     """
     try:
+        # VERIFICAR SI YA EXISTE FOTO
+        existe, ruta_existente = verificar_si_foto_existe(cedula, carpeta_fotos)
+        if existe:
+            return False, None, f"Ya existe una foto cargada para la cédula {cedula}. No se puede cargar otra foto."
+        
         # Crear carpeta si no existe
         os.makedirs(carpeta_fotos, exist_ok=True)
         
@@ -462,8 +529,22 @@ def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
             os.remove(ruta_temp)
             return False, None, mensaje_validacion
         
-        # Procesar la imagen con dimensiones correctas para el carnet SENA
-        exito = procesar_foto_carnet(ruta_temp, ruta_final, ancho_carnet=220, alto_carnet=270)
+        # Abrir imagen para verificar el fondo
+        imagen = Image.open(ruta_temp)
+        if imagen.mode != 'RGB':
+            imagen = imagen.convert('RGB')
+        
+        # VERIFICAR SI EL FONDO YA ES BLANCO
+        if detectar_si_fondo_es_blanco(imagen):
+            print("ℹ️ El fondo ya es blanco, solo se redimensionará")
+            # Solo redimensionar sin procesar el fondo
+            imagen_redimensionada = redimensionar_para_carnet(imagen, 220, 270)
+            imagen_redimensionada.save(ruta_final, 'PNG', quality=95, optimize=True)
+            exito = True
+        else:
+            print("🔧 Fondo no es blanco, procesando imagen completa...")
+            # Procesar la imagen con dimensiones correctas para el carnet SENA
+            exito = procesar_foto_carnet(ruta_temp, ruta_final, ancho_carnet=220, alto_carnet=270)
         
         # Eliminar archivo temporal
         if os.path.exists(ruta_temp):
@@ -471,7 +552,7 @@ def procesar_foto_aprendiz(archivo_foto, cedula, carpeta_fotos="static/fotos"):
         
         if exito:
             print(f"✅ Foto guardada como: {nombre_final}")
-            return True, nombre_final, "Foto procesada correctamente con fondo blanco"
+            return True, nombre_final, "Foto procesada correctamente"
         else:
             return False, None, "Error procesando la foto"
             
@@ -554,6 +635,11 @@ def probar_procesamiento(ruta_imagen_prueba):
 
 if __name__ == "__main__":
     print("🧪 Verificando procesador de fotos para SENA...")
+    print("=" * 60)
+    print("CARACTERÍSTICAS:")
+    print("✅ Solo quita fondo si NO es blanco")
+    print("✅ NO recorta vestimenta ni partes del cuerpo")
+    print("✅ Verifica si ya existe foto antes de procesar")
     print("=" * 60)
     
     if verificar_dependencias():
