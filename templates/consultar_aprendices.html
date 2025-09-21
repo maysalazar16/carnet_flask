@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Aprendices - SENA Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* Filtros y búsqueda */
+        .filters {
+            background: #F8F9FA;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #39A935;
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            padding: 12px 15px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #39A935;
+            box-shadow: 0 0 0 3px rgba(57, 169, 53, 0.1);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #39A935;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2E7D32;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6C757D;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5A6268;
+        }
+
+        .btn-danger {
+            background: #DC3545;
+            color: white;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        .btn-danger:hover {
+            background: #C82333;
+            transform: translateY(-1px);
+        }
+
+        /* Estadísticas */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border-left: 5px solid;
+        }
+
+        .stat-card.total { border-left-color: #39A935; }
+        .stat-card.con-foto { border-left-color: #28A745; }
+        .stat-card.sin-foto { border-left-color: #FFC107; }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2E7D32;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Tabla */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th {
+            background: #F8F9FA;
+            color: #333;
+            font-weight: 600;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid #E0E0E0;
+            font-size: 13px;
+        }
+
+        .table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #F0F0F0;
+            font-size: 13px;
+        }
+
+        .table tr:hover {
+            background: #F8F9FA;
+        }
+
+        /* Foto en tabla */
+        .foto-preview {
+            width: 50px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #E0E0E0;
+        }
+
+        .sin-foto {
+            width: 50px;
+            height: 60px;
+            background: #F0F0F0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+            border: 2px dashed #CCC;
+        }
+
+        /* Status badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.con-foto {
+            background: #D4EDDA;
+            color: #155724;
+        }
+
+        .badge.sin-foto {
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        /* Acciones */
+        .acciones {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #D4EDDA;
+            color: #155724;
+            border-left: 4px solid #28A745;
+        }
+
+        .alert-error {
+            background: #F8D7DA;
+            color: #721C24;
+            border-left: 4px solid #DC3545;
+        }
+
+        .alert-info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border-left: 4px solid #17A2B8;
+        }
+
+        /* Modal de confirmación */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h3 {
+            color: #DC3545;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table th, .table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            .acciones {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Gestionar Aprendices</h1>
+            <p>Consulta, busca y gestiona las fotos de los aprendices registrados</p>
+        </div>
+
+        <div class="content">
+            <!-- Mensajes Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'error' else 'info' }}">
+                            <span>{{ '✅' if category == 'success' else '❌' if category == 'error' else 'ℹ️' }}</span>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Filtros y búsqueda -->
+            <div class="filters">
+                <form method="GET" action="{{ url_for('consultar_aprendices') }}">
+                    <div class="filters-row">
+                        <div class="form-group">
+                            <label class="form-label">🔍 Buscar aprendiz</label>
+                            <input type="text" name="buscar" class="form-input" 
+                                   placeholder="Nombre, cédula o código..." 
+                                   value="{{ filtros.buscar or '' }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📸 Estado de foto</label>
+                            <select name="foto" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="con_foto" {{ 'selected' if filtros.foto == 'con_foto' }}>Con foto</option>
+                                <option value="sin_foto" {{ 'selected' if filtros.foto == 'sin_foto' }}>Sin foto</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            🔍 Buscar
+                        </button>
+                        
+                        <a href="{{ url_for('consultar_aprendices') }}" class="btn btn-secondary">
+                            🔄 Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats">
+                <div class="stat-card total">
+                    <span class="stat-number">{{ estadisticas.total }}</span>
+                    <div class="stat-label">Total Aprendices</div>
+                </div>
+                <div class="stat-card con-foto">
+                    <span class="stat-number">{{ estadisticas.con_foto }}</span>
+                    <div class="stat-label">Con Foto</div>
+                </div>
+                <div class="stat-card sin-foto">
+                    <span class="stat-number">{{ estadisticas.sin_foto }}</span>
+                    <div class="stat-label">Sin Foto</div>
+                </div>
+            </div>
+
+            <!-- Tabla de aprendices -->
+            {% if aprendices %}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Programa</th>
+                            <th>Ficha</th>
+                            <th>Nivel</th>
+                            <th>Estado Foto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for aprendiz in aprendices %}
+                        <tr>
+                            <td>
+                                {% if aprendiz.foto_existe %}
+                                    <img src="{{ url_for('static', filename='fotos/' + aprendiz.foto) }}" 
+                                         alt="Foto de {{ aprendiz.nombre }}" 
+                                         class="foto-preview">
+                                {% else %}
+                                    <div class="sin-foto">👤</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ aprendiz.nombre }}</strong><br>
+                                <small style="color: #666;">{{ aprendiz.tipo_documento }}: {{ aprendiz.cedula }}</small>
+                            </td>
+                            <td>{{ aprendiz.cedula }}</td>
+                            <td>
+                                <small>{{ aprendiz.nombre_programa }}</small>
+                            </td>
+                            <td>{{ aprendiz.codigo_ficha }}</td>
+                            <td>
+                                <span class="badge" style="background: #E3F2FD; color: #1976D2;">
+                                    {{ aprendiz.nivel_formacion }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if aprendiz.foto_existe %}
+                                    <span class="badge con-foto">Con Foto</span>
+                                {% else %}
+                                    <span class="badge sin-foto">Sin Foto</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="acciones">
+                                    {% if aprendiz.foto_existe %}
+                                        <button onclick="confirmarEliminacion('{{ aprendiz.nombre }}', '{{ aprendiz.cedula }}')" 
+                                                class="btn btn-danger" title="Eliminar foto">
+                                            🗑️ Eliminar Foto
+                                        </button>
+                                    {% else %}
+                                        <span style="color: #999; font-size: 12px;">Sin foto para eliminar</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <h3>No se encontraron aprendices</h3>
+                <p>Intenta ajustar los filtros de búsqueda o verifica que haya aprendices registrados.</p>
+                <a href="{{ url_for('dashboard_admin') }}" class="btn btn-primary">
+                    🏠 Volver al Dashboard
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Botones de navegación -->
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary">
+                    ⬅️ Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ Confirmar Eliminación</h3>
+            <p id="confirmMessage">¿Estás seguro de que deseas eliminar la foto?</p>
+            <div class="modal-actions">
+                <button onclick="cerrarModal()" class="btn btn-secondary">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">🗑️ Eliminar Foto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmarEliminacion(nombre, cedula) {
+            const modal = document.getElementById('confirmModal');
+            const message = document.getElementById('confirmMessage');
+            const form = document.getElementById('deleteForm');
+            
+            message.innerHTML = `¿Estás seguro de que deseas eliminar la foto de <strong>${nombre}</strong>?<br><small>Esta acción no se puede deshacer.</small>`;
+            form.action = `/admin/eliminar_foto_cedula/${cedula}`;
+            
+            modal.style.display = 'block';
+        }
+        
+        function cerrarModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+        
+        // Cerrar modal al hacer click fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+        
+        // Auto-hide alerts después de 5 segundos
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.transition = 'all 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

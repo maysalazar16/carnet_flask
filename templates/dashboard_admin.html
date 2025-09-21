@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SENA Carnets</title>
+    <title>Panel Administrativo - SENA</title>
     <style>
         * {
             margin: 0;
@@ -12,326 +12,1109 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f0f2f5;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        .header {
-            background: linear-gradient(135deg, #2e8b57, #228b22);
+        /* Header Superior */
+        .top-header {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-section h1 {
-            font-size: 2rem;
-            margin-right: 20px;
-        }
-
-        .user-info {
+        .header-left {
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .welcome-text {
-            font-size: 1.1rem;
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
         }
 
-        .logout-btn {
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
             background: rgba(255,255,255,0.2);
             color: white;
-            border: none;
-            padding: 10px 20px;
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .logout-btn:hover {
+        .btn-logout:hover {
             background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
         }
 
-        .main-content {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+        /* Layout Principal */
+        .main-layout {
+            display: flex;
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .card {
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
             background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            position: fixed;
+            left: 0;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid #e8eaed;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Menu Items */
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 10px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #39A935;
+            transform: scaleY(0);
             transition: transform 0.3s ease;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .menu-item:hover {
+            background: #f8f9fa;
+            color: #39A935;
         }
 
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
+        .menu-item.active {
+            background: linear-gradient(90deg, rgba(57,169,53,0.1) 0%, transparent 100%);
+            color: #39A935;
+            font-weight: 600;
         }
 
-        .card h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
+        .menu-item.active::before {
+            transform: scaleY(1);
         }
 
-        .card p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .card-btn {
-            background: linear-gradient(135deg, #2e8b57, #228b22);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            border-radius: 10px;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
 
-        .card-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 139, 87, 0.3);
+        .menu-item:hover .menu-icon {
+            transform: scale(1.1);
         }
 
-        /* ✅ NUEVOS ESTILOS PARA BOTÓN SECUNDARIO */
-        .card-btn-secondary {
-            background: linear-gradient(135deg, #17a2b8, #138496);
+        .menu-item.active .menu-icon {
+            background: rgba(57,169,53,0.1);
+        }
+
+        .menu-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .menu-badge {
+            background: #FF5252;
             color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
         }
 
-        .card-btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            margin-left: 300px;
+            padding: 30px;
+            background: #f0f2f5;
+            min-height: calc(100vh - 70px);
+            transition: margin-left 0.3s ease;
         }
 
-        .success-message {
-            background: #e8f5e8;
-            border: 1px solid #4caf50;
-            color: #2e7d32;
-            padding: 15px;
+        /* Welcome Alert */
+        .welcome-alert {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-left: 4px solid #39A935;
+            padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.5s ease;
         }
 
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .welcome-icon {
+            font-size: 24px;
+        }
+
+        .welcome-text {
+            color: #2E7D32;
+            font-size: 15px;
+        }
+
+        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
             background: white;
             padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #2e8b57;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* ✅ ESTILOS NUEVOS PARA LA TARJETA DESTACADA */
-        .card-featured {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: 3px solid #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
             position: relative;
             overflow: hidden;
         }
 
-        .card-featured::before {
-            content: "✨ NUEVO";
+        .stat-card::before {
+            content: '';
             position: absolute;
-            top: 10px;
-            right: -30px;
-            background: #ff6b35;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #39A935, #2E7D32);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: rgba(57,169,53,0.2);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Cards */
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .action-button {
+            background: #39A935;
             color: white;
-            padding: 5px 40px;
-            font-size: 12px;
-            font-weight: bold;
-            transform: rotate(45deg);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px;
         }
 
-        .card-featured .card-icon {
-            color: white;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        .action-button:hover {
+            background: #2E7D32;
+            transform: translateY(-2px);
         }
 
-        .card-featured h3 {
-            color: white;
+        .action-button.orange {
+            background: #FF9800;
         }
 
-        .card-featured p {
-            color: rgba(255,255,255,0.9);
+        .action-button.orange:hover {
+            background: #F57C00;
         }
 
-        .card-featured .card-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
+        .action-button.red {
+            background: #f44336;
         }
 
-        .card-featured .card-btn:hover {
-            background: rgba(255,255,255,0.3);
-            border-color: rgba(255,255,255,0.5);
+        .action-button.red:hover {
+            background: #d32f2f;
         }
 
-        .card-featured .card-btn-secondary {
-            background: rgba(255,255,255,0.15);
-            border: 2px solid rgba(255,255,255,0.2);
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .card-featured .card-btn-secondary:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.4);
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #39A935;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                left: -300px;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .content-area {
+                margin-left: 0;
+            }
+
+            .header-title {
+                display: none;
+            }
+
+            .user-info span {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-area {
+                padding: 15px;
+            }
+        }
+
+        /* Overlay para móvil */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="logo-section">
-                <h1>🎓 SENA</h1>
-                <span>Sistema de Carnets Digitales</span>
+    <!-- Header Superior -->
+    <header class="top-header">
+        <div class="header-left">
+            <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="logo">🎓</div>
+            <div>
+                <div class="header-title">SENA</div>
+                <div class="header-subtitle">Sistema de Carnets Digitales</div>
             </div>
+        </div>
+        <div class="header-right">
             <div class="user-info">
-                <span class="welcome-text">Bienvenido, <strong>{{ usuario }}</strong></span>
-                <a href="{{ url_for('logout') }}" class="logout-btn">🚪 Cerrar Sesión</a>
+                <span>Bienvenido, <strong>admin</strong></span>
             </div>
+            <a href="{{ url_for('logout') }}" class="btn-logout">
+                <span>🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
         </div>
-    </div>
+    </header>
 
-    <div class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="success-message">
-                        {{ message }}
+    <!-- Layout Principal -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Panel de Control</h2>
+                <p class="sidebar-subtitle">Administración del Sistema</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <!-- Sección Principal -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Principal</div>
+                    <a href="#" class="menu-item active" onclick="showSection('dashboard')">
+                        <div class="menu-icon">📊</div>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </div>
+
+                <!-- Sección Gestión -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Gestión de Datos</div>
+                    <a href="#" class="menu-item" onclick="showSection('cargar-excel')">
+                        <div class="menu-icon">📁</div>
+                        <span class="menu-text">Cargar Plantilla Excel</span>
+                        <span class="menu-badge">Nuevo</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="showSection('gestionar-fotos')">
+                        <div class="menu-icon">📸</div>
+                        <span class="menu-text">Gestionar Fotos</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="showSection('gestionar-aprendices')">
+                        <div class="menu-icon">👥</div>
+                        <span class="menu-text">Gestionar Aprendices</span>
+                    </a>
+                </div>
+
+                <!-- Sección Carnets -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Carnets</div>
+                    <a href="#" class="menu-item" onclick="showSection('gestionar-carnets')">
+                        <div class="menu-icon">🎴</div>
+                        <span class="menu-text">Gestionar Carnets</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="showSection('generar-carnet')">
+                        <div class="menu-icon">🆔</div>
+                        <span class="menu-text">Generar Carnet</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="showSection('archivo-carnets')">
+                        <div class="menu-icon">📂</div>
+                        <span class="menu-text">Archivo de Carnets</span>
+                    </a>
+                </div>
+
+                <!-- Sección Sistema -->
+                <div class="menu-section">
+                    <div class="menu-section-title">Sistema</div>
+                    <a href="#" class="menu-item" onclick="showSection('agregar-aprendiz')">
+                        <div class="menu-icon">➕</div>
+                        <span class="menu-text">Agregar Aprendiz</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="showSection('consultar-datos')">
+                        <div class="menu-icon">🔍</div>
+                        <span class="menu-text">Consultar Datos</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- Área de Contenido -->
+        <main class="content-area">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <!-- Welcome Alert -->
+                <div class="welcome-alert">
+                    <span class="welcome-icon">✅</span>
+                    <span class="welcome-text">¡Bienvenido admin! Has iniciado sesión correctamente.</span>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label">Aprendices Registrados</div>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                    <div class="stat-card">
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">Registrados Hoy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">89</div>
+                        <div class="stat-label">Esta Semana</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100<span style="font-size: 20px;">%</span></div>
+                        <div class="stat-label">Disponibilidad</div>
+                    </div>
+                </div>
 
-        <h2>Panel de Control Administrativo</h2>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.total if stats else 156 }}</div>
-                <div class="stat-label">Aprendices Registrados</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.hoy if stats else 23 }}</div>
-                <div class="stat-label">Registrados Hoy</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.semana if stats else 89 }}</div>
-                <div class="stat-label">Esta Semana</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.disponibilidad if stats else '100%' }}</div>
-                <div class="stat-label">Disponibilidad</div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <!-- ✅ TARJETA DESTACADA PRINCIPAL - CARGAR PLANTILLA EXCEL -->
-            <div class="card card-featured">
-                <div class="card-icon">📤</div>
-                <h3>Cargar Plantilla Excel</h3>
-                <p>Carga masiva de aprendices desde archivo Excel. Sube tu plantilla completada y procesa múltiples aprendices de una vez.</p>
-                <a href="{{ url_for('cargar_plantilla') }}" class="card-btn">📄 Cargar Excel</a>
-                <a href="{{ url_for('descargar_plantilla') }}" class="card-btn-secondary">⬇️ Descargar Plantilla</a>
+                <div class="info-card">
+                    <h3>Accesos Rápidos</h3>
+                    <div style="margin-top: 20px;">
+                        <button class="action-button" onclick="showSection('cargar-excel')">
+                            📁 Cargar Excel
+                        </button>
+                        <button class="action-button orange" onclick="showSection('gestionar-fotos')">
+                            📸 Gestionar Fotos
+                        </button>
+                        <button class="action-button" onclick="showSection('generar-carnet')">
+                            🆔 Generar Carnet
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- ✅ GENERAR CARNET -->
-            <div class="card">
-                <div class="card-icon">🆔</div>
-                <h3>Generar Carnet</h3>
-                <p>Crea un nuevo carnet digital con código QR para aprendices ya registrados en el sistema.</p>
-                <a href="{{ url_for('generar_carnet_web') }}" class="card-btn">Generar Carnet</a>
+            <!-- Cargar Excel Section -->
+            <div id="cargar-excel" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">📁 Cargar Plantilla Excel</h1>
+                    <p class="section-subtitle">Importa datos de aprendices desde un archivo Excel</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Instrucciones de Carga</h3>
+                    <ol style="margin: 20px 0; color: #666; line-height: 1.8;">
+                        <li>Descarga la plantilla Excel vacía</li>
+                        <li>Completa todos los campos requeridos</li>
+                        <li>Guarda el archivo en formato .xlsx</li>
+                        <li>Selecciona y carga el archivo</li>
+                    </ol>
+                    
+                    <div style="margin-top: 20px;">
+                        <a href="{{ url_for('descargar_plantilla') }}" class="action-button" style="text-decoration: none;">
+                            📥 Descargar Plantilla
+                        </a>
+                        <a href="{{ url_for('descargar_plantilla_vacia') }}" class="action-button orange" style="text-decoration: none;">
+                            📋 Plantilla Vacía
+                        </a>
+                    </div>
+                    
+                    <form action="{{ url_for('cargar_plantilla') }}" method="POST" enctype="multipart/form-data" style="margin-top: 30px;" id="uploadForm">
+                        <div class="form-group">
+                            <label class="form-label" for="excel_file">Seleccionar Archivo Excel:</label>
+                            <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required class="form-input">
+                        </div>
+                        <button type="submit" class="action-button" id="uploadBtn">
+                            📤 Cargar Archivo
+                        </button>
+                    </form>
+                    
+                    <div id="uploadResult" style="margin-top: 20px;"></div>
+                </div>
             </div>
 
-            <!-- ✅ GESTIONAR APRENDICES -->
-            <div class="card">
-                <div class="card-icon">👥</div>
-                <h3>Gestionar Aprendices</h3>
-                <p>Administra la información de aprendices, registra nuevos estudiantes y actualiza datos existentes.</p>
-                <a href="{{ url_for('agregar') }}" class="card-btn">Agregar Aprendiz</a>
+            <!-- Gestionar Fotos Section -->
+            <div id="gestionar-fotos" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">📸 Gestionar Fotos de Aprendices</h1>
+                    <p class="section-subtitle">Administra las fotos de los aprendices</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Buscar Aprendiz</h3>
+                    <form id="buscarAprendizForm" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label" for="cedula_buscar">Número de Cédula:</label>
+                            <input type="text" name="cedula" id="cedula_buscar" class="form-input" placeholder="Ingresa la cédula del aprendiz" required>
+                        </div>
+                        <button type="submit" class="action-button">
+                            🔍 Buscar Aprendiz
+                        </button>
+                    </form>
+                    
+                    <div id="aprendizInfo" style="margin-top: 20px; display: none;">
+                        <!-- Aquí se mostrará la información del aprendiz -->
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Ver Todos los Aprendices</h3>
+                    <p style="color: #666; margin: 15px 0;">Consulta y gestiona las fotos de todos los aprendices registrados.</p>
+                    <a href="{{ url_for('consultar_aprendices') }}" class="action-button" style="text-decoration: none;">
+                        👥 Ver Lista de Aprendices
+                    </a>
+                </div>
             </div>
 
-            <!-- ✅ CONFIGURACIÓN -->
-            <div class="card">
-                <div class="card-icon">⚙️</div>
-                <h3>Configuración</h3>
-                <p>Ajusta la configuración del sistema, usuarios y preferencias.</p>
-                <a href="{{ url_for('configuracion') }}" class="card-btn">Configurar</a>
+            <!-- Gestionar Aprendices Section -->
+            <div id="gestionar-aprendices" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">👥 Gestionar Aprendices</h1>
+                    <p class="section-subtitle">Administra la información de los aprendices</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Opciones de Gestión</h3>
+                    <div style="margin-top: 20px;">
+                        <a href="{{ url_for('agregar') }}" class="action-button" style="text-decoration: none;">
+                            ➕ Agregar Nuevo Aprendiz
+                        </a>
+                        <a href="{{ url_for('consultar_aprendices') }}" class="action-button orange" style="text-decoration: none;">
+                            📋 Ver Lista de Aprendices
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- ✅ ARCHIVO DE CARNETS -->
-            <div class="card">
-                <div class="card-icon">📁</div>
-                <h3>Archivo de Carnets</h3>
-                <p>Consulta y descarga carnets previamente generados.</p>
-                <a href="{{ url_for('archivo_carnets') }}" class="card-btn">Ver Archivo</a>
+            <!-- 🆕 NUEVA SECCIÓN: Gestionar Carnets -->
+            <div id="gestionar-carnets" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">🎴 Gestionar Carnets</h1>
+                    <p class="section-subtitle">Lista completa de aprendices para generar carnets</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Buscar Aprendiz por Cédula</h3>
+                    <form method="GET" action="{{ url_for('consultar_aprendices') }}" style="margin-top: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Buscar por cédula o nombre:</label>
+                                <input type="text" name="buscar" class="form-input" placeholder="Ej: 1006342488 o JOHN ALEXANDER">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Estado de foto:</label>
+                                <select name="foto" class="form-input">
+                                    <option value="">Todos</option>
+                                    <option value="con_foto">Con foto</option>
+                                    <option value="sin_foto">Sin foto</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="action-button">🔍 Buscar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Acciones Rápidas</h3>
+                    <p style="color: #666; margin: 15px 0;">Gestiona los carnets de todos los aprendices del sistema.</p>
+                    <div style="margin-top: 20px;">
+                        <a href="{{ url_for('consultar_aprendices') }}" class="action-button" style="text-decoration: none;">
+                            👥 Ver Todos los Aprendices
+                        </a>
+                        <a href="{{ url_for('consultar_aprendices', foto='sin_foto') }}" class="action-button orange" style="text-decoration: none;">
+                            📸 Ver Aprendices Sin Foto
+                        </a>
+                        <a href="{{ url_for('consultar_aprendices', foto='con_foto') }}" class="action-button" style="text-decoration: none; background: #28a745;">
+                            ✅ Ver Aprendices Con Foto
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="info-card" style="background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-left: 4px solid #39A935;">
+                    <h3 style="color: #2E7D32;">💡 Instrucciones</h3>
+                    <ul style="margin: 15px 0; color: #2E7D32; line-height: 1.8;">
+                        <li>Busca un aprendiz por su número de cédula</li>
+                        <li>Verifica que el aprendiz tenga foto cargada</li>
+                        <li>Si no tiene foto, cárgala desde "Gestionar Fotos"</li>
+                        <li>Una vez con foto, genera su carnet desde "Generar Carnet"</li>
+                    </ul>
+                </div>
             </div>
-        </div>
+
+            <!-- Generar Carnet Section -->
+            <div id="generar-carnet" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">🆔 Generar Carnet</h1>
+                    <p class="section-subtitle">Crea carnets digitales para los aprendices</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Generar Carnet por Cédula</h3>
+                    <form action="{{ url_for('generar_carnet_web') }}" method="POST" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label" for="cedula_carnet">Número de Cédula:</label>
+                            <input type="text" name="cedula" id="cedula_carnet" class="form-input" placeholder="Ingresa la cédula del aprendiz" required>
+                        </div>
+                        <button type="submit" class="action-button">
+                            ✨ Generar Carnet
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Acceso Directo</h3>
+                    <p style="color: #666; margin: 15px 0;">Accede directamente al generador de carnets.</p>
+                    <a href="{{ url_for('generar') }}" class="action-button orange" style="text-decoration: none;">
+                        🔗 Ir al Generador
+                    </a>
+                </div>
+            </div>
+
+            <!-- Archivo de Carnets Section -->
+            <div id="archivo-carnets" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">📂 Archivo de Carnets</h1>
+                    <p class="section-subtitle">Historial de carnets generados</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Consultar Carnets Generados</h3>
+                    <p style="color: #666; margin: 15px 0;">Revisa todos los carnets que han sido generados y descárgalos si es necesario.</p>
+                    <a href="{{ url_for('archivo_carnets') }}" class="action-button" style="text-decoration: none;">
+                        🔍 Ver Archivo de Carnets
+                    </a>
+                </div>
+            </div>
+
+            <!-- Agregar Aprendiz Section -->
+            <div id="agregar-aprendiz" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">➕ Agregar Aprendiz</h1>
+                    <p class="section-subtitle">Registra un nuevo aprendiz en el sistema</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Opciones de Registro</h3>
+                    <div style="margin-top: 20px;">
+                        <a href="{{ url_for('agregar') }}" class="action-button" style="text-decoration: none;">
+                            📝 Formulario Individual
+                        </a>
+                        <a href="{{ url_for('agregar_empleado') }}" class="action-button orange" style="text-decoration: none;">
+                            👤 Registro Completo SENA
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultar Datos Section -->
+            <div id="consultar-datos" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">🔍 Consultar Datos</h1>
+                    <p class="section-subtitle">Busca información de aprendices</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Búsqueda de Aprendices</h3>
+                    <form id="consultarForm" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label" for="cedula_consulta">Número de Cédula:</label>
+                            <input type="text" name="cedula" id="cedula_consulta" class="form-input" placeholder="Ingresa la cédula a buscar" required>
+                        </div>
+                        <button type="submit" class="action-button">
+                            🔍 Buscar
+                        </button>
+                    </form>
+                    
+                    <div style="margin-top: 20px;">
+                        <a href="{{ url_for('consultar_aprendices') }}" class="action-button orange" style="text-decoration: none;">
+                            📋 Ver Todos los Aprendices
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
+
+    <script>
+        // Variables globales
+        let currentSection = 'dashboard';
+
+        // Función para mostrar/ocultar sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Función para cambiar de sección
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Actualizar menú activo
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Activar el elemento del menú correspondiente
+            const activeMenuItem = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (activeMenuItem) {
+                activeMenuItem.classList.add('active');
+            }
+
+            // Cerrar sidebar en móviles
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+
+            currentSection = sectionId;
+        }
+
+        // Manejar formulario de carga de Excel
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const uploadBtn = document.getElementById('uploadBtn');
+            const resultDiv = document.getElementById('uploadResult');
+            
+            // Mostrar loading
+            uploadBtn.innerHTML = '<span class="spinner"></span> Cargando...';
+            uploadBtn.disabled = true;
+            
+            try {
+                const response = await fetch('{{ url_for("cargar_plantilla") }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>✅ Éxito!</strong> ${result.message}
+                            ${result.created ? `<br>Creados: ${result.created}` : ''}
+                            ${result.updated ? `<br>Actualizados: ${result.updated}` : ''}
+                            ${result.errors ? `<br>Errores: ${result.errors}` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            <strong>❌ Error:</strong> ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>❌ Error:</strong> No se pudo procesar el archivo
+                    </div>
+                `;
+            } finally {
+                uploadBtn.innerHTML = '📤 Cargar Archivo';
+                uploadBtn.disabled = false;
+            }
+        });
+
+        // Manejar formulario de búsqueda de aprendices
+        document.getElementById('buscarAprendizForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cedula = document.getElementById('cedula_buscar').value;
+            const infoDiv = document.getElementById('aprendizInfo');
+            
+            if (!cedula) return;
+            
+            // Mostrar loading
+            infoDiv.style.display = 'block';
+            infoDiv.innerHTML = '<div style="text-align: center;"><span class="spinner"></span> Buscando...</div>';
+            
+            try {
+                // Aquí harías la búsqueda real - por ahora simulamos
+                setTimeout(() => {
+                    infoDiv.innerHTML = `
+                        <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+                            <h4>Información del Aprendiz</h4>
+                            <p><strong>Cédula:</strong> ${cedula}</p>
+                            <div style="margin-top: 15px;">
+                                <button class="action-button orange" onclick="eliminarFoto('${cedula}')">
+                                    🗑️ Eliminar Foto
+                                </button>
+                                <a href="{{ url_for('consultar_aprendices') }}?buscar=${cedula}" class="action-button" style="text-decoration: none;">
+                                    👁️ Ver Detalles
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }, 1000);
+            } catch (error) {
+                infoDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>❌ Error:</strong> No se pudo buscar el aprendiz
+                    </div>
+                `;
+            }
+        });
+
+        // Función para eliminar foto
+        async function eliminarFoto(cedula) {
+            if (!confirm('¿Estás seguro de que quieres eliminar la foto de este aprendiz?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/eliminar_foto_cedula/${cedula}`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Foto eliminada exitosamente');
+                    document.getElementById('buscarAprendizForm').reset();
+                    document.getElementById('aprendizInfo').style.display = 'none';
+                } else {
+                    alert('❌ Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error al eliminar la foto');
+            }
+        }
+
+        // Manejar formulario de consulta
+        document.getElementById('consultarForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const cedula = document.getElementById('cedula_consulta').value;
+            if (cedula) {
+                window.open(`{{ url_for('consultar_aprendices') }}?buscar=${cedula}`, '_blank');
+            }
+        });
+
+        // Responsive: cerrar sidebar al cambiar tamaño de pantalla
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('dashboard');
+        });
+    </script>
 </body>
 </html>

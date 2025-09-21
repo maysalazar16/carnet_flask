@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -23,11 +23,23 @@
 
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             max-width: 600px;
             width: 100%;
             padding: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .header {
@@ -35,10 +47,23 @@
             margin-bottom: 30px;
         }
 
-        h2 {
-            color: #39A935;
-            font-size: 28px;
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #39A935;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+
+        h1 {
+            color: #2E7D32;
+            font-size: 26px;
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .subtitle {
@@ -47,187 +72,172 @@
             margin-bottom: 20px;
         }
 
-        .info-box {
-            background: #E8F5E9;
-            border-left: 4px solid #39A935;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 5px;
-        }
-
-        .info-box h3 {
-            color: #2E7D32;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .info-box p {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 5px;
-        }
-
-        .upload-area {
-            border: 3px dashed #39A935;
+        /* Información del aprendiz */
+        .aprendiz-info {
+            background: linear-gradient(135deg, #F5FFF5 0%, #E8F5E9 100%);
+            border-left: 5px solid #39A935;
             border-radius: 15px;
-            padding: 60px 20px;
-            text-align: center;
-            margin-bottom: 25px;
-            background: #F5FFF5;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
+            padding: 20px;
+            margin-bottom: 30px;
         }
 
-        .upload-area:hover {
-            background: #E8F5E9;
-            border-color: #2E7D32;
-        }
-
-        .upload-area.dragover {
-            background: #C8E6C9;
-            border-color: #2E7D32;
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-
-        .upload-text {
-            color: #39A935;
+        .aprendiz-info h3 {
+            color: #2E7D32;
             font-size: 18px;
-            font-weight: 600;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .upload-subtext {
-            color: #666;
+        .aprendiz-info p {
+            color: #555;
+            margin-bottom: 8px;
             font-size: 14px;
         }
 
-        input[type="file"] {
-            display: none;
+        /* Instrucciones importantes */
+        .instructions {
+            background: #E3F2FD;
+            border-left: 5px solid #2196F3;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
         }
 
-        .file-selected {
-            background: #E8F5E9;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .file-selected.show {
-            display: block;
-        }
-
-        .file-name {
-            color: #2E7D32;
-            font-weight: 600;
+        .instructions h3 {
+            color: #1976D2;
+            font-size: 18px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* BOTÓN PRINCIPAL - TEXTO ACTUALIZADO */
-        .btn-submit {
+        .instructions ul {
+            color: #555;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        /* Formulario de foto */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #39A935;
+            border-radius: 15px;
+            background: #F8F9FA;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            background: #E8F5E9;
+            border-color: #2E7D32;
+        }
+
+        .file-input input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .file-input-icon {
+            font-size: 48px;
+            color: #39A935;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            margin: 10px 5px;
+        }
+
+        .btn-primary {
             background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
             color: white;
-            border: none;
-            padding: 18px 35px;
-            font-size: 20px;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
-        .btn-submit:hover:not(:disabled) {
+        .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
         }
 
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background: #cccccc;
-        }
-
-        .btn-cancel {
-            background: #757575;
+        .btn-secondary {
+            background: #6C757D;
             color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
         }
 
-        .btn-cancel:hover {
-            background: #616161;
+        .btn-secondary:hover {
+            background: #5A6268;
             transform: translateY(-2px);
         }
 
-        .requirements {
-            background: #FFF3E0;
-            border-left: 4px solid #FF9800;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+        .btn-group {
+            text-align: center;
+            margin-top: 30px;
         }
 
-        .requirements h4 {
-            color: #E65100;
-            margin-bottom: 10px;
-        }
-
-        .requirements ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .requirements li {
-            color: #666;
-            padding: 5px 0;
-            padding-left: 25px;
-            position: relative;
-        }
-
-        .requirements li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #FF9800;
-            font-weight: bold;
-        }
-
+        /* Alertas */
         .alert {
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 10px;
             margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
         }
 
-        .alert-error {
-            background: #FFEBEE;
-            border-left: 4px solid #F44336;
-            color: #C62828;
-        }
-
-        .alert-warning {
-            background: #FFF3E0;
-            border-left: 4px solid #FF9800;
-            color: #E65100;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .alert-success {
@@ -236,269 +246,209 @@
             color: #2E7D32;
         }
 
-        .preview-container {
-            margin-top: 20px;
-            text-align: center;
-            display: none;
+        .alert-error {
+            background: #FFEBEE;
+            border-left: 4px solid #F44336;
+            color: #C62828;
         }
 
-        .preview-container.show {
-            display: block;
+        .alert-info {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            color: #1976D2;
         }
 
-        .preview-image {
-            max-width: 200px;
-            max-height: 250px;
-            border: 3px solid #39A935;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #39A935;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .success-message {
-            display: none;
-            background: #E8F5E9;
-            border: 2px solid #4CAF50;
+        /* Proceso de carga */
+        .upload-process {
+            background: #FFF8E1;
+            border-left: 5px solid #FFC107;
             border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
         }
 
-        .success-message.show {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .success-message h3 {
-            color: #2E7D32;
-            font-size: 24px;
+        .upload-process h3 {
+            color: #F57C00;
+            font-size: 18px;
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .success-message p {
-            color: #555;
-            font-size: 16px;
-            line-height: 1.6;
+        .process-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .step-number {
+            background: #FFC107;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>📸 Cargar Foto para Carnet</h2>
-            <p class="subtitle">Sistema de Carnetización SENA</p>
+            <div class="logo">📸</div>
+            <h1>Cargar tu Foto</h1>
+            <p class="subtitle">Sube tu foto para el carnet estudiantil</p>
         </div>
-
-        {% if aprendiz %}
-        <div class="info-box">
-            <h3>Información del Aprendiz</h3>
-            <p><strong>Nombre:</strong> {{ aprendiz.nombre }}</p>
-            <p><strong>Cédula:</strong> {{ aprendiz.cedula }}</p>
-            <p><strong>Programa:</strong> {{ aprendiz.nombre_programa }}</p>
-            <p><strong>Ficha:</strong> {{ aprendiz.codigo_ficha }}</p>
-        </div>
-        {% endif %}
 
         <!-- Mensajes Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'error' else 'info' }}">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <!-- Mensaje de éxito (oculto por defecto) -->
-        <div class="success-message" id="successMessage">
-            <h3>✅ ¡Gracias por cargar tu foto!</h3>
-            <p>La entidad generará tu carnet próximamente.</p>
-            <p>Recibirás una notificación cuando esté listo.</p>
+        <!-- Información del aprendiz -->
+        <div class="aprendiz-info">
+            <h3>
+                <span>👤</span>
+                Información del Aprendiz
+            </h3>
+            <p><strong>Nombre:</strong> {{ aprendiz.nombre }}</p>
+            <p><strong>Cédula:</strong> {{ aprendiz.cedula }}</p>
+            <p><strong>Programa:</strong> {{ aprendiz.nombre_programa }}</p>
+            <p><strong>Nivel:</strong> {{ aprendiz.nivel_formacion }}</p>
+            <p><strong>Ficha:</strong> {{ aprendiz.codigo_ficha }}</p>
         </div>
 
-        <div class="requirements">
-            <h4>📋 Requisitos de la foto:</h4>
+        <!-- Proceso que seguirá -->
+        <div class="upload-process">
+            <h3>
+                <span>⚙️</span>
+                Proceso de tu Carnet
+            </h3>
+            <div class="process-step">
+                <span class="step-number">1</span>
+                <span>Subes tu foto aquí</span>
+            </div>
+            <div class="process-step">
+                <span class="step-number">2</span>
+                <span>El sistema procesa automáticamente tu foto (3x4, fondo blanco)</span>
+            </div>
+            <div class="process-step">
+                <span class="step-number">3</span>
+                <span>Tu foto se guarda en el sistema</span>
+            </div>
+            <div class="process-step">
+                <span class="step-number">4</span>
+                <span><strong>El administrador generará tu carnet</strong></span>
+            </div>
+            <div class="process-step">
+                <span class="step-number">5</span>
+                <span>Te notificaremos cuando tu carnet esté listo</span>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="instructions">
+            <h3>
+                <span>📋</span>
+                Instrucciones para la Foto
+            </h3>
             <ul>
-                <li>Formato JPG o PNG</li>
-                <li>Tamaño mínimo: 200x200 píxeles</li>
-                <li>Tamaño máximo del archivo: 10MB</li>
-                <li>Foto tipo documento (de frente)</li>
-                <li>Buena iluminación</li>
-                <li>Cualquier fondo (se procesará si no es blanco)</li>
+                <li><strong>Formato:</strong> JPG, JPEG o PNG</li>
+                <li><strong>Tamaño:</strong> Máximo 5MB</li>
+                <li><strong>Calidad:</strong> Buena resolución y nitidez</li>
+                <li><strong>Fondo:</strong> Preferiblemente claro (se procesará automáticamente)</li>
+                <li><strong>Posición:</strong> Rostro centrado mirando al frente</li>
+                <li><strong>Ropa:</strong> Formal, sin gorra ni accesorios que oculten el rostro</li>
             </ul>
         </div>
 
-        <form method="POST" enctype="multipart/form-data" id="uploadForm">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📷</div>
-                <p class="upload-text">Haz clic para seleccionar una foto</p>
-                <p class="upload-subtext">o arrastra y suelta tu imagen aquí</p>
-                <input type="file" name="foto" id="foto" accept="image/jpeg,image/jpg,image/png" required>
+        <!-- Formulario -->
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label" for="foto">📷 Selecciona tu Foto</label>
+                <div class="file-input-container">
+                    <div class="file-input">
+                        <input type="file" name="foto" id="foto" accept="image/*" required>
+                        <span class="file-input-icon">📁</span>
+                        <div class="file-input-text">
+                            Haz clic aquí para seleccionar tu foto<br>
+                            <small>o arrastra y suelta el archivo</small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="file-selected" id="fileSelected">
-                <p class="file-name">
-                    <span>✅</span>
-                    <span id="fileName"></span>
-                </p>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    📤 Subir Foto
+                </button>
+                <a href="{{ url_for('consultar_datos_aprendiz') }}" class="btn btn-secondary">
+                    ⬅️ Volver Atrás
+                </a>
             </div>
-
-            <div class="preview-container" id="previewContainer">
-                <img id="previewImage" class="preview-image" alt="Vista previa">
-            </div>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p style="color: #39A935; font-size: 16px; font-weight: 600;">Procesando tu foto...</p>
-                <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                    Esto puede tomar unos segundos
-                </p>
-            </div>
-
-            <!-- BOTÓN CON TEXTO CORRECTO: "Subir Foto" -->
-            <button type="submit" class="btn-submit" id="submitBtn" disabled>
-                📤 Subir Foto
-            </button>
         </form>
 
-        <form action="{{ url_for('cancelar_consulta') }}" method="GET">
-            <button type="submit" class="btn-cancel">
-                Cancelar
-            </button>
-        </form>
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #E0E0E0;">
+            <p style="color: #999; font-size: 13px;">
+                Sistema de Carnetización Digital SENA<br>
+                © 2024 - Todos los derechos reservados
+            </p>
+        </div>
     </div>
 
     <script>
-        const uploadArea = document.getElementById('uploadArea');
+        // Mejorar la experiencia del input de archivo
         const fileInput = document.getElementById('foto');
-        const fileSelected = document.getElementById('fileSelected');
-        const fileName = document.getElementById('fileName');
-        const submitBtn = document.getElementById('submitBtn');
-        const uploadForm = document.getElementById('uploadForm');
-        const loading = document.getElementById('loading');
-        const previewContainer = document.getElementById('previewContainer');
-        const previewImage = document.getElementById('previewImage');
-        const successMessage = document.getElementById('successMessage');
-
-        // Click en área de carga
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                handleFileSelect();
+        const fileInputText = document.querySelector('.file-input-text');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const fileName = e.target.files[0].name;
+                fileInputText.innerHTML = `
+                    <strong>Archivo seleccionado:</strong><br>
+                    ${fileName}<br>
+                    <small>Haz clic en "Subir Foto" para continuar</small>
+                `;
             }
         });
 
-        // Selección de archivo
-        fileInput.addEventListener('change', handleFileSelect);
-
-        function handleFileSelect() {
-            const file = fileInput.files[0];
-            if (file) {
-                // Validar tipo de archivo
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                if (!validTypes.includes(file.type)) {
-                    alert('Por favor selecciona una imagen JPG o PNG');
-                    fileInput.value = '';
-                    return;
-                }
-
-                // Validar tamaño
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('El archivo es muy grande. Máximo 10MB');
-                    fileInput.value = '';
-                    return;
-                }
-
-                fileName.textContent = file.name;
-                fileSelected.classList.add('show');
-                submitBtn.disabled = false;
-
-                // Vista previa
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewContainer.classList.add('show');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Envío del formulario
-        uploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Ocultar elementos del formulario
-            uploadArea.style.display = 'none';
-            fileSelected.style.display = 'none';
-            previewContainer.style.display = 'none';
-            submitBtn.style.display = 'none';
-            
-            // Mostrar loading
-            loading.classList.add('show');
-            
-            // Simular procesamiento
-            setTimeout(() => {
-                // Ocultar loading
-                loading.classList.remove('show');
-                
-                // Mostrar mensaje de éxito
-                successMessage.classList.add('show');
-                
-                // Enviar el formulario real después de 3 segundos
-                setTimeout(() => {
-                    uploadForm.submit();
-                }, 3000);
-            }, 2000);
-        });
+        // Auto-hide alerts después de 8 segundos
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.transition = 'all 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 8000);
     </script>
 </body>
 </html>
