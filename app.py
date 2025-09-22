@@ -485,6 +485,7 @@ def cargar_excel_sena_mejorado(file):
                 column_map[header.strip()] = idx
         
         print(f"Mapa de columnas creado: {column_map}")
+        print(f"🔍 Buscando columna de fecha en: {list(column_map.keys())}")
         
         # Verificar columnas requeridas
         required_columns = ['Primer Apellido', 'Nombre', 'Tipo de documento', 'Número de documento']
@@ -539,8 +540,31 @@ def cargar_excel_sena_mejorado(file):
                 red_tecnologica = str(row[column_map.get('Red Tecnologica', '')]).strip() if row[column_map.get('Red Tecnologica', '')] else ''
                 
                 # Procesar fecha
-                fecha_finalizacion_raw = row[column_map.get('Fecha Finalización del Programa', '')]
-                fecha_finalizacion = convertir_fecha_excel(fecha_finalizacion_raw)
+                fecha_finalizacion = None
+                posibles_nombres_fecha = [
+                    'Fecha Finalización del Programa',
+                    'Fecha Finalizacion del Programa',
+                    'FECHA FINALIZACION',
+                    'Fecha de Finalización',
+                    'Fecha Finalizacion',
+                    'Fecha Final',
+                    'Fecha Fin'
+                ]
+
+                for nombre_col in posibles_nombres_fecha:
+                    if nombre_col in column_map:
+                        fecha_finalizacion_raw = row[column_map.get(nombre_col, '')]
+                        if fecha_finalizacion_raw and fecha_finalizacion_raw != 'None':
+                            fecha_finalizacion = convertir_fecha_excel(fecha_finalizacion_raw)
+                            print(f"✅ Fecha encontrada en columna '{nombre_col}': {fecha_finalizacion}")
+                            break
+
+                # Si no se encontró fecha, usar fecha por defecto (1 año desde hoy)
+                if not fecha_finalizacion:
+                    from datetime import datetime, timedelta
+                    fecha_default = (datetime.now() + timedelta(days=365)).strftime("%Y-%m-%d")
+                    fecha_finalizacion = fecha_default
+                    print(f"⚠️ No se encontró fecha de finalización, usando: {fecha_finalizacion}")
                 
                 # Generar o procesar NIS
                 nis = str(row[column_map.get('NIS', '')]).strip() if row[column_map.get('NIS', '')] else ''
@@ -602,7 +626,7 @@ def cargar_excel_sena_mejorado(file):
                         numero_documento
                     ))
                     updated_count += 1
-                    print(f"Actualizado: {nombre_completo} - Cédula: {numero_documento}")
+                    print(f"Actualizado: {nombre_completo} - Cedula: {numero_documento}")
                 else:
                     # Crear nuevo
                     cursor.execute("""
@@ -622,7 +646,7 @@ def cargar_excel_sena_mejorado(file):
                         nivel_formacion, red_tecnologica
                     ))
                     created_count += 1
-                    print(f"Creado: {nombre_completo} - Cédula: {numero_documento}")
+                    print(f"Creado: {nombre_completo} - Cedula: {numero_documento}")
                 
                 # Confirmar cada inserción
                 conn.commit()
@@ -1808,7 +1832,7 @@ def archivo_carnets():
             SELECT nombre, cedula, tipo_documento, cargo, codigo, 
                    fecha_emision, fecha_vencimiento, tipo_sangre, foto,
                    nis, primer_apellido, segundo_apellido, 
-                   nombre_programa, codigo_ficha, centro, nivel_formacion
+                   nombre_programa, codigo_ficha, centro, nivel_formacion, red_tecnologica
             FROM empleados 
             WHERE cargo = 'APRENDIZ' 
               AND foto IS NOT NULL 
