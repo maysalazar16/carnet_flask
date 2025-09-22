@@ -532,38 +532,55 @@
         </div>
     </div>
 
-    <script>
-        function confirmarEliminacion(nombre, cedula) {
-            const modal = document.getElementById('confirmModal');
-            const message = document.getElementById('confirmMessage');
-            const form = document.getElementById('deleteForm');
-            
-            message.innerHTML = `¿Estás seguro de que deseas eliminar la foto de <strong>${nombre}</strong>?<br><small>Esta acción no se puede deshacer.</small>`;
-            form.action = `/admin/eliminar_foto_cedula/${cedula}`;
-            
-            modal.style.display = 'block';
+<script>
+    function confirmarEliminacion(nombre, cedula) {
+        // Confirmación simple del navegador
+        if (!confirm(`¿Estás seguro de que deseas eliminar la foto de ${nombre}?\n\nEsta acción no se puede deshacer.`)) {
+            return;
         }
         
-        function cerrarModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-        
-        // Cerrar modal al hacer click fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('confirmModal');
-            if (event.target === modal) {
-                cerrarModal();
+        // Hacer la petición AJAX
+        fetch(`/admin/eliminar_foto_cedula/${cedula}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Mostrar mensaje de éxito
+                alert('✅ ' + result.message);
+                
+                // Recargar la página
+                window.location.reload();
+            } else {
+                alert('❌ Error: ' + result.message);
             }
+        })
+        .catch(error => {
+            alert('❌ Error al eliminar la foto. Por favor, intenta de nuevo.');
+            console.error('Error:', error);
+        });
+    }
+    
+    function cerrarModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+    
+    // Cerrar modal al hacer click fuera
+    window.onclick = function(event) {
+        const modal = document.getElementById('confirmModal');
+        if (event.target === modal) {
+            cerrarModal();
         }
-        
-        // Auto-hide alerts después de 5 segundos
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.style.transition = 'all 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 5000);
+    }
+    
+    // Auto-hide alerts después de 5 segundos
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            alert.style.transition = 'all 0.5s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 5000);
     </script>
 </body>
 </html>
