@@ -48,7 +48,7 @@
             padding: 30px;
         }
 
-        /* Filtros y búsqueda */
+        /* Filtros y búsqueda MEJORADOS */
         .filters {
             background: #F8F9FA;
             border-radius: 15px;
@@ -59,7 +59,7 @@
 
         .filters-row {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
+            grid-template-columns: 1fr auto auto auto auto; /* NUEVO: espacio para botón Dashboard */
             gap: 20px;
             align-items: end;
         }
@@ -71,7 +71,7 @@
 
         .form-label {
             font-weight: 600;
-            color: #333;
+            color: #2E7D32; /* Color SENA */
             margin-bottom: 8px;
             font-size: 14px;
         }
@@ -105,67 +105,180 @@
         }
 
         .btn-primary {
-            background: #39A935;
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.3);
         }
 
         .btn-primary:hover {
-            background: #2E7D32;
+            background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(57, 169, 53, 0.4);
         }
 
         .btn-secondary {
-            background: #6C757D;
+            background: linear-gradient(135deg, #6C757D 0%, #495057 100%);
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #5A6268;
+            background: linear-gradient(135deg, #495057 0%, #343A40 100%);
+            transform: translateY(-2px);
         }
 
         .btn-danger {
-            background: #DC3545;
+            background: linear-gradient(135deg, #DC3545 0%, #C82333 100%);
             color: white;
             font-size: 12px;
             padding: 8px 12px;
         }
 
         .btn-danger:hover {
-            background: #C82333;
+            background: linear-gradient(135deg, #C82333 0%, #A71E2A 100%);
             transform: translateY(-1px);
         }
 
-        /* Estadísticas */
+        /* NUEVO: Botón Ver Carnet - COLOR VERDE SENA */
+        .btn-carnet {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            font-size: 12px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            width: 100%;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .btn-carnet:hover {
+            background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(57, 169, 53, 0.3);
+        }
+
+        /* NUEVO: Botón Dashboard en filtros */
+        .btn-dashboard {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+            font-size: 14px;
+            padding: 12px 20px;
+            border: 2px solid #39A935;
+        }
+
+        .btn-dashboard:hover {
+            background: white;
+            color: #39A935;
+            border-color: #39A935;
+        }
+
+        /* Estadísticas - DIMENSIONES FORZADAS IDÉNTICAS */
         .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            display: flex;
+            justify-content: space-between;
             gap: 20px;
             margin-bottom: 30px;
+            width: 100%;
         }
 
         .stat-card {
             background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px 20px !important;
             text-align: center;
             border-left: 5px solid;
+            height: 120px !important;
+            width: calc(33.333% - 14px) !important; /* ANCHO EXACTO: 1/3 menos gap */
+            max-width: calc(33.333% - 14px) !important;
+            min-width: calc(33.333% - 14px) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            transition: all 0.3s ease;
+            box-sizing: border-box !important;
+            flex-shrink: 0 !important;
         }
 
-        .stat-card.total { border-left-color: #39A935; }
-        .stat-card.con-foto { border-left-color: #28A745; }
-        .stat-card.sin-foto { border-left-color: #FFC107; }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ESTILOS IDÉNTICOS PARA TOTAL Y SIN FOTO */
+        .stat-card.total,
+        .stat-card.sin-foto {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%) !important;
+            border-left: 5px solid #39A935 !important;
+            border-right: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            box-shadow: 0 4px 15px rgba(57, 169, 53, 0.15) !important;
+            height: 120px !important;
+            width: calc(33.333% - 14px) !important;
+            max-width: calc(33.333% - 14px) !important;
+            min-width: calc(33.333% - 14px) !important;
+            padding: 25px 20px !important;
+            margin: 0 !important;
+            flex: none !important;
+            border-radius: 15px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            transition: all 0.3s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        /* HOVER IDÉNTICO PARA AMBOS */
+        .stat-card.total:hover,
+        .stat-card.sin-foto:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(57, 169, 53, 0.25) !important;
+        }
+
+        /* CON FOTO - DIFERENTE PARA DISTINGUIR */
+        .stat-card.con-foto { 
+            background: linear-gradient(135deg, #E8F8F5 0%, #D1F2EB 100%) !important;
+            border-left: 5px solid #28A745 !important;
+            border-right: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15) !important;
+            height: 120px !important;
+            width: calc(33.333% - 14px) !important;
+            max-width: calc(33.333% - 14px) !important;
+            min-width: calc(33.333% - 14px) !important;
+            padding: 25px 20px !important;
+            margin: 0 !important;
+            flex: none !important;
+        }
+
+        .stat-card.con-foto:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.25) !important;
+        }
 
         .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2E7D32;
-            display: block;
+            font-size: 36px !important;
+            font-weight: 700 !important;
+            color: #2E7D32 !important;
+            display: block !important;
+            margin: 0 0 8px 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            text-align: center !important;
         }
 
         .stat-label {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
+            color: #2E7D32 !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            text-align: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         /* Tabla */
@@ -182,12 +295,12 @@
         }
 
         .table th {
-            background: #F8F9FA;
-            color: #333;
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
             font-weight: 600;
             padding: 15px 12px;
             text-align: left;
-            border-bottom: 2px solid #E0E0E0;
+            border-bottom: 2px solid #2E7D32;
             font-size: 13px;
         }
 
@@ -198,7 +311,7 @@
         }
 
         .table tr:hover {
-            background: #F8F9FA;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
         }
 
         /* Foto en tabla */
@@ -207,25 +320,25 @@
             height: 60px;
             object-fit: cover;
             border-radius: 8px;
-            border: 2px solid #E0E0E0;
+            border: 2px solid #39A935;
         }
 
         .sin-foto {
             width: 50px;
             height: 60px;
-            background: #F0F0F0;
+            background: linear-gradient(135deg, #F0F0F0 0%, #E0E0E0 100%);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #999;
             font-size: 24px;
-            border: 2px dashed #CCC;
+            border: 2px dashed #39A935;
         }
 
         /* Status badges */
         .badge {
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
@@ -233,13 +346,15 @@
         }
 
         .badge.con-foto {
-            background: #D4EDDA;
+            background: linear-gradient(135deg, #D4EDDA 0%, #C3E6CB 100%);
             color: #155724;
+            border: 1px solid #28A745;
         }
 
         .badge.sin-foto {
-            background: #FFF3CD;
+            background: linear-gradient(135deg, #FFF3CD 0%, #FFEAA7 100%);
             color: #856404;
+            border: 1px solid #FFC107;
         }
 
         /* Acciones */
@@ -247,6 +362,7 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         /* Alertas */
@@ -260,77 +376,46 @@
         }
 
         .alert-success {
-            background: #D4EDDA;
+            background: linear-gradient(135deg, #D4EDDA 0%, #C3E6CB 100%);
             color: #155724;
             border-left: 4px solid #28A745;
         }
 
         .alert-error {
-            background: #F8D7DA;
+            background: linear-gradient(135deg, #F8D7DA 0%, #F1AAB0 100%);
             color: #721C24;
             border-left: 4px solid #DC3545;
         }
 
         .alert-info {
-            background: #D1ECF1;
+            background: linear-gradient(135deg, #D1ECF1 0%, #B8DAFF 100%);
             color: #0C5460;
             border-left: 4px solid #17A2B8;
         }
 
-        /* Modal de confirmación */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background: white;
-            margin: 15% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
+        /* Responsive MEJORADO - SIN SUPERPOSICIONES */
+        @media (max-width: 1200px) {
+            .acciones {
+                width: 120px;
+                min-width: 120px;
+                max-width: 120px;
             }
-            to {
-                transform: translateY(0);
-                opacity: 1;
+
+            .btn-carnet, .btn-danger {
+                font-size: 10px;
+                padding: 5px 6px;
+                min-width: 80px;
+                max-width: 110px;
+            }
+
+            .table th:last-child,
+            .table td:last-child {
+                width: 120px;
+                min-width: 120px;
+                max-width: 120px;
             }
         }
 
-        .modal h3 {
-            color: #DC3545;
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-
-        .modal p {
-            color: #666;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .filters-row {
                 grid-template-columns: 1fr;
@@ -341,14 +426,96 @@
                 grid-template-columns: 1fr;
             }
 
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 900px;
+            }
+
             .table th, .table td {
-                padding: 10px 8px;
+                padding: 8px 6px;
                 font-size: 12px;
             }
 
             .acciones {
-                flex-direction: column;
-                gap: 5px;
+                width: 100px;
+                min-width: 100px;
+                max-width: 100px;
+                gap: 3px;
+            }
+
+            .btn-carnet, .btn-danger {
+                font-size: 9px;
+                padding: 4px 5px;
+                min-width: 70px;
+                max-width: 95px;
+            }
+
+            .table th:last-child,
+            .table td:last-child {
+                width: 100px;
+                min-width: 100px;
+                max-width: 100px;
+            }
+
+            .foto-preview, .sin-foto {
+                width: 40px;
+                height: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 10px;
+                margin: 10px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .stats {
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 20px 15px;
+                min-height: 100px;
+            }
+
+            .stat-number {
+                font-size: 28px;
+            }
+
+            .table {
+                min-width: 800px;
+            }
+
+            .table th, .table td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+
+            .acciones {
+                width: 90px;
+                min-width: 90px;
+                max-width: 90px;
+            }
+
+            .btn-carnet, .btn-danger {
+                font-size: 8px;
+                padding: 3px 4px;
+                min-width: 60px;
+                max-width: 85px;
+            }
+
+            .table th:last-child,
+            .table td:last-child {
+                width: 90px;
+                min-width: 90px;
+                max-width: 90px;
             }
         }
 
@@ -385,7 +552,7 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- Filtros y búsqueda -->
+            <!-- Filtros y búsqueda MEJORADOS -->
             <div class="filters">
                 <form method="GET" action="{{ url_for('consultar_aprendices') }}">
                     <div class="filters-row">
@@ -412,11 +579,16 @@
                         <a href="{{ url_for('consultar_aprendices') }}" class="btn btn-secondary">
                             🔄 Limpiar
                         </a>
+                        
+                        <!-- NUEVO: Botón Dashboard movido aquí -->
+                        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-dashboard">
+                            🏠 Dashboard
+                        </a>
                     </div>
                 </form>
             </div>
 
-            <!-- Estadísticas -->
+            <!-- Estadísticas MEJORADAS -->
             <div class="stats">
                 <div class="stat-card total">
                     <span class="stat-number">{{ estadisticas.total }}</span>
@@ -443,7 +615,6 @@
                             <th>Cédula</th>
                             <th>Programa</th>
                             <th>Ficha</th>
-                            <th>Nivel</th>
                             <th>Estado Foto</th>
                             <th>Acciones</th>
                         </tr>
@@ -470,11 +641,6 @@
                             </td>
                             <td>{{ aprendiz.codigo_ficha }}</td>
                             <td>
-                                <span class="badge" style="background: #E3F2FD; color: #1976D2;">
-                                    {{ aprendiz.nivel_formacion }}
-                                </span>
-                            </td>
-                            <td>
                                 {% if aprendiz.foto_existe %}
                                     <span class="badge con-foto">Con Foto</span>
                                 {% else %}
@@ -483,13 +649,21 @@
                             </td>
                             <td>
                                 <div class="acciones">
+                                    <!-- NUEVO: Botón Ver Carnet ANTES de Eliminar Foto -->
                                     {% if aprendiz.foto_existe %}
+                                        <form method="POST" action="{{ url_for('generar_carnet_web') }}" style="display: inline;">
+                                            <input type="hidden" name="cedula" value="{{ aprendiz.cedula }}">
+                                            <button type="submit" class="btn btn-carnet" title="Ver carnet">
+                                                🎴 Ver Carnet
+                                            </button>
+                                        </form>
+                                        
                                         <button onclick="confirmarEliminacion('{{ aprendiz.nombre }}', '{{ aprendiz.cedula }}')" 
                                                 class="btn btn-danger" title="Eliminar foto">
                                             🗑️ Eliminar Foto
                                         </button>
                                     {% else %}
-                                        <span style="color: #999; font-size: 12px;">Sin foto para eliminar</span>
+                                        <span style="color: #999; font-size: 12px;">Sin foto disponible</span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -508,27 +682,6 @@
                 </a>
             </div>
             {% endif %}
-
-            <!-- Botones de navegación -->
-            <div style="margin-top: 30px; text-align: center;">
-                <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary">
-                    ⬅️ Volver al Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmación -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <h3>⚠️ Confirmar Eliminación</h3>
-            <p id="confirmMessage">¿Estás seguro de que deseas eliminar la foto?</p>
-            <div class="modal-actions">
-                <button onclick="cerrarModal()" class="btn btn-secondary">Cancelar</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">🗑️ Eliminar Foto</button>
-                </form>
-            </div>
         </div>
     </div>
 
@@ -561,18 +714,6 @@
         });
     }
     
-    function cerrarModal() {
-        document.getElementById('confirmModal').style.display = 'none';
-    }
-    
-    // Cerrar modal al hacer click fuera
-    window.onclick = function(event) {
-        const modal = document.getElementById('confirmModal');
-        if (event.target === modal) {
-            cerrarModal();
-        }
-    }
-    
     // Auto-hide alerts después de 5 segundos
     setTimeout(() => {
         document.querySelectorAll('.alert').forEach(alert => {
@@ -581,6 +722,6 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
-    </script>
+</script>
 </body>
 </html>
