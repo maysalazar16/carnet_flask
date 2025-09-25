@@ -12,6 +12,9 @@ import tempfile
 import openpyxl
 from werkzeug.utils import secure_filename
 import sqlite3
+import shutil
+import json
+import time
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_segura'
@@ -26,6 +29,9 @@ os.makedirs("static/qr", exist_ok=True)
 os.makedirs("static/carnets", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("templates", exist_ok=True)
+os.makedirs("static/fotos_backup", exist_ok=True)
+os.makedirs("static/fotos_backup/por_fecha", exist_ok=True)
+os.makedirs("static/fotos_backup/metadatos", exist_ok=True)
 
 # Crear base de datos
 crear_base_datos()
@@ -445,7 +451,198 @@ def procesar_foto_aprendiz_fallback(archivo_foto, cedula):
         return False, None, f"Error procesando foto: {str(e)}"
 
 # =============================================
-# FUNCIÓN MEJORADA PARA CARGAR EXCEL SENA
+# FUNCIONES DE BACKUP DE FOTOS
+# =============================================
+
+def crear_carpetas_backup():
+    """Crear carpetas de respaldo para fotos"""
+    carpetas_backup = [
+        "static/fotos_backup",
+        "static/fotos_backup/por_fecha", 
+        "static/fotos_backup/metadatos"
+    ]
+    
+    for carpeta in carpetas_backup:
+        if not os.path.exists(carpeta):
+            os.makedirs(carpeta, exist_ok=True)
+            print(f"Carpeta de backup creada: {carpeta}")
+
+def crear_backup_foto(archivo_foto_path, cedula, usuario_tipo="admin", metadatos_extra=None):
+    """
+    Crea una copia de respaldo de la foto con metadatos
+    
+    Args:
+        archivo_foto_path (str): Ruta del archivo foto original
+        cedula (str): Cédula del aprendiz
+        usuario_tipo (str): Tipo de usuario que subió ('admin' o 'aprendiz')
+        metadatos_extra (dict): Datos adicionales a guardar
+    """
+    try:
+        if not os.path.exists(archivo_foto_path):
+            print(f"Archivo no encontrado para backup: {archivo_foto_path}")
+            return False
+        
+        # Generar timestamp único
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        fecha_carpeta = datetime.now().strftime("%Y-%m")
+        
+        # Crear carpeta por fecha si no existe
+        backup_fecha_dir = f"static/fotos_backup/por_fecha/{fecha_carpeta}"
+        os.makedirs(backup_fecha_dir, exist_ok=True)
+        
+        # Generar nombre único para el backup
+        extension = os.path.splitext(archivo_foto_path)[1]
+        nombre_backup = f"backup_{cedula}_{timestamp}{extension}"
+        ruta_backup = os.path.join(backup_fecha_dir, nombre_backup)
+        
+        # Copiar archivo
+        shutil.copy2(archivo_foto_path, ruta_backup)
+        
+        # Crear metadatos
+        metadatos = {
+            "cedula": cedula,
+            "timestamp": timestamp,
+            "fecha_backup": datetime.now().isoformat(),
+            "archivo_original": archivo_foto_path,
+            "archivo_backup": ruta_backup,
+            "usuario_tipo": usuario_tipo,
+            "tamano_bytes": os.path.getsize(archivo_foto_path)
+        }
+        
+        if metadatos_extra:
+            metadatos.update(metadatos_extra)
+        
+        # Guardar metadatos
+        metadatos_file = f"static/fotos_backup/metadatos/backup_{cedula}_{timestamp}.json"
+        with open(metadatos_file, 'w', encoding='utf-8') as f:
+            json.dump(metadatos, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Backup creado: {nombre_backup}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error creando backup: {e}")
+        return False
+
+def procesar_foto_aprendiz_con_backup(archivo_foto, cedula):
+    """Versión modificada que incluye backup automático"""
+    try:
+        # Procesar foto normalmente
+        exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula)
+        
+        if exito:
+            # Crear backup de la foto procesada
+            ruta_foto_principal = os.path.join('static/fotos', nombre_archivo_foto)
+            
+            # Obtener datos del aprendiz para metadatos
+            aprendiz = buscar_empleado_completo(cedula)
+            metadatos_extra = {
+                "nombre_aprendiz": aprendiz.get('nombre', 'N/A') if aprendiz else 'N/A',
+                "programa": aprendiz.get('nombre_programa', 'N/A') if aprendiz else 'N/A',
+                "codigo_ficha": aprendiz.get('codigo_ficha', 'N/A') if aprendiz else 'N/A'
+            }
+            
+            # Crear backup
+            backup_exitoso = crear_backup_foto(
+                ruta_foto_principal, 
+                cedula, 
+                usuario_tipo="aprendiz",
+                metadatos_extra=metadatos_extra
+            )
+            
+            if backup_exitoso:
+                mensaje += " (Copia de respaldo creada)"
+            
+        return exito, nombre_archivo_foto, mensaje
+        
+    except Exception as e:
+        # Si falla el backup, usar la función original
+        return procesar_foto_aprendiz_fallback(archivo_foto, cedula)
+
+def procesar_foto_admin_con_backup(archivo_foto, cedula):
+    """Función para cuando el admin sube fotos (también con backup)"""
+    try:
+        # Procesar foto normalmente
+        exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula)
+        
+        if exito:
+            # Crear backup
+            ruta_foto_principal = os.path.join('static/fotos', nombre_archivo_foto)
+            
+            aprendiz = buscar_empleado_completo(cedula)
+            metadatos_extra = {
+                "nombre_aprendiz": aprendiz.get('nombre', 'N/A') if aprendiz else 'N/A',
+                "programa": aprendiz.get('nombre_programa', 'N/A') if aprendiz else 'N/A',
+                "subida_por": "admin"
+            }
+            
+            crear_backup_foto(
+                ruta_foto_principal, 
+                cedula, 
+                usuario_tipo="admin",
+                metadatos_extra=metadatos_extra
+            )
+            
+        return exito, nombre_archivo_foto, mensaje
+        
+    except Exception as e:
+        return procesar_foto_aprendiz_fallback(archivo_foto, cedula)
+
+# =============================================
+# NUEVA FUNCIÓN PARA VERIFICAR DUPLICADOS
+# =============================================
+
+def verificar_datos_duplicados(cedulas_excel, porcentaje_minimo=80):
+    """
+    Verifica si los datos del Excel ya están cargados en la base de datos
+    Retorna True si más del porcentaje_minimo de las cédulas ya existen
+    """
+    try:
+        if not cedulas_excel:
+            return False, 0, 0
+            
+        conn = sqlite3.connect('carnet.db')
+        cursor = conn.cursor()
+        
+        # Convertir cédulas a lista para consulta SQL
+        cedulas_limpias = []
+        for cedula in cedulas_excel:
+            cedula_limpia = ''.join(filter(str.isdigit, str(cedula))) if cedula else ''
+            if cedula_limpia and len(cedula_limpia) >= 7:
+                cedulas_limpias.append(cedula_limpia)
+        
+        if not cedulas_limpias:
+            conn.close()
+            return False, 0, 0
+        
+        # Buscar cédulas existentes en la base de datos
+        placeholders = ','.join(['?' for _ in cedulas_limpias])
+        cursor.execute(f"SELECT cedula FROM empleados WHERE cedula IN ({placeholders})", cedulas_limpias)
+        cedulas_existentes = [row[0] for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        # Calcular porcentaje de coincidencias
+        total_cedulas = len(cedulas_limpias)
+        cedulas_encontradas = len(cedulas_existentes)
+        porcentaje_coincidencia = (cedulas_encontradas / total_cedulas) * 100 if total_cedulas > 0 else 0
+        
+        print(f"📊 Verificación duplicados:")
+        print(f"   - Total cédulas en Excel: {total_cedulas}")
+        print(f"   - Cédulas ya existentes: {cedulas_encontradas}")
+        print(f"   - Porcentaje coincidencia: {porcentaje_coincidencia:.1f}%")
+        
+        # Si más del porcentaje_minimo ya existe, consideramos que está duplicado
+        es_duplicado = porcentaje_coincidencia >= porcentaje_minimo
+        
+        return es_duplicado, cedulas_encontradas, total_cedulas
+        
+    except Exception as e:
+        print(f"Error verificando duplicados: {e}")
+        return False, 0, 0
+
+# =============================================
+# FUNCIÓN MEJORADA PARA CARGAR EXCEL SENA (CON VERIFICACIÓN DE DUPLICADOS)
 # =============================================
 
 def cargar_excel_sena_mejorado(file):
@@ -497,6 +694,34 @@ def cargar_excel_sena_mejorado(file):
                 'success': False, 
                 'message': f'Faltan columnas requeridas: {", ".join(missing_columns)}'
             }
+        
+        # 🆕 NUEVA VERIFICACIÓN DE DUPLICADOS
+        print("🔍 Verificando si los datos ya están cargados...")
+        
+        # Extraer todas las cédulas del Excel para verificación
+        cedulas_excel = []
+        for row_idx, row in enumerate(rows[1:], start=2):
+            if not any(row):
+                continue
+            numero_documento = str(row[column_map.get('Número de documento', '')]).strip() if row[column_map.get('Número de documento', '')] else ''
+            if numero_documento and numero_documento != 'None':
+                cedulas_excel.append(numero_documento)
+        
+        # Verificar duplicados
+        es_duplicado, coincidencias, total = verificar_datos_duplicados(cedulas_excel, porcentaje_minimo=80)
+        
+        if es_duplicado:
+            os.unlink(temp_file_path)
+            return {
+                'success': False,
+                'message': f'⚠️ Base de datos duplicada detectada. {coincidencias} de {total} aprendices ({((coincidencias/total)*100):.1f}%) ya están registrados en el sistema. Si necesitas actualizar datos específicos, elimina los registros duplicados primero o usa una plantilla con solo los datos nuevos.',
+                'duplicado': True,
+                'coincidencias': coincidencias,
+                'total': total
+            }
+        
+        # Si llegamos aquí, continuar con el procesamiento normal...
+        print("✅ Verificación pasada, continuando con la carga...")
         
         # Procesar datos
         conn = sqlite3.connect('carnet.db')
@@ -822,17 +1047,13 @@ def agregar():
             
             print(f"CÓDIGO GENERADO: {codigo}")
             
-            # MANEJAR FOTO OBLIGATORIA CON PROCESAMIENTO AUTOMÁTICO
+            # MANEJAR FOTO OBLIGATORIA CON PROCESAMIENTO AUTOMÁTICO Y BACKUP
             archivo_foto = request.files.get('foto')
             nombre_archivo_foto = None
             
             if archivo_foto and archivo_foto.filename != '':
-                # Intentar procesamiento automático
-                try:
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula)
-                except:
-                    # Si falla, usar función de respaldo
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, cedula)
+                # Usar función con backup para admin
+                exito, nombre_archivo_foto, mensaje = procesar_foto_admin_con_backup(archivo_foto, cedula)
                 
                 if not exito:
                     flash(f"Error procesando la foto: {mensaje}", 'error')
@@ -961,15 +1182,11 @@ def agregar_empleado():
                 'nivel_formacion': nivel_formacion
             }
             
-            # Manejar foto
+            # Manejar foto con backup
             archivo_foto = request.files.get('foto')
             if archivo_foto and archivo_foto.filename != '':
-                # Intentar procesamiento automático
-                try:
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, numero_documento)
-                except:
-                    # Si falla, usar función de respaldo
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, numero_documento)
+                # Usar función con backup para admin
+                exito, nombre_archivo_foto, mensaje = procesar_foto_admin_con_backup(archivo_foto, numero_documento)
                 
                 if exito:
                     datos['foto'] = nombre_archivo_foto
@@ -1036,10 +1253,8 @@ def registro_aprendiz():
 
         archivo_foto = request.files['foto']
         if archivo_foto and archivo_foto.filename != '':
-            try:
-                exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula)
-            except:
-                exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, cedula)
+            # Usar función con backup para aprendiz
+            exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_con_backup(archivo_foto, cedula)
             
             if exito:
                 datos['foto'] = nombre_archivo_foto
@@ -1263,45 +1478,6 @@ def descargar_plantilla():
         flash(f'Error al generar la plantilla: {str(e)}', 'error')
         return redirect(url_for('dashboard_admin'))
 
-@app.route('/descargar_plantilla_vacia')
-def descargar_plantilla_vacia():
-    """Genera una plantilla vacía solo con cabeceras para importar nuevos datos"""
-    if 'usuario' not in session or session['rol'] != 'admin':
-        return redirect(url_for('login'))
-    
-    try:
-        # Crear plantilla solo con cabeceras y una fila de ejemplo
-        data = {
-            'NIS': ['Ejemplo: 12345678901'],
-            'Primer Apellido': ['Ejemplo: PEREZ'],
-            'Segundo Apellido': ['Ejemplo: LOPEZ'],
-            'Nombre': ['Ejemplo: JUAN CARLOS'],
-            'Tipo de documento': ['CC, TI, CE, PEP, PPT'],
-            'Número de documento': ['Ejemplo: 12345678'],
-            'Tipo de Sangre': ['O+, O-, A+, A-, B+, B-, AB+, AB-'],
-            'Nombre del Programa': ['Ejemplo: Análisis y Desarrollo de Sistemas'],
-            'Nivel de Formación': ['Técnico o Tecnólogo'],
-            'Código de Ficha': ['Ejemplo: 2024001'],
-            'Centro': ['Centro de Biotecnología Industrial'],
-            'Red Tecnologica': ['Ejemplo: Tecnologías de Producción Industrial'],
-            'Fecha Finalización del Programa': ['Formato: DD/MM/AAAA']
-        }
-        
-        df = pd.DataFrame(data)
-        
-        # Crear archivo temporal
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
-            df.to_excel(temp_file.name, index=False, sheet_name='Nueva Importación')
-            temp_file_path = temp_file.name
-        
-        flash('Plantilla vacía descargada. Elimina la fila de ejemplo antes de cargar datos.', 'info')
-        return send_file(temp_file_path, as_attachment=True, download_name='plantilla_vacia_sena.xlsx')
-        
-    except Exception as e:
-        print(f"Error generando plantilla vacía: {e}")
-        flash(f'Error al generar la plantilla vacía: {str(e)}', 'error')
-        return redirect(url_for('dashboard_admin'))
-
 @app.route('/cargar_plantilla', methods=['GET', 'POST'])
 def cargar_plantilla():
     """Ruta MEJORADA para cargar empleados desde archivo Excel SENA"""
@@ -1327,7 +1503,7 @@ def cargar_plantilla():
             
             print(f"🔄 Procesando archivo SENA: {file.filename}")
             
-            # USAR LA NUEVA FUNCIÓN MEJORADA PARA EXCEL SENA
+            # USAR LA NUEVA FUNCIÓN MEJORADA PARA EXCEL SENA (CON VERIFICACIÓN DE DUPLICADOS)
             resultado = cargar_excel_sena_mejorado(file)
             
             print(f"✅ Resultado de carga: {resultado}")
@@ -1404,11 +1580,8 @@ def actualizar_foto_rapido():
         # Limpiar cédula
         cedula_limpia = ''.join(filter(str.isdigit, cedula))
         
-        # Procesar foto
-        try:
-            exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula_limpia)
-        except:
-            exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, cedula_limpia)
+        # Procesar foto con backup
+        exito, nombre_archivo_foto, mensaje = procesar_foto_admin_con_backup(archivo_foto, cedula_limpia)
         
         if not exito:
             return jsonify({'success': False, 'message': f'Error procesando foto: {mensaje}'})
@@ -1428,7 +1601,7 @@ def actualizar_foto_rapido():
         
         return jsonify({
             'success': True, 
-            'message': 'Foto actualizada exitosamente',
+            'message': 'Foto actualizada exitosamente (con backup automático)',
             'foto_url': f'/static/fotos/{nombre_archivo_foto}'
         })
         
@@ -1511,17 +1684,14 @@ def cargar_foto_aprendiz():
                 flash('Debes seleccionar una foto para procesar.', 'error')
                 return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
             
-            # PROCESAR LA FOTO AUTOMÁTICAMENTE (3x4, fondo blanco, tamaño carnet)
-            try:
-                exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, aprendiz_cedula)
-            except:
-                exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, aprendiz_cedula)
+            # PROCESAR LA FOTO AUTOMÁTICAMENTE CON BACKUP (3x4, fondo blanco, tamaño carnet)
+            exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_con_backup(archivo_foto, aprendiz_cedula)
             
             if not exito:
                 flash(f'Error procesando la foto: {mensaje}', 'error')
                 return render_template('cargar_foto_aprendiz.html', aprendiz=aprendiz_datos)
             
-            print(f"Foto procesada automáticamente: {nombre_archivo_foto}")
+            print(f"Foto procesada automáticamente con backup: {nombre_archivo_foto}")
             
             # Actualizar datos del aprendiz con la nueva foto en la base de datos
             conn = sqlite3.connect('carnet.db')
@@ -1536,7 +1706,7 @@ def cargar_foto_aprendiz():
             session.pop('aprendiz_datos', None)
             
             # CAMBIO PRINCIPAL: Solo mostrar mensaje de éxito, NO generar carnet
-            flash('Foto subida exitosamente! Tu foto ha sido procesada y guardada. El administrador generará tu carnet pronto.', 'success')
+            flash('Foto subida exitosamente! Tu foto ha sido procesada y guardada con copia de respaldo. El administrador generará tu carnet pronto.', 'success')
             flash('Tu foto se procesó automáticamente con las especificaciones correctas (3x4, fondo blanco).', 'info')
             flash('Espera a que el administrador genere tu carnet. Te notificaremos cuando esté listo.', 'info')
             
@@ -1669,10 +1839,8 @@ def gestionar_fotos():
         archivo_foto = request.files.get('foto')
         if archivo_foto and archivo_foto.filename != '':
             try:
-                try:
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz(archivo_foto, cedula_limpia)
-                except:
-                    exito, nombre_archivo_foto, mensaje = procesar_foto_aprendiz_fallback(archivo_foto, cedula_limpia)
+                # Usar función con backup para admin
+                exito, nombre_archivo_foto, mensaje = procesar_foto_admin_con_backup(archivo_foto, cedula_limpia)
                 
                 if exito:
                     # Actualizar base de datos
@@ -1683,7 +1851,7 @@ def gestionar_fotos():
                     conn.commit()
                     conn.close()
                     
-                    flash(f'Foto actualizada exitosamente para {aprendiz["nombre"]}', 'success')
+                    flash(f'Foto actualizada exitosamente para {aprendiz["nombre"]} (con backup automático)', 'success')
                     
                     # Actualizar datos del aprendiz para mostrar la nueva foto
                     aprendiz['foto'] = nombre_archivo_foto
@@ -1751,7 +1919,7 @@ def eliminar_foto_por_cedula(cedula):
         conn.commit()
         conn.close()
         
-        mensaje = f'Foto eliminada exitosamente para {nombre_aprendiz}'
+        mensaje = f'Foto eliminada exitosamente para {nombre_aprendiz}. Las copias de respaldo se mantienen intactas.'
         if archivos_eliminados > 1:
             mensaje += f' ({archivos_eliminados} archivos eliminados)'
         
@@ -1796,13 +1964,144 @@ def eliminar_foto_aprendiz(aprendiz_id):
         conn.commit()
         conn.close()
         
-        flash(f'Foto eliminada exitosamente para {nombre_aprendiz}. El aprendiz puede subir una nueva foto.', 'success')
+        flash(f'Foto eliminada exitosamente para {nombre_aprendiz}. Las copias de respaldo se mantienen intactas. El aprendiz puede subir una nueva foto.', 'success')
         
     except Exception as e:
         print(f"Error al eliminar foto: {e}")
         flash('Error al eliminar la foto. Intenta nuevamente.', 'error')
     
     return redirect(url_for('consultar_aprendices'))
+
+# =============================================
+# RUTAS PARA GESTIÓN DE BACKUPS DE FOTOS
+# =============================================
+
+@app.route('/admin/backups_fotos')
+def gestionar_backups_fotos():
+    """Ruta para que el admin vea y gestione los backups de fotos"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        flash('Acceso denegado. Solo administradores.', 'error')
+        return redirect(url_for('login'))
+    
+    try:
+        backups = []
+        metadatos_dir = "static/fotos_backup/metadatos"
+        
+        if os.path.exists(metadatos_dir):
+            for archivo_meta in os.listdir(metadatos_dir):
+                if archivo_meta.endswith('.json'):
+                    try:
+                        with open(os.path.join(metadatos_dir, archivo_meta), 'r', encoding='utf-8') as f:
+                            metadatos = json.load(f)
+                            
+                        # Verificar si el archivo de backup existe
+                        metadatos['backup_existe'] = os.path.exists(metadatos['archivo_backup'])
+                        
+                        # Verificar si el archivo original existe
+                        metadatos['original_existe'] = os.path.exists(metadatos['archivo_original'])
+                        
+                        # Formatear fecha para mostrar
+                        fecha_obj = datetime.fromisoformat(metadatos['fecha_backup'])
+                        metadatos['fecha_legible'] = fecha_obj.strftime("%d/%m/%Y %H:%M:%S")
+                        
+                        backups.append(metadatos)
+                        
+                    except Exception as e:
+                        print(f"Error leyendo metadatos {archivo_meta}: {e}")
+        
+        # Ordenar por fecha más reciente
+        backups.sort(key=lambda x: x['fecha_backup'], reverse=True)
+        
+        # Estadísticas
+        total_backups = len(backups)
+        backups_validos = len([b for b in backups if b['backup_existe']])
+        por_aprendiz = len([b for b in backups if b['usuario_tipo'] == 'aprendiz'])
+        por_admin = len([b for b in backups if b['usuario_tipo'] == 'admin'])
+        
+        estadisticas = {
+            'total_backups': total_backups,
+            'backups_validos': backups_validos,
+            'por_aprendiz': por_aprendiz,
+            'por_admin': por_admin,
+            'huerfanos': total_backups - backups_validos
+        }
+        
+        return render_template('admin_backups_fotos.html', 
+                             backups=backups, 
+                             stats=estadisticas)
+                             
+    except Exception as e:
+        print(f"Error gestionando backups: {e}")
+        flash('Error al cargar los backups de fotos.', 'error')
+        return redirect(url_for('dashboard_admin'))
+
+@app.route('/admin/descargar_backup_foto/<path:ruta_backup>')
+def descargar_backup_foto(ruta_backup):
+    """Descargar una foto de backup específica"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        # Validar que la ruta esté dentro del directorio de backup
+        if not ruta_backup.startswith('static/fotos_backup/'):
+            flash('Ruta no válida.', 'error')
+            return redirect(url_for('gestionar_backups_fotos'))
+        
+        if os.path.exists(ruta_backup):
+            directory, filename = os.path.split(ruta_backup)
+            return send_from_directory(directory, filename, as_attachment=True)
+        else:
+            flash('Archivo de backup no encontrado.', 'error')
+            return redirect(url_for('gestionar_backups_fotos'))
+            
+    except Exception as e:
+        print(f"Error descargando backup: {e}")
+        flash('Error al descargar el backup.', 'error')
+        return redirect(url_for('gestionar_backups_fotos'))
+
+@app.route('/admin/limpiar_backups_antiguos')
+def limpiar_backups_antiguos():
+    """Limpiar backups de más de 6 meses"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        eliminados = 0
+        fecha_limite = datetime.now() - timedelta(days=180)  # 6 meses
+        
+        metadatos_dir = "static/fotos_backup/metadatos"
+        
+        if os.path.exists(metadatos_dir):
+            for archivo_meta in os.listdir(metadatos_dir):
+                if archivo_meta.endswith('.json'):
+                    try:
+                        with open(os.path.join(metadatos_dir, archivo_meta), 'r', encoding='utf-8') as f:
+                            metadatos = json.load(f)
+                        
+                        fecha_backup = datetime.fromisoformat(metadatos['fecha_backup'])
+                        
+                        if fecha_backup < fecha_limite:
+                            # Eliminar archivo de backup
+                            if os.path.exists(metadatos['archivo_backup']):
+                                os.remove(metadatos['archivo_backup'])
+                            
+                            # Eliminar metadatos
+                            os.remove(os.path.join(metadatos_dir, archivo_meta))
+                            eliminados += 1
+                            
+                    except Exception as e:
+                        print(f"Error procesando {archivo_meta}: {e}")
+        
+        if eliminados > 0:
+            flash(f'Se eliminaron {eliminados} backups antiguos (más de 6 meses).', 'success')
+        else:
+            flash('No hay backups antiguos para eliminar.', 'info')
+            
+    except Exception as e:
+        print(f"Error limpiando backups: {e}")
+        flash('Error al limpiar backups antiguos.', 'error')
+    
+    return redirect(url_for('gestionar_backups_fotos'))
 
 # =============================================
 # RUTAS ADICIONALES Y COMPATIBILIDAD
@@ -2445,7 +2744,6 @@ def allowed_file(filename):
 def limpiar_archivos_temporales():
     """Limpia archivos temporales antiguos"""
     try:
-        import tempfile
         temp_dir = tempfile.gettempdir()
         
         # Buscar archivos temporales de la aplicación
@@ -2498,7 +2796,11 @@ def verificar_directorios():
         "static/qr", 
         "static/carnets",
         "uploads",
-        "templates"
+        "templates",
+        # DIRECTORIOS DE BACKUP
+        "static/fotos_backup",
+        "static/fotos_backup/por_fecha",
+        "static/fotos_backup/metadatos"
     ]
     
     for directorio in directorios:
@@ -2519,6 +2821,7 @@ def mostrar_estadisticas_inicio():
         print(f"📅 Registrados hoy: {stats['registrados_hoy']}")
         print(f"📈 Esta semana: {stats['esta_semana']}")
         print("=" * 50)
+        print("💾 Sistema de backup de fotos: ACTIVADO")
         print("🔗 Aplicación lista en: http://localhost:5000")
         print("=" * 50)
         
@@ -2532,8 +2835,11 @@ def mostrar_estadisticas_inicio():
 # Ejecutar funciones de inicialización
 print("🚀 Iniciando Sistema de Carnetización SENA...")
 
-# Verificar directorios
+# Verificar directorios (incluye los de backup)
 verificar_directorios()
+
+# Crear carpetas específicas de backup
+crear_carpetas_backup()
 
 # Actualizar base de datos
 print("🔧 Verificando base de datos...")
@@ -2547,5 +2853,6 @@ limpiar_archivos_temporales()
 mostrar_estadisticas_inicio()
 
 if __name__ == "__main__":
-    print("🌟 Servidor Flask iniciado")
+    print("🌟 Servidor Flask iniciado con sistema de backup automático")
+    print("💾 Las fotos se respaldan automáticamente en static/fotos_backup/")
     app.run(debug=True, host="0.0.0.0", port=5000)
