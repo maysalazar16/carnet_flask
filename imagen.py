@@ -11,25 +11,25 @@ def generar_carnet(empleado, ruta_qr):
 
     # Cargar fuentes PRIMERO (antes de usarlas)
     try:
-        font_nombre = ImageFont.truetype("arial.ttf", 42)
-        font_cedula = ImageFont.truetype("arial.ttf", 32)
-        font_rh_label = ImageFont.truetype("arial.ttf", 28)
-        font_rh_tipo = ImageFont.truetype("arial.ttf", 85)
-        font_footer = ImageFont.truetype("arial.ttf", 28)
+        font_nombre = ImageFont.truetype("arial.ttf", 42)                    # Nombre: ARIAL (igual)
+        font_cedula = ImageFont.truetype("calibri.ttf", 32)                  # CC: SANS-SERIF (Calibri)
+        font_rh_label = ImageFont.truetype("trebuc.ttf", 28)                 # Rh: TREBUCHET MS
+        font_rh_tipo = ImageFont.truetype("trebuc.ttf", 85)                  # Tipo sangre: TREBUCHET MS
+        font_footer = ImageFont.truetype("arial.ttf", 28)                    # Regional: ARIAL (igual)
         font_vertical = ImageFont.truetype("arial.ttf", 25)
         font_vertical_bold = ImageFont.truetype("arialbd.ttf", 35)
         font_logo = ImageFont.truetype("arial.ttf", 36)
     except:
         font_nombre = font_cedula = font_rh_label = font_rh_tipo = font_footer = font_vertical = font_vertical_bold = font_logo = ImageFont.load_default()
 
-    # Cargar imagen del logo SENA EXTRA GRANDE
+    # Cargar imagen del logo SENA - MÁS PEQUEÑO
     ruta_logo = os.path.join("static", "fotos", "logo_sena.png")
     try:
         logo = Image.open(ruta_logo).convert("RGBA")
-        logo = logo.resize((260, 250))
-        img.paste(logo, (50, 58), logo)
+        logo = logo.resize((130, 140))  # Logo más pequeño (antes era 260x250)
+        img.paste(logo, (65, 75), logo)
     except:
-        draw.text((15, 15), "SENA", fill=(0, 128, 0), font=font_logo)
+        draw.text((40, 75), "SENA", fill=(0, 128, 0), font=font_logo)
 
     # ========== SECCIÓN DE LA FOTO ==========
     foto_encontrada = False
@@ -80,25 +80,21 @@ def generar_carnet(empleado, ruta_qr):
             font_placeholder = ImageFont.load_default()
         draw_placeholder.text((60, 120), "SIN FOTO", fill=(150, 150, 150), font=font_placeholder)
     
-    foto = foto.resize((220, 270))
-    img.paste(foto, (360, 40))
+    foto = foto.resize((220, 260))
+    img.paste(foto, (399, 40)) #posicionamiento a la derecha 
 
-    # Texto "INSTRUCTOR/APRENDIZ" vertical
-    cargo_texto = empleado['cargo'].upper()
-    cargo_img = Image.new("RGBA", (250, 90), (255, 255, 255, 0))
-    draw_cargo = ImageDraw.Draw(cargo_img)
-    
+    # Texto "APRENDIZ" HORIZONTAL debajo del logo, SOBRE la línea verde - EN COLOR NEGRO Y NEGRILLA
+    cargo_texto = empleado.get('cargo', 'APRENDIZ').upper()
     try:
-        fuente_cargo = font_vertical_bold
+        font_aprendiz = ImageFont.truetype("arialbd.ttf", 26)  # NEGRILLA
     except:
-        fuente_cargo = font_vertical
+        font_aprendiz = ImageFont.load_default()
     
-    draw_cargo.text((0, 15), cargo_texto, font=fuente_cargo, fill=(45, 0, 0))
-    cargo_img = cargo_img.rotate(90, expand=True)
-    img.paste(cargo_img, (585, 50), cargo_img)
+    # Colocar APRENDIZ debajo del logo más pequeño, sobre la línea verde
+    draw.text((40, 270), cargo_texto, fill=(0, 0, 0), font=font_aprendiz)
 
-    # Línea verde horizontal
-    draw.line((15, 330, 620, 330), fill=(0, 128, 0), width=5)
+    # Línea verde horizontal - CON GROSOR PERO SIN TOCAR LOS BORDES
+    draw.line((40, 310, 624, 310), fill=(0, 128, 0), width=7)  # width aumenta el grosor de la linea verde 
 
     # NOMBRES
     nombre_completo = empleado['nombre'].upper()
@@ -106,38 +102,43 @@ def generar_carnet(empleado, ruta_qr):
         partes = nombre_completo.split()
         linea1 = " ".join(partes[:2])
         linea2 = " ".join(partes[2:])
-        draw.text((15, 345), linea1, fill=(0, 128, 0), font=font_nombre)
+        draw.text((40, 325 + 20 ), linea1, fill=(0, 128, 0), font=font_nombre)
         if linea2:
-            draw.text((15, 395), linea2, fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = 455
+            draw.text((40, 375 + 20), linea2, fill=(0, 128, 0), font=font_nombre)
+        siguiente_y = 435
     else:
-        draw.text((15, 345), nombre_completo, fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = 395
+        draw.text((15, 325), nombre_completo, fill=(0, 128, 0), font=font_nombre)
+        siguiente_y = 375
 
-    # CÉDULA
+   
+    # CÉDULA CON TIPO DE DOCUMENTO (TI, CC, etc.)
+    tipo_doc = empleado.get('tipo_documento', 'CC')
     cedula_formateada = "{:,}".format(int(empleado['cedula'])).replace(",", ".")
-    draw.text((15, siguiente_y), cedula_formateada, fill=(100, 100, 100), font=font_cedula)
+    texto_completo_cedula = f"{tipo_doc}. {cedula_formateada}"
+    draw.text((40, siguiente_y + 50), texto_completo_cedula, fill=(0, 0, 0), font=font_cedula)
 
     # RH y TIPO DE SANGRE
     rh_y = siguiente_y + 140
-    draw.text((90, rh_y), "RH", fill=(0, 0, 0), font=font_rh_label)
     tipo_sangre = empleado['tipo_sangre'].upper()
-    draw.text((20, rh_y + 90), tipo_sangre, fill=(100, 100, 100), font=font_rh_tipo)
+    texto_rh_completo = f"Rh {tipo_sangre}"
+    draw.text((40, rh_y-40), texto_rh_completo, fill=(0, 0, 0), font=font_rh_label)
 
     # CÓDIGO QR
     try:
         qr = Image.open(ruta_qr).convert("RGB")
         qr = qr.resize((370, 370))
-        img.paste(qr, (260, 480))
+        img.paste(qr, (260, 470))
     except:
         draw.rectangle([(320, 430), (620, 730)], outline=(0, 0, 0), width=2)
         draw.text((420, 570), "QR CODE", fill=(0, 0, 0), font=font_footer)
 
-    # INFORMACIÓN REGIONAL
+    # LÍNEA VERDE ANTES DEL FOOTER (igual que la de arriba)
+    draw.line((40, 900, 100, 900), fill=(0, 100, 0), width=7)
+    
+    # INFORMACIÓN REGIONAL - TODO EN VERDE Y EN DOS LÍNEAS
     footer_y = 870
-    draw.text((15, footer_y), "Regional Valle", fill=(100, 100, 100), font=font_footer)
-    draw.text((15, footer_y + 50), "Centro de Biotecnología", fill=(0, 128, 0), font=font_footer)
-    draw.text((15, footer_y + 100), "Industrial", fill=(0, 128, 0), font=font_footer)
+    draw.text((40, footer_y + 50), "Regional Valle del Cauca", fill=(0, 128, 0), font=font_footer)
+    draw.text((40, footer_y + 90), "Centro de Biotecnología Industrial", fill=(0, 100, 0), font=font_footer)
 
     # Guardar anverso
     ruta_anverso = os.path.join("static", "carnets", f"carnet_{empleado['cedula']}.png")
@@ -154,118 +155,141 @@ def generar_carnet(empleado, ruta_qr):
     draw_reverso = ImageDraw.Draw(reverso)
 
     try:
-        font_reverso = ImageFont.truetype("arial.ttf", 19)
+        font_reverso = ImageFont.truetype("cambria.ttf", 28)  # LETRA GRANDE
         font_programa = ImageFont.truetype("arialbd.ttf", 18)
         font_fecha = ImageFont.truetype("arial.ttf", 16)
     except:
-        font_reverso = font_programa = font_fecha = ImageFont.load_default()
+        try:
+            font_reverso = ImageFont.truetype("arial.ttf", 28)
+            font_programa = ImageFont.truetype("arialbd.ttf", 18)
+            font_fecha = ImageFont.truetype("arial.ttf", 16)
+        except:
+            font_reverso = font_programa = font_fecha = ImageFont.load_default()
 
-    # CUADRO PRINCIPAL
-    cuadro_x, cuadro_y = 40, 80
+    # CUADRO PRINCIPAL (solo variables)
+    cuadro_x, cuadro_y = 40, 50
     cuadro_ancho, cuadro_alto = 560, 400
-    draw_reverso.rectangle([(cuadro_x, cuadro_y), (cuadro_x + cuadro_ancho, cuadro_y + cuadro_alto)], 
-                          outline=(0, 0, 0), width=3)
 
-    # PRIMER TEXTO
-    texto1_y = cuadro_y + 10
+    # MÁRGENES IGUALES A IZQUIERDA Y DERECHA
+    margen_izquierdo = 40
+    margen_derecho = 40
+    ancho_texto_disponible = ancho - margen_izquierdo - margen_derecho
+
+    # PRIMER TEXTO - LETRA GRANDE
+    texto1_y = cuadro_y + 30
     texto1_lines = [
-        "Este carnet identifica a quien lo porta",
-        "únicamente para las funciones y para la",
-        "obtención de los servicios que el SENA",
-        "presta a sus funcionarios y/o contratistas.",
-        "",
-        "Se solicita a las autoridades civiles y",
-        "militares prestarle toda la colaboración",
-        "para su desempeño.",
-        ""
+        "Este carné identifica a quien lo porta,",
+        "únicamente para el cumplimiento de sus",
+        "funciones y para la obtención de los",
+        "servicios que el SENA presta a sus",
+        "aprendices, funcionarios y/o contratistas.",
+        "Se solicita a las autoridades civiles y militares",
+        "prestarle toda la colaboración para su",
+        "desempeño."
     ]
     
+    # DIBUJAR EL TEXTO CENTRADO
+    separacion_lineas = 45  # Separación entre líneas
+
     for i, line in enumerate(texto1_lines):
-        draw_reverso.text((cuadro_x + 15, texto1_y + (i * 20)), line, fill=(0, 0, 0), font=font_reverso)
-
-    # LÍNEA SEPARADORA
-    separador_y = cuadro_y + 200
-    draw_reverso.line([(cuadro_x + 15, separador_y), (cuadro_x + cuadro_ancho - 15, separador_y)], 
-                     fill=(0, 0, 0), width=2)
-
-    # SEGUNDO TEXTO
-    texto2_y = separador_y + 10
-    texto2_lines = [
-        "",
-        "Si por algún motivo este carnet es extraviado",
-        "por favor diríjase a la Calle 40 # 30-44",
-        "",
-        "Barrio Alfonso López o al teléfono:",
-        "",
-        "3182532397",
-        "",
-        ""
-    ]
+        if line.strip():  # Solo si la línea no está vacía
+            # Justificar el texto (distribuir espacios)
+            palabras = line.split()
+            if len(palabras) > 1:
+                # Calcular ancho total de palabras sin espacios
+                ancho_palabras = sum([draw_reverso.textbbox((0, 0), palabra, font=font_reverso)[2] - 
+                                    draw_reverso.textbbox((0, 0), palabra, font=font_reverso)[0] 
+                                    for palabra in palabras])
+                # Espacio disponible para distribuir entre palabras
+                espacio_total = ancho_texto_disponible - ancho_palabras
+                espacio_entre_palabras = espacio_total / (len(palabras) - 1) if len(palabras) > 1 else 0
+                
+                # Dibujar cada palabra con el espaciado calculado
+                x_actual = margen_izquierdo
+                for palabra in palabras:
+                    draw_reverso.text((x_actual, texto1_y + (i * separacion_lineas)), palabra, fill=(0, 0, 0), font=font_reverso)
+                    bbox_palabra = draw_reverso.textbbox((0, 0), palabra, font=font_reverso)
+                    ancho_palabra = bbox_palabra[2] - bbox_palabra[0]
+                    x_actual += ancho_palabra + espacio_entre_palabras
+            else:
+                # Si solo hay una palabra, centrarla
+                draw_reverso.text((margen_izquierdo, texto1_y + (i * separacion_lineas)), line, fill=(0, 0, 0), font=font_reverso)
     
-    for i, line in enumerate(texto2_lines):
-        draw_reverso.text((cuadro_x + 15, texto2_y + (i * 20)), line, fill=(0, 0, 0), font=font_reverso)
-
+    # ========== SECCIÓN INFERIOR DEL REVERSO ==========
+    
     # FIRMA
-    firma_y = alto - 200
+    firma_y = alto - 300
     
+    # TEXTO "FIRMA Y AUTORIZA" CENTRADO
+    try:
+        font_firma_titulo = ImageFont.truetype("cambria.ttf", 22)
+    except:
+        font_firma_titulo = font_reverso
+    
+    firma_texto_y = firma_y - 50
+    texto_firma = "Firma y Autoriza"
+    bbox_firma = draw_reverso.textbbox((0, 0), texto_firma, font=font_firma_titulo)
+    ancho_firma = bbox_firma[2] - bbox_firma[0]
+    pos_x_firma = (ancho - ancho_firma) // 2
+    draw_reverso.text((pos_x_firma, firma_texto_y), texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
+    
+    # IMAGEN DE FIRMA CENTRADA
     try:
         ruta_firma = os.path.join("static", "fotos", "firma_directora.png")
         if os.path.exists(ruta_firma):
             firma_img = Image.open(ruta_firma).convert("RGBA")
-            firma_img = firma_img.resize((250, 300))
-            pos_firma_x = cuadro_x + 190
-            pos_firma_y = firma_y - 280
+            firma_img = firma_img.resize((200, 100))
+            pos_firma_x = (ancho - 200) // 2
+            pos_firma_y = firma_texto_y + 35
             reverso.paste(firma_img, (pos_firma_x, pos_firma_y), firma_img)
     except:
         pass
     
+    # TEXTO SOBRE CARNÉ EXTRAVIADO (CENTRADO)
     try:
-        font_firma = ImageFont.truetype("arial.ttf", 16)
-        font_info = ImageFont.truetype("arial.ttf", 14)
-        font_bold = ImageFont.truetype("arialbd.ttf", 14)
-        font_nombre_subdirectora = ImageFont.truetype("arialbd.ttf", 18)  # NUEVO: más grande
+        font_extraviado = ImageFont.truetype("cambria.ttf", 20)
     except:
-        font_firma = font_info = font_bold = font_nombre_subdirectora = ImageFont.load_default()
-        
+        font_extraviado = font_fecha
     
+    info_y = firma_texto_y + 150
+    texto_extraviado = [
+        "Si por algún motivo este carné es extraviado,",
+        "por favor diríjase al Centro de Biotecnología",
+        "Industrial ubicado en la calle 40 #30-44"
+    ]
     
-    # Nombre
-    nombre_y = firma_y + 15
-    draw_reverso.text((cuadro_x + 180, nombre_y), "Fanny Marcela García Davila", fill=(0, 0, 0), font=font_bold)
+    for i, linea in enumerate(texto_extraviado):
+        bbox_linea = draw_reverso.textbbox((0, 0), linea, font=font_extraviado)
+        ancho_linea = bbox_linea[2] - bbox_linea[0]
+        pos_x_linea = (ancho - ancho_linea) // 2
+        draw_reverso.text((pos_x_linea, info_y + (i * 25)), linea, fill=(0, 0, 0), font=font_extraviado)
     
-    # Cargo
-    cargo_y = nombre_y + 20
-    draw_reverso.text((cuadro_x + 240, cargo_y), "Subdirectora", fill=(0, 0, 0), font=font_info)
-    
-    # ===== CAMBIOS SOLICITADOS =====
-    # Obtener datos
+    # NOMBRE DEL PROGRAMA (CENTRADO)
     nombre_programa = empleado.get('nombre_programa', 'Programa Técnico')
-    fecha_vencimiento = empleado.get('fecha_vencimiento', '2025-12-31')
-    codigo_ficha = empleado.get('codigo_ficha', '0000')
-    
-    # Formatear fecha
+    programa_y = info_y + 100
     try:
-        from datetime import datetime
-        if '-' in fecha_vencimiento:
-            fecha_obj = datetime.strptime(fecha_vencimiento, '%Y-%m-%d')
-            fecha_formateada = fecha_obj.strftime('%d/%m/%Y')
-        else:
-            fecha_formateada = fecha_vencimiento
+        font_programa_bold = ImageFont.truetype("arialbd.ttf", 20)
     except:
-        fecha_formateada = fecha_vencimiento
+        font_programa_bold = font_programa
     
-    info_y = cargo_y + 30
+    bbox_programa = draw_reverso.textbbox((0, 0), nombre_programa, font=font_programa_bold)
+    ancho_programa = bbox_programa[2] - bbox_programa[0]
+    pos_x_programa = (ancho - ancho_programa) // 2
+    draw_reverso.text((pos_x_programa, programa_y), nombre_programa, fill=(0, 0, 0), font=font_programa_bold)
     
-    # 1. SOLO EL NOMBRE DEL PROGRAMA (sin "Técnico en" ni "Tecnólogo en")
-    draw_reverso.text((cuadro_x + 100, info_y), nombre_programa, fill=(0, 0, 0), font=font_info)
+    # FICHA (CENTRADO Y NEGRILLA)
+    codigo_ficha = empleado.get('codigo_ficha', '0000')
+    ficha_y = programa_y + 35
+    ficha_text = f"FICHA {codigo_ficha}"
+    try:
+        font_ficha = ImageFont.truetype("arialbd.ttf", 20)
+    except:
+        font_ficha = font_programa
     
-    # 2. FICHA y CADUCIDAD en líneas separadas
-    ficha_y = info_y + 25
-    draw_reverso.text((cuadro_x + 50, ficha_y), f"FICHA: {codigo_ficha}", fill=(0, 0, 0), font=font_bold)
-    
-    # CADUCIDAD debajo de FICHA
-    caducidad_y = ficha_y + 25
-    draw_reverso.text((cuadro_x + 50, caducidad_y), f"CADUCIDAD: {fecha_formateada}", fill=(0, 0, 0), font=font_bold)
+    bbox_ficha = draw_reverso.textbbox((0, 0), ficha_text, font=font_ficha)
+    ancho_ficha = bbox_ficha[2] - bbox_ficha[0]
+    pos_x_ficha = (ancho - ancho_ficha) // 2
+    draw_reverso.text((pos_x_ficha, ficha_y), ficha_text, fill=(0, 0, 0), font=font_ficha)
 
     ruta_reverso = os.path.join("static", "carnets", f"reverso_{empleado['cedula']}.png")
     reverso.save(ruta_reverso, dpi=(300, 300))
