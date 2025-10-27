@@ -126,8 +126,8 @@ def generar_carnet(empleado, ruta_qr):
     # CÓDIGO QR
     try:
         qr = Image.open(ruta_qr).convert("RGB")
-        qr = qr.resize((370, 370))
-        img.paste(qr, (260, 470))
+        qr = qr.resize((330, 330))
+        img.paste(qr, (300, 460))
     except:
         draw.rectangle([(320, 430), (620, 730)], outline=(0, 0, 0), width=2)
         draw.text((420, 570), "QR CODE", fill=(0, 0, 0), font=font_footer)
@@ -217,78 +217,85 @@ def generar_carnet(empleado, ruta_qr):
     
     # ========== SECCIÓN INFERIOR DEL REVERSO ==========
     
-    # FIRMA
-    firma_y = alto - 300
-    
-    # TEXTO "FIRMA Y AUTORIZA" CENTRADO
-    try:
-        font_firma_titulo = ImageFont.truetype("cambria.ttf", 22)
-    except:
-        font_firma_titulo = font_reverso
-    
-    firma_texto_y = firma_y - 50
-    texto_firma = "Firma y Autoriza"
-    bbox_firma = draw_reverso.textbbox((0, 0), texto_firma, font=font_firma_titulo)
-    ancho_firma = bbox_firma[2] - bbox_firma[0]
-    pos_x_firma = (ancho - ancho_firma) // 2
-    draw_reverso.text((pos_x_firma, firma_texto_y), texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
-    
-    # IMAGEN DE FIRMA CENTRADA
+   # FIRMA
+    firma_y = alto - 100
+
+# IMAGEN DE FIRMA CENTRADA (PRIMERO)
+    firma_img_y = 400  # Cambiar este número para subir/bajar la firma
+    firma_img_x = (ancho - 100) // 3  # Centrada, o cambiar para mover izq/der
     try:
         ruta_firma = os.path.join("static", "fotos", "firma_directora.png")
         if os.path.exists(ruta_firma):
             firma_img = Image.open(ruta_firma).convert("RGBA")
-            firma_img = firma_img.resize((200, 100))
-            pos_firma_x = (ancho - 200) // 2
-            pos_firma_y = firma_texto_y + 35
-            reverso.paste(firma_img, (pos_firma_x, pos_firma_y), firma_img)
+            firma_img = firma_img.resize((300, 300))
+            reverso.paste(firma_img, (firma_img_x, firma_img_y), firma_img)
     except:
         pass
-    
-    # TEXTO SOBRE CARNÉ EXTRAVIADO (CENTRADO)
+
+# TEXTO "FIRMA Y AUTORIZA" DEBAJO DE LA FIRMA
+    texto_firma_y = 920  # Cambiar este número para subir/bajar el texto
+
     try:
-        font_extraviado = ImageFont.truetype("cambria.ttf", 20)
+        font_firma_titulo = ImageFont.truetype("cambria.ttf", 22)
     except:
-        font_extraviado = font_fecha
+        font_firma_titulo = font_reverso
+
+    firma_texto_y = firma_img_y + 280  # Debajo de la imagen
+    texto_firma = "Firma y Autoriza"
+    bbox_firma = draw_reverso.textbbox((0, 0), texto_firma, font=font_firma_titulo)
+    ancho_firma = bbox_firma[2] - bbox_firma[0]
+    pos_x_firma = (ancho - ancho_firma) // 12
+    draw_reverso.text((pos_x_firma, firma_texto_y), texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
     
-    info_y = firma_texto_y + 150
+    # ===== TEXTO SOBRE CARNÉ EXTRAVIADO - ALINEADO A LA IZQUIERDA =====
+    # Mismo tamaño que el texto de arriba (28pt)
+    try:
+        font_extraviado = ImageFont.truetype("cambria.ttf", 22)  # Mismo tamaño que arriba
+    except:
+        font_extraviado = font_reverso
+
+    # Posición inicial (izquierda)
+    margen_izquierdo_extraviado = 40  #  CAMBIAR este número para mover más izq/der
+    info_y = 760  #  CAMBIAR este número para subir/bajar todo el bloque
+
     texto_extraviado = [
         "Si por algún motivo este carné es extraviado,",
         "por favor diríjase al Centro de Biotecnología",
         "Industrial ubicado en la calle 40 #30-44"
     ]
-    
+
+# Dibujar cada línea alineada a la izquierda
+    separacion_lineas_extraviado = 40  #  CAMBIAR para más/menos espacio entre líneas
+
     for i, linea in enumerate(texto_extraviado):
-        bbox_linea = draw_reverso.textbbox((0, 0), linea, font=font_extraviado)
-        ancho_linea = bbox_linea[2] - bbox_linea[0]
-        pos_x_linea = (ancho - ancho_linea) // 2
-        draw_reverso.text((pos_x_linea, info_y + (i * 25)), linea, fill=(0, 0, 0), font=font_extraviado)
-    
-    # NOMBRE DEL PROGRAMA (CENTRADO)
+        draw_reverso.text((margen_izquierdo_extraviado, info_y + (i * separacion_lineas_extraviado)), 
+                        linea, fill=(0, 0, 0), font=font_extraviado)
+        
+    # ===== NOMBRE DEL PROGRAMA (POSICIÓN INDEPENDIENTE) =====
+    programa_x = 40  #  CAMBIAR para mover izquierda/derecha
+    programa_y = 900  #  CAMBIAR para mover arriba/abajo
     nombre_programa = empleado.get('nombre_programa', 'Programa Técnico')
-    programa_y = info_y + 100
+
     try:
-        font_programa_bold = ImageFont.truetype("arialbd.ttf", 20)
+        font_programa_bold = ImageFont.truetype("times.ttf", 22)
     except:
         font_programa_bold = font_programa
-    
-    bbox_programa = draw_reverso.textbbox((0, 0), nombre_programa, font=font_programa_bold)
-    ancho_programa = bbox_programa[2] - bbox_programa[0]
-    pos_x_programa = (ancho - ancho_programa) // 2
-    draw_reverso.text((pos_x_programa, programa_y), nombre_programa, fill=(0, 0, 0), font=font_programa_bold)
+
+    draw_reverso.text((programa_x, programa_y), nombre_programa, fill=(0, 0, 0), font=font_programa_bold)
+
     
     # FICHA (CENTRADO Y NEGRILLA)
     codigo_ficha = empleado.get('codigo_ficha', '0000')
-    ficha_y = programa_y + 35
+    ficha_y = programa_y + 45
     ficha_text = f"FICHA {codigo_ficha}"
     try:
-        font_ficha = ImageFont.truetype("arialbd.ttf", 20)
+        font_ficha = ImageFont.truetype("times.ttf", 22)
     except:
         font_ficha = font_programa
     
     bbox_ficha = draw_reverso.textbbox((0, 0), ficha_text, font=font_ficha)
     ancho_ficha = bbox_ficha[2] - bbox_ficha[0]
-    pos_x_ficha = (ancho - ancho_ficha) // 2
+    pos_x_ficha = (ancho - ancho_ficha) // 13
     draw_reverso.text((pos_x_ficha, ficha_y), ficha_text, fill=(0, 0, 0), font=font_ficha)
 
     ruta_reverso = os.path.join("static", "carnets", f"reverso_{empleado['cedula']}.png")
