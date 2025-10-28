@@ -407,6 +407,12 @@
             transform: translateY(-2px);
         }
 
+        .action-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .action-button.orange {
             background: #FF9800;
         }
@@ -449,6 +455,137 @@
             border-color: #39A935;
         }
 
+        /* NUEVA TABLA PARA APRENDICES */
+        .aprendices-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .aprendices-table thead {
+            background: linear-gradient(135deg, #39A935 0%, #2E7D32 100%);
+            color: white;
+        }
+
+        .aprendices-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .aprendices-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .aprendices-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .aprendices-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #39A935;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+        }
+
+        .aprendiz-nombre {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .aprendiz-cedula {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .aprendiz-programa {
+            color: #39A935;
+            font-size: 13px;
+        }
+
+        /* BOTONES GRUPO */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* ESTILOS PARA BÚSQUEDA */
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-section .form-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-section .action-button {
+            margin: 0;
+        }
+
+        /* ESTADÍSTICAS */
+        .stats-text {
+            color: #666;
+            font-size: 14px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #39A935;
+        }
+
+        /* ALERTAS */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-menu-toggle {
@@ -478,6 +615,31 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .aprendices-table {
+                font-size: 12px;
+            }
+
+            .aprendices-table th,
+            .aprendices-table td {
+                padding: 10px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button {
+                width: 100%;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .search-section .form-input {
+                min-width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -487,6 +649,16 @@
             
             .content-area {
                 padding: 15px;
+            }
+
+            .section-title {
+                font-size: 22px;
+            }
+
+            .aprendices-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
             }
         }
 
@@ -521,30 +693,36 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Alertas */
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
+        /* Loading overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .loading-content .spinner {
             margin-bottom: 20px;
-            border: 1px solid transparent;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            border-color: #bee5eb;
-            color: #0c5460;
+            width: 40px;
+            height: 40px;
+            border-width: 4px;
         }
     </style>
 </head>
@@ -635,6 +813,10 @@
                         <div class="menu-icon">🔍</div>
                         <span class="menu-text">Consultar Datos</span>
                     </a>
+                    <a href="#" class="menu-item" onclick="showSection('eliminar-aprendices')">
+                        <div class="menu-icon">🗑️</div>
+                        <span class="menu-text">Eliminar Aprendices</span>
+                    </a>
                 </div>
             </nav>
         </aside>
@@ -683,6 +865,9 @@
                         </button>
                         <button class="action-button" onclick="showSection('generar-carnet')">
                             🆔 Generar Carnet
+                        </button>
+                        <button class="action-button red" onclick="showSection('eliminar-aprendices')">
+                            🗑️ Eliminar Aprendices
                         </button>
                     </div>
                 </div>
@@ -854,8 +1039,6 @@
                         </button>
                     </form>
                 </div>
-                
-               
             </div>
 
             <!-- Archivo de Carnets Section -->
@@ -920,12 +1103,94 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 🆕 NUEVA SECCIÓN: ELIMINAR APRENDICES POR FICHA -->
+            <div id="eliminar-aprendices" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">🗑️ Eliminar Aprendices</h1>
+                    <p class="section-subtitle">Elimina aprendices registrados en una ficha específica</p>
+                </div>
+
+                <!-- Alerta de aviso -->
+                <div class="info-card" style="background: linear-gradient(135deg, #FFF8E1 0%, #FFE4B5 100%); border-left: 4px solid #FF9800;">
+                    <h3 style="color: #E65100;">⚠️ Advertencia</h3>
+                    <p style="color: #E65100; margin: 10px 0;">
+                        Esta acción eliminará <strong>permanentemente</strong> los registros de aprendices de la base de datos.
+                        Por favor, verifica bien la ficha antes de proceder.
+                    </p>
+                </div>
+
+                <!-- Búsqueda de Ficha -->
+                <div class="info-card">
+                    <h3>Paso 1: Buscar Ficha</h3>
+                    <div class="search-section">
+                        <input type="text" id="fichaBuscar" class="form-input" placeholder="Ej: 2024001" required>
+                        <button class="action-button" onclick="buscarFicha()">
+                            🔍 Buscar Ficha
+                        </button>
+                    </div>
+                    <div id="fichaResultado"></div>
+                </div>
+
+                <!-- Tabla de Aprendices (oculta inicialmente) -->
+                <div class="info-card" id="tablaSection" style="display: none;">
+                    <h3>Paso 2: Seleccionar Aprendices</h3>
+                    
+                    <!-- Estadísticas -->
+                    <div id="estadisticas" class="stats-text" style="display: none;">
+                        <strong id="estadisticaTexto"></strong>
+                    </div>
+
+                    <!-- Botones de Acciones -->
+                    <div class="button-group" id="botonesAccion" style="display: none;">
+                        <button class="action-button" onclick="seleccionarTodos()">
+                            ✓ Seleccionar Todos
+                        </button>
+                        <button class="action-button orange" onclick="deseleccionarTodos()">
+                            ✗ Deseleccionar Todos
+                        </button>
+                        <button class="action-button red" onclick="eliminarSeleccionados()" id="btnEliminar">
+                            🗑️ Eliminar Seleccionados
+                        </button>
+                    </div>
+
+                    <!-- Tabla de Aprendices -->
+                    <table class="aprendices-table" id="tablaPrendices" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                                </th>
+                                <th>Nombre</th>
+                                <th>Cédula</th>
+                                <th>Programa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        </tbody>
+                    </table>
+
+                    <!-- Mensaje cuando no hay aprendices -->
+                    <div id="mensajeVacio" style="text-align: center; padding: 40px; color: #666;">
+                        <p style="font-size: 16px;">📭 No se encontraron aprendices en esta ficha</p>
+                    </div>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
     </div>
 
     <script>
         // Variables globales
         let currentSection = 'dashboard';
+        let aprendicesSeleccionados = new Set();
 
         // Función para mostrar/ocultar sidebar en móviles
         function toggleSidebar() {
@@ -968,7 +1233,249 @@
             }
 
             currentSection = sectionId;
+
+            // Limpiar cuando se cambia de sección
+            if (sectionId !== 'eliminar-aprendices') {
+                limpiarFormularioEliminar();
+            }
         }
+
+        // ====== FUNCIONES PARA ELIMINAR APRENDICES ======
+
+        function limpiarFormularioEliminar() {
+            document.getElementById('fichaBuscar').value = '';
+            document.getElementById('fichaResultado').innerHTML = '';
+            document.getElementById('tablaSection').style.display = 'none';
+            document.getElementById('tablaPrendices').style.display = 'none';
+            document.getElementById('mensajeVacio').style.display = 'none';
+            document.getElementById('botonesAccion').style.display = 'none';
+            document.getElementById('estadisticas').style.display = 'none';
+            aprendicesSeleccionados.clear();
+        }
+
+        async function buscarFicha() {
+            const ficha = document.getElementById('fichaBuscar').value.trim();
+            
+            if (!ficha) {
+                mostrarAlerta('Por favor ingresa un número de ficha', 'error');
+                return;
+            }
+
+            mostrarLoading(true);
+
+            try {
+                const response = await fetch(`/buscar_ficha/${ficha}`);
+                const data = await response.json();
+
+                mostrarLoading(false);
+
+                if (data.success && data.aprendices.length > 0) {
+                    mostrarAprendices(data.aprendices, ficha);
+                    document.getElementById('fichaResultado').innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ Se encontraron <strong>${data.aprendices.length}</strong> aprendices en la ficha ${ficha}
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('fichaResultado').innerHTML = `
+                        <div class="alert alert-error">
+                            ❌ No se encontraron aprendices en la ficha ${ficha}
+                        </div>
+                    `;
+                    document.getElementById('tablaSection').style.display = 'none';
+                }
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarAlerta('Error al buscar la ficha: ' + error, 'error');
+            }
+        }
+
+        function mostrarAprendices(aprendices, ficha) {
+            const tbody = document.getElementById('tbody');
+            const tabla = document.getElementById('tablaPrendices');
+            const tablaSection = document.getElementById('tablaSection');
+            const mensajeVacio = document.getElementById('mensajeVacio');
+            const estadisticas = document.getElementById('estadisticas');
+            const botonesAccion = document.getElementById('botonesAccion');
+
+            // Limpiar
+            tbody.innerHTML = '';
+            aprendicesSeleccionados.clear();
+
+            if (aprendices.length === 0) {
+                tabla.style.display = 'none';
+                mensajeVacio.style.display = 'block';
+                botonesAccion.style.display = 'none';
+                estadisticas.style.display = 'none';
+                tablaSection.style.display = 'block';
+                return;
+            }
+
+            // Agregar filas
+            aprendices.forEach((aprendiz, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" value="${aprendiz.cedula}" onchange="actualizarSeleccion('${aprendiz.cedula}')">
+                    </td>
+                    <td class="aprendiz-nombre">${aprendiz.nombre}</td>
+                    <td class="aprendiz-cedula">${aprendiz.cedula}</td>
+                    <td class="aprendiz-programa">${aprendiz.programa}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Mostrar tabla y controles
+            tabla.style.display = 'table';
+            tablaSection.style.display = 'block';
+            botonesAccion.style.display = 'flex';
+            mensajeVacio.style.display = 'none';
+
+            // Actualizar estadísticas
+            actualizarEstadisticas(aprendices.length);
+        }
+
+        function actualizarSeleccion(cedula) {
+            const checkbox = document.querySelector(`input[value="${cedula}"]`);
+            
+            if (checkbox.checked) {
+                aprendicesSeleccionados.add(cedula);
+            } else {
+                aprendicesSeleccionados.delete(cedula);
+            }
+
+            // Actualizar estado del checkbox "Seleccionar Todos"
+            const allChecked = document.querySelectorAll('#tablaPrendices tbody input[type="checkbox"]');
+            const selectAll = document.getElementById('selectAll');
+            
+            selectAll.checked = Array.from(allChecked).every(cb => cb.checked);
+
+            actualizarEstadisticas();
+        }
+
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('#tablaPrendices tbody input[type="checkbox"]');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                const cedula = cb.value;
+                
+                if (checkbox.checked) {
+                    aprendicesSeleccionados.add(cedula);
+                } else {
+                    aprendicesSeleccionados.delete(cedula);
+                }
+            });
+
+            actualizarEstadisticas();
+        }
+
+        function seleccionarTodos() {
+            const selectAll = document.getElementById('selectAll');
+            selectAll.checked = true;
+            toggleSelectAll(selectAll);
+        }
+
+        function deseleccionarTodos() {
+            const selectAll = document.getElementById('selectAll');
+            selectAll.checked = false;
+            toggleSelectAll(selectAll);
+        }
+
+        function actualizarEstadisticas(total) {
+            const seleccionados = aprendicesSeleccionados.size;
+            const estadisticas = document.getElementById('estadisticas');
+            const estadisticaTexto = document.getElementById('estadisticaTexto');
+            const btnEliminar = document.getElementById('btnEliminar');
+
+            if (total !== undefined) {
+                estadisticaTexto.innerHTML = `
+                    Total de aprendices: <strong>${total}</strong> | 
+                    Seleccionados: <strong>${seleccionados}</strong>
+                `;
+            } else {
+                const totalCheckboxes = document.querySelectorAll('#tablaPrendices tbody input[type="checkbox"]').length;
+                estadisticaTexto.innerHTML = `
+                    Total de aprendices: <strong>${totalCheckboxes}</strong> | 
+                    Seleccionados: <strong>${seleccionados}</strong>
+                `;
+            }
+
+            estadisticas.style.display = 'block';
+            btnEliminar.disabled = seleccionados === 0;
+        }
+
+        async function eliminarSeleccionados() {
+            if (aprendicesSeleccionados.size === 0) {
+                mostrarAlerta('Por favor selecciona al menos un aprendiz', 'warning');
+                return;
+            }
+
+            const cantidad = aprendicesSeleccionados.size;
+            const confirmacion = confirm(
+                `⚠️ ¿Estás seguro de que quieres ELIMINAR ${cantidad} aprendiz(ces)?\n\nEsta acción es IRREVERSIBLE.`
+            );
+
+            if (!confirmacion) return;
+
+            mostrarLoading(true);
+
+            try {
+                // Eliminar cada aprendiz individualmente
+                for (const cedula of aprendicesSeleccionados) {
+                    await fetch(`/eliminar_empleado/${cedula}`, {
+                        method: 'POST'
+                    });
+                }
+
+                mostrarLoading(false);
+                mostrarAlerta(`✅ Se eliminaron ${cantidad} aprendiz(ces) exitosamente`, 'success');
+                
+                // Limpiar y volver a buscar
+                const ficha = document.getElementById('fichaBuscar').value;
+                setTimeout(() => {
+                    buscarFicha();
+                }, 1000);
+
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarAlerta('Error al eliminar aprendices: ' + error, 'error');
+            }
+        }
+
+        function mostrarLoading(show) {
+            const loading = document.getElementById('loadingOverlay');
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            // Crear alerta temporal
+            const alerta = document.createElement('div');
+            alerta.className = `alert alert-${tipo}`;
+            alerta.innerHTML = mensaje;
+            alerta.style.position = 'fixed';
+            alerta.style.top = '80px';
+            alerta.style.right = '20px';
+            alerta.style.zIndex = '3000';
+            alerta.style.minWidth = '300px';
+            alerta.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+
+            document.body.appendChild(alerta);
+
+            setTimeout(() => {
+                alerta.style.transition = 'all 0.3s ease';
+                alerta.style.opacity = '0';
+                alerta.style.transform = 'translateX(400px)';
+                
+                setTimeout(() => alerta.remove(), 300);
+            }, 4000);
+        }
+
+        // ====== FIN FUNCIONES PARA ELIMINAR ======
 
         // Manejar formulario de carga de Excel
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
@@ -1032,7 +1539,6 @@
             infoDiv.innerHTML = '<div style="text-align: center;"><span class="spinner"></span> Buscando...</div>';
             
             try {
-                // Aquí harías la búsqueda real - por ahora simulamos
                 setTimeout(() => {
                     infoDiv.innerHTML = `
                         <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
@@ -1072,14 +1578,14 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('✅ Foto eliminada exitosamente');
+                    mostrarAlerta('✅ Foto eliminada exitosamente', 'success');
                     document.getElementById('buscarAprendizForm').reset();
                     document.getElementById('aprendizInfo').style.display = 'none';
                 } else {
-                    alert('❌ Error: ' + result.message);
+                    mostrarAlerta('❌ Error: ' + result.message, 'error');
                 }
             } catch (error) {
-                alert('❌ Error al eliminar la foto');
+                mostrarAlerta('❌ Error al eliminar la foto', 'error');
             }
         }
 
