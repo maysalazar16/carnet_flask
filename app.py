@@ -979,8 +979,165 @@ def dashboard_aprendiz():
         return redirect(url_for('login'))
     return render_template("dashboard_aprendiz.html", usuario=session['usuario'])
 
+# =====================================================
+# 🆕 NUEVOS ENDPOINTS DE API PARA LA BÚSQUEDA
+# =====================================================
+
+@app.route('/api/lista_aprendices_filtrada', methods=['GET'])
+def api_lista_aprendices_filtrada():
+    """
+    API para obtener lista filtrada de aprendices
+    
+    Parámetros:
+    - todos=true: mostrar todos
+    - ficha=codigo: buscar por ficha
+    - cedula=numero: buscar por cédula exacta
+    - nombre=texto: buscar por nombre (parcial)
+    - foto=con_foto|sin_foto: filtrar por foto
+    """
+    try:
+        print("\n[API] === BÚSQUEDA INICIADA ===")
+        
+        # Obtener parámetros
+        todos = request.args.get('todos', '').lower() == 'true'
+        ficha = request.args.get('ficha', '').strip()
+        cedula = request.args.get('cedula', '').strip()
+        nombre = request.args.get('nombre', '').strip()
+        foto_estado = request.args.get('foto', '').strip()
+        
+        print(f"[API] Parámetros recibidos:")
+        print(f"  - todos: {todos}")
+        print(f"  - ficha: {ficha}")
+        print(f"  - cedula: {cedula}")
+        print(f"  - nombre: {nombre}")
+        print(f"  - foto_estado: {foto_estado}")
+        
+        # Conectar a BD
+        conn = sqlite3.connect('carnet.db')
+        cursor = conn.cursor()
+        
+        # Contar total en BD
+        cursor.execute("SELECT COUNT(*) FROM empleados")
+        total_en_bd = cursor.fetchone()[0]
+        print(f"[API] Total en BD: {total_en_bd}")
+        
+        # Construir consulta
+        query = """
+            SELECT nombre, cedula, tipo_documento, cargo, codigo, 
+                   fecha_emision, fecha_vencimiento, tipo_sangre, foto,
+                   nis, primer_apellido, segundo_apellido, 
+                   nombre_programa, codigo_ficha, centro, nivel_formacion, red_tecnologica
+            FROM empleados 
+            WHERE 1=1
+        """
+        params = []
+        
+        # Aplicar filtros
+        if not todos:
+            if ficha:
+                print(f"[API] Filtrando por ficha: {ficha}")
+                query += " AND codigo_ficha LIKE ?"
+                params.append(f"%{ficha}%")
+            
+            if cedula:
+                print(f"[API] Filtrando por cedula: {cedula}")
+                cedula_limpia = ''.join(filter(str.isdigit, cedula))
+                query += " AND cedula = ?"
+                params.append(cedula_limpia)
+            
+            if nombre:
+                print(f"[API] Filtrando por nombre: {nombre}")
+                query += " AND nombre LIKE ?"
+                params.append(f"%{nombre}%")
+        else:
+            print(f"[API] Mostrando TODOS los aprendices")
+        
+        # Filtro por foto
+        if foto_estado == 'con_foto':
+            print(f"[API] Filtrando: CON FOTO")
+            query += " AND foto IS NOT NULL AND foto != ''"
+        elif foto_estado == 'sin_foto':
+            print(f"[API] Filtrando: SIN FOTO")
+            query += " AND (foto IS NULL OR foto = '')"
+        
+        query += " ORDER BY nombre ASC"
+        
+        print(f"[API] Query: {query}")
+        print(f"[API] Parámetros: {params}")
+        
+        # Ejecutar
+        cursor.execute(query, params)
+        aprendices = []
+        
+        for row in cursor.fetchall():
+            aprendiz = {
+                'nombre': row[0],
+                'cedula': row[1],
+                'tipo_documento': row[2] or 'CC',
+                'cargo': row[3] or 'APRENDIZ',
+                'codigo': row[4],
+                'fecha_emision': row[5],
+                'fecha_vencimiento': row[6],
+                'tipo_sangre': row[7] or 'O+',
+                'foto': row[8],
+                'nis': row[9] or 'N/A',
+                'primer_apellido': row[10] or '',
+                'segundo_apellido': row[11] or '',
+                'nombre_programa': row[12] or 'Programa General',
+                'codigo_ficha': row[13] or 'Sin Ficha',
+                'centro': row[14] or 'Centro de Biotecnología Industrial',
+                'nivel_formacion': row[15] or 'Técnico',
+                'red_tecnologica': row[16] or 'Red Tecnológica'
+            }
+            aprendices.append(aprendiz)
+        
+        conn.close()
+        
+        print(f"[API] RESULTADO: {len(aprendices)} aprendices encontrados")
+        print(f"[API] === BÚSQUEDA FINALIZADA ===\n")
+        
+        return jsonify({
+            'success': True,
+            'total': len(aprendices),
+            'aprendices': aprendices
+        })
+    
+    except Exception as e:
+        print(f"[API ERROR]: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
+
+@app.route('/api/buscar_aprendiz/<cedula>')
+def api_buscar_aprendiz(cedula):
+    """Buscar un aprendiz específico por cédula"""
+    try:
+        cedula_limpia = ''.join(filter(str.isdigit, cedula))
+        empleado = buscar_empleado_completo(cedula_limpia)
+        
+        if empleado:
+            # Verificar foto
+            if empleado['foto']:
+                ruta_foto = os.path.join('static/fotos', empleado['foto'])
+                empleado['foto_existe'] = os.path.exists(ruta_foto)
+                empleado['foto_url'] = f"/static/fotos/{empleado['foto']}" if empleado['foto_existe'] else None
+            else:
+                empleado['foto_existe'] = False
+                empleado['foto_url'] = None
+            
+            return jsonify({'success': True, 'data': empleado})
+        else:
+            return jsonify({'success': False, 'message': 'Aprendiz no encontrado'})
+            
+    except Exception as e:
+        print(f"Error API buscar aprendiz: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # =============================================
-# RUTAS PARA AGREGAR EMPLEADOS
+# RESTO DE RUTAS (copiar todo lo demás de tu archivo app.py original)
 # =============================================
 
 @app.route('/agregar', methods=['GET', 'POST'])
@@ -1278,10 +1435,6 @@ def registro_aprendiz():
 
     return render_template("registro_aprendiz.html", usuario=session['usuario'], fecha_hoy=hoy.strftime("%Y-%m-%d"), fecha_vencimiento=vencimiento.strftime("%Y-%m-%d"))
 
-# =============================================
-# RUTAS PARA GENERAR CARNETS
-# =============================================
-
 @app.route('/generar')
 def generar():
     return generar_carnet_web()
@@ -1364,10 +1517,6 @@ def generar_carnet_web():
 @app.route('/descargar_carnet/<path:carnet>')
 def descargar_carnet(carnet):
     return send_from_directory('static/carnets', carnet, as_attachment=True)
-
-# =============================================
-# RUTAS MEJORADAS PARA PLANTILLAS EXCEL
-# =============================================
 
 @app.route('/descargar_plantilla')
 def descargar_plantilla():
@@ -1520,10 +1669,6 @@ def cargar_excel():
     """Alias para cargar_plantilla - compatible con el dashboard"""
     return cargar_plantilla()
 
-# =============================================
-# RUTA NUEVA: BÚSQUEDA RÁPIDA POR CÉDULA
-# =============================================
-
 @app.route('/buscar_rapido', methods=['GET', 'POST'])
 def buscar_rapido():
     """Nueva ruta para búsqueda rápida de aprendices por cédula"""
@@ -1610,11 +1755,6 @@ def actualizar_foto_rapido():
     except Exception as e:
         print(f"Error actualizando foto rápido: {e}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
-    
-
-# =============================================
-# RUTAS PARA CONSULTA DE DATOS
-# =============================================
 
 @app.route('/consultar_datos', methods=['GET', 'POST'])
 def consultar_datos_aprendiz():
@@ -1731,10 +1871,6 @@ def cancelar_consulta():
     session.pop('aprendiz_datos', None)
     flash('Consulta cancelada.', 'info')
     return redirect(url_for('dashboard_aprendiz'))
-
-# =============================================
-# RUTAS PARA GESTIÓN DE APRENDICES (ADMIN)
-# =============================================
 
 @app.route('/consultar_aprendices')
 @app.route('/admin/consultar_aprendices')
@@ -2432,10 +2568,6 @@ def dashboard_menu():
     else:
         return redirect(url_for('login'))
 
-# =============================================
-# RUTAS ADICIONALES PARA MANEJO DE FICHAS
-# =============================================
-
 @app.route('/gestionar_fichas')
 def gestionar_fichas():
     """Ruta para gestionar aprendices por fichas"""
@@ -2668,10 +2800,6 @@ def generar_carnets_ficha(codigo_ficha):
         flash('Error al generar carnets masivamente.', 'error')
         return redirect(url_for('ver_ficha', codigo_ficha=codigo_ficha))
 
-# =============================================
-# RUTAS API PARA AJAX
-# =============================================
-
 @app.route('/api/estadisticas_fichas')
 def api_estadisticas_fichas():
     """API para obtener estadísticas de fichas en JSON"""
@@ -2707,37 +2835,6 @@ def api_estadisticas_fichas():
     except Exception as e:
         print(f"Error API estadísticas fichas: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/buscar_aprendiz/<cedula>')
-def api_buscar_aprendiz(cedula):
-    """API para buscar aprendiz por cédula"""
-    if 'usuario' not in session:
-        return jsonify({'error': 'No autorizado'}), 401
-    
-    try:
-        cedula_limpia = ''.join(filter(str.isdigit, cedula))
-        empleado = buscar_empleado_completo(cedula_limpia)
-        
-        if empleado:
-            # Verificar foto
-            if empleado['foto']:
-                ruta_foto = os.path.join('static/fotos', empleado['foto'])
-                empleado['foto_existe'] = os.path.exists(ruta_foto)
-                empleado['foto_url'] = f"/static/fotos/{empleado['foto']}" if empleado['foto_existe'] else None
-            else:
-                empleado['foto_existe'] = False
-                empleado['foto_url'] = None
-            
-            return jsonify({'success': True, 'data': empleado})
-        else:
-            return jsonify({'success': False, 'message': 'Aprendiz no encontrado'})
-            
-    except Exception as e:
-        print(f"Error API buscar aprendiz: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-# ========== NUEVAS RUTAS PARA ELIMINAR POR FICHA ==========
 
 @app.route('/buscar_ficha/<ficha>')
 def buscar_ficha(ficha):
@@ -2775,7 +2872,6 @@ def buscar_ficha(ficha):
             'success': False,
             'message': str(e)
         }), 500
-
 
 @app.route('/eliminar_ficha', methods=['POST'])
 def eliminar_ficha():
@@ -2824,36 +2920,55 @@ def eliminar_ficha():
             'message': str(e)
         }), 500
 
-# ========== FIN DE NUEVAS RUTAS ==========
-
-
-# =============================================
-# FUNCIONES AUXILIARES Y UTILIDADES
-# =============================================
-
-def allowed_file(filename):
-    """Verifica si el archivo tiene extensión permitida"""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['xlsx', 'xls']
-
-def limpiar_archivos_temporales():
-    """Limpia archivos temporales antiguos"""
+@app.route('/eliminar_empleado/<cedula>', methods=['POST'])
+def eliminar_empleado_por_cedula(cedula):
+    """Elimina un aprendiz por su cédula"""
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        return jsonify({'success': False, 'message': 'Acceso denegado'}), 403
+    
     try:
-        temp_dir = tempfile.gettempdir()
+        cedula_limpia = ''.join(filter(str.isdigit, cedula))
         
-        # Buscar archivos temporales de la aplicación
-        for filename in os.listdir(temp_dir):
-            if filename.startswith('tmp') and filename.endswith('.xlsx'):
-                filepath = os.path.join(temp_dir, filename)
-                try:
-                    # Eliminar archivos de más de 1 hora
-                    if os.path.getmtime(filepath) < time.time() - 3600:
-                        os.remove(filepath)
-                        print(f"Archivo temporal eliminado: {filepath}")
-                except:
-                    pass
-                    
+        conn = sqlite3.connect('carnet.db')
+        cursor = conn.cursor()
+        
+        # Verificar si existe
+        cursor.execute("SELECT nombre FROM empleados WHERE cedula = ?", (cedula_limpia,))
+        resultado = cursor.fetchone()
+        
+        if not resultado:
+            conn.close()
+            return jsonify({'success': False, 'message': 'Aprendiz no encontrado'}), 404
+        
+        nombre = resultado[0]
+        
+        # Eliminar de la base de datos
+        cursor.execute("DELETE FROM empleados WHERE cedula = ?", (cedula_limpia,))
+        conn.commit()
+        conn.close()
+        
+        # Eliminar archivos asociados
+        archivos_a_eliminar = [
+            f"static/fotos/{cedula_limpia}.jpg",
+            f"static/fotos/foto_{cedula_limpia}.jpg",
+            f"static/fotos/foto_{cedula_limpia}.png",
+            f"static/qr/{cedula_limpia}.png",
+            f"static/carnets/{cedula_limpia}_anverso.png",
+            f"static/carnets/{cedula_limpia}_reverso.png",
+            f"static/carnets/{cedula_limpia}_completo.png"
+        ]
+        
+        for archivo in archivos_a_eliminar:
+            if os.path.exists(archivo):
+                os.remove(archivo)
+        
+        print(f"✅ Aprendiz eliminado: {nombre} (Cédula: {cedula_limpia})")
+        
+        return jsonify({'success': True, 'message': f'Aprendiz {nombre} eliminado correctamente'})
+        
     except Exception as e:
-        print(f"Error limpiando archivos temporales: {e}")
+        print(f"Error eliminando aprendiz: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 # =============================================
 # MANEJO DE ERRORES
@@ -2941,101 +3056,32 @@ actualizar_base_datos_sena()
 print("✅ Base de datos verificada y actualizada")
 
 # Limpiar archivos temporales
+def limpiar_archivos_temporales():
+    """Limpia archivos temporales antiguos"""
+    try:
+        temp_dir = tempfile.gettempdir()
+        
+        # Buscar archivos temporales de la aplicación
+        for filename in os.listdir(temp_dir):
+            if filename.startswith('tmp') and filename.endswith('.xlsx'):
+                filepath = os.path.join(temp_dir, filename)
+                try:
+                    # Eliminar archivos de más de 1 hora
+                    if os.path.getmtime(filepath) < time.time() - 3600:
+                        os.remove(filepath)
+                        print(f"Archivo temporal eliminado: {filepath}")
+                except:
+                    pass
+                    
+    except Exception as e:
+        print(f"Error limpiando archivos temporales: {e}")
+
 limpiar_archivos_temporales()
 
 # Mostrar estadísticas
 mostrar_estadisticas_inicio()
 
-# ═══════════════════════════════════════════════════════════════
-# 🗑️ RUTA PARA ELIMINAR APRENDICES
-# ═══════════════════════════════════════════════════════════════
-
-@app.route('/eliminar_empleado/<cedula>', methods=['POST'])
-def eliminar_empleado_por_cedula(cedula):
-    """Elimina un aprendiz por su cédula de la base de datos"""
-    if 'usuario' not in session or session.get('rol') != 'admin':
-        return jsonify({'success': False, 'message': 'Acceso denegado'}), 403
-    
-    try:
-        cedula_limpia = ''.join(filter(str.isdigit, cedula))
-        
-        # Conexión a la BD
-        conn = sqlite3.connect('carnet.db')
-        cursor = conn.cursor()
-        
-        # Verificar si existe
-        cursor.execute("SELECT nombre FROM empleados WHERE cedula = ?", (cedula_limpia,))
-        resultado = cursor.fetchone()
-        
-        if not resultado:
-            conn.close()
-            return jsonify({'success': False, 'message': 'Aprendiz no encontrado'}), 404
-        
-        nombre = resultado[0]
-        
-        # ELIMINAR DE LA BD
-        cursor.execute("DELETE FROM empleados WHERE cedula = ?", (cedula_limpia,))
-        conn.commit()
-        conn.close()
-        
-        print(f"✅ Eliminado: {nombre} (Cédula: {cedula_limpia})")
-        
-        return jsonify({'success': True, 'message': f'Aprendiz {nombre} eliminado correctamente'})
-        
-    except Exception as e:
-        print(f"❌ Error eliminando aprendiz: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
 if __name__ == "__main__":
     print("🌟 Servidor Flask iniciado con sistema de backup automático")
     print("💾 Las fotos se respaldan automáticamente en static/fotos_backup/")
     app.run(debug=True, host="0.0.0.0", port=5000)
-@app.route('/eliminar_empleado/<cedula>', methods=['POST'])
-def eliminar_empleado_por_cedula(cedula):
-    """Elimina un aprendiz por su cédula"""
-    if 'usuario' not in session or session.get('rol') != 'admin':
-        return jsonify({'success': False, 'message': 'Acceso denegado'}), 403
-    
-    try:
-        cedula_limpia = ''.join(filter(str.isdigit, cedula))
-        
-        conn = sqlite3.connect('carnet.db')
-        cursor = conn.cursor()
-        
-        # Verificar si existe
-        cursor.execute("SELECT nombre FROM empleados WHERE cedula = ?", (cedula_limpia,))
-        resultado = cursor.fetchone()
-        
-        if not resultado:
-            conn.close()
-            return jsonify({'success': False, 'message': 'Aprendiz no encontrado'}), 404
-        
-        nombre = resultado[0]
-        
-        # Eliminar de la base de datos
-        cursor.execute("DELETE FROM empleados WHERE cedula = ?", (cedula_limpia,))
-        conn.commit()
-        conn.close()
-        
-        # Eliminar archivos asociados
-        archivos_a_eliminar = [
-            f"static/fotos/{cedula_limpia}.jpg",
-            f"static/fotos/foto_{cedula_limpia}.jpg",
-            f"static/fotos/foto_{cedula_limpia}.png",
-            f"static/qr/{cedula_limpia}.png",
-            f"static/carnets/{cedula_limpia}_anverso.png",
-            f"static/carnets/{cedula_limpia}_reverso.png",
-            f"static/carnets/{cedula_limpia}_completo.png"
-        ]
-        
-        for archivo in archivos_a_eliminar:
-            if os.path.exists(archivo):
-                os.remove(archivo)
-        
-        print(f"✅ Aprendiz eliminado: {nombre} (Cédula: {cedula_limpia})")
-        
-        return jsonify({'success': True, 'message': f'Aprendiz {nombre} eliminado correctamente'})
-        
-    except Exception as e:
-        print(f"Error eliminando aprendiz: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500

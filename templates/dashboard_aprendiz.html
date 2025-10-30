@@ -624,13 +624,57 @@
             word-break: break-word;
         }
 
-        .btn-cargar-foto {
-            display: none;
-            margin-top: 20px;
+        .success-message {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #39A935;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
         }
 
-        .btn-cargar-foto.show {
-            display: block;
+        .success-message h4 {
+            color: #155724;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #155724;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .loading-content .spinner {
+            margin-bottom: 25px;
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
         }
 
         @media (max-width: 768px) {
@@ -700,48 +744,6 @@
 
         .sidebar-overlay.active {
             display: block;
-        }
-
-        .especificaciones-tabla {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0;
-        }
-
-        .especificaciones-tabla tr {
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .especificaciones-tabla td {
-            padding: 8px;
-            font-size: 12px;
-        }
-
-        .especificaciones-tabla td:first-child {
-            font-weight: 700;
-            color: #39A935;
-            width: 40%;
-        }
-
-        .success-message {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border: 2px solid #39A935;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .success-message h4 {
-            color: #155724;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .success-message p {
-            color: #155724;
-            font-size: 16px;
-            line-height: 1.8;
         }
     </style>
 </head>
@@ -837,7 +839,7 @@
             <div id="consultar-datos" class="content-section">
                 <div class="section-header">
                     <h1 class="section-title">🔍 Consultar CC</h1>
-                    <p class="section-subtitle">Ingresa tu cédula para ver tu información registrada en el sistema</p>
+                    <p class="section-subtitle">Ingresa tu cédula para ver tu información y cargar tu foto</p>
                 </div>
                 
                 <div class="info-card">
@@ -848,54 +850,11 @@
                             <input type="text" name="cedula" id="cedula" class="form-input" placeholder="Ej: 1006342488" autocomplete="off" required>
                         </div>
                         <button type="submit" class="action-button" id="btnConsultar">
-                            🔍 Consultar
+                            🔍 Buscar Aprendiz
                         </button>
                     </form>
                     
                     <div id="resultadoConsulta" style="margin-top: 30px;"></div>
-                </div>
-            </div>
-
-            <div id="cargar-foto" class="content-section">
-                <div class="section-header">
-                    <h1 class="section-title">📸 Cargar mi Foto</h1>
-                    <p class="section-subtitle">Sube tu foto tipo documento para generar tu carnet digital</p>
-                </div>
-                
-                <div class="info-card">
-                    <h3>Especificaciones de la Foto</h3>
-                    <ul style="margin: 15px 0; color: #555; line-height: 1.8; list-style-position: inside;">
-                        <li>✓ Formato: JPG o PNG</li>
-                        <li>✓ Tamaño: 3x4 (o similar)</li>
-                        <li>✓ Fondo: Blanco o uniforme</li>
-                        <li>✓ Peso máximo: 5MB</li>
-                        <li>✓ Foto clara y reciente</li>
-                    </ul>
-                </div>
-
-                <div class="info-card">
-                    <h3>Subir Foto</h3>
-                    <form id="formularioFoto" method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
-                        <div class="form-group">
-                            <label class="form-label" for="cedula_foto">Número de Cédula:</label>
-                            <input type="text" name="cedula" id="cedula_foto" class="form-input" placeholder="Ej: 1006342488" autocomplete="off" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="foto">Selecciona tu Foto:</label>
-                            <div class="file-input-wrapper">
-                                <input type="file" name="foto" id="foto" accept=".jpg,.jpeg,.png,.gif" required>
-                                <label for="foto" class="file-input-label">
-                                    <span>📁 Haz clic o arrastra tu foto aquí</span>
-                                </label>
-                            </div>
-                            <div class="file-name" id="nombreArchivo"></div>
-                        </div>
-                        <button type="submit" class="action-button" id="btnCargarFoto">
-                            📤 Subir Foto
-                        </button>
-                    </form>
-                    
-                    <div id="resultadoFoto" style="margin-top: 30px;"></div>
                 </div>
             </div>
 
@@ -940,9 +899,16 @@
         </main>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
     <script>
         let currentSection = 'dashboard';
-        let cedulaConsultada = null;
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -969,6 +935,38 @@
             currentSection = sectionId;
         }
 
+        function mostrarLoading(show) {
+            const loading = document.getElementById('loadingOverlay');
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            const alerta = document.createElement('div');
+            alerta.className = `alert alert-${tipo}`;
+            alerta.innerHTML = mensaje;
+            alerta.style.position = 'fixed';
+            alerta.style.top = '90px';
+            alerta.style.right = '20px';
+            alerta.style.zIndex = '3000';
+            alerta.style.minWidth = '350px';
+            alerta.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+
+            document.body.appendChild(alerta);
+
+            setTimeout(() => {
+                alerta.style.transition = 'all 0.3s ease';
+                alerta.style.opacity = '0';
+                alerta.style.transform = 'translateX(400px)';
+                
+                setTimeout(() => alerta.remove(), 300);
+            }, 4000);
+        }
+
+        // Formulario de consulta principal
         document.getElementById('formularioConsulta').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -985,58 +983,16 @@
             btnConsultar.innerHTML = '<span class="spinner"></span> Buscando...';
             resultDiv.innerHTML = '';
 
+            mostrarLoading(true);
+
             try {
                 const response = await fetch('/api/buscar_aprendiz/' + cedula);
                 const data = await response.json();
 
-                if (data.success && data.data) {
-                    cedulaConsultada = data.data.cedula;
-                    document.getElementById('cedula_foto').value = cedula;
+                mostrarLoading(false);
 
-                    resultDiv.innerHTML = `
-                        <div class="info-display">
-                            <h4 style="color: #1e5c1e; margin-bottom: 15px;">✅ Datos Encontrados</h4>
-                            <div class="info-display-row">
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Nombre</div>
-                                    <div class="info-display-value">${data.data.nombre}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Cédula</div>
-                                    <div class="info-display-value">${data.data.cedula}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Programa</div>
-                                    <div class="info-display-value">${data.data.nombre_programa || 'N/A'}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Nivel</div>
-                                    <div class="info-display-value">${data.data.nivel_formacion || 'N/A'}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Código Ficha</div>
-                                    <div class="info-display-value">${data.data.codigo_ficha || 'N/A'}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Centro</div>
-                                    <div class="info-display-value">${data.data.centro || 'N/A'}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">NIS</div>
-                                    <div class="info-display-value">${data.data.nis || 'N/A'}</div>
-                                </div>
-                                <div class="info-display-item">
-                                    <div class="info-display-label">Tipo Sangre</div>
-                                    <div class="info-display-value">${data.data.tipo_sangre || 'N/A'}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="btn-cargar-foto show">
-                            <button class="action-button" onclick="showSection('cargar-foto')" style="width: 100%; justify-content: center;">
-                                📸 Cargar mi Foto Ahora
-                            </button>
-                        </div>
-                    `;
+                if (data.success && data.data) {
+                    mostrarInfoAprendiz(data.data);
                 } else {
                     resultDiv.innerHTML = `
                         <div class="alert alert-error">
@@ -1045,86 +1001,145 @@
                     `;
                 }
             } catch (error) {
+                mostrarLoading(false);
                 resultDiv.innerHTML = `<div class="alert alert-error"><strong>❌ Error:</strong> ${error.message}</div>`;
             } finally {
                 btnConsultar.disabled = false;
-                btnConsultar.innerHTML = '🔍 Consultar';
+                btnConsultar.innerHTML = '🔍 Buscar Aprendiz';
             }
         });
 
-        document.getElementById('foto').addEventListener('change', function(e) {
-            const nombreArchivo = document.getElementById('nombreArchivo');
-            if (this.files.length > 0) {
-                const archivo = this.files[0];
-                const tamanoMB = (archivo.size / 1024 / 1024).toFixed(2);
-                nombreArchivo.textContent = `✓ Archivo: ${archivo.name} (${tamanoMB} MB)`;
-                nombreArchivo.classList.add('show');
-            } else {
-                nombreArchivo.classList.remove('show');
-            }
-        });
-
-        document.getElementById('formularioFoto').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        function mostrarInfoAprendiz(aprendiz) {
+            const resultDiv = document.getElementById('resultadoConsulta');
+            const tieneProto = aprendiz.foto ? true : false;
             
-            const cedula = document.getElementById('cedula_foto').value.trim();
-            const foto = document.getElementById('foto').files[0];
-            const resultDiv = document.getElementById('resultadoFoto');
-            const btnCargarFoto = document.getElementById('btnCargarFoto');
-            
-            if (!cedula || !foto) {
-                resultDiv.innerHTML = '<div class="alert alert-error">❌ Completa todos los campos</div>';
-                return;
-            }
-
-            if (foto.size > 5 * 1024 * 1024) {
-                resultDiv.innerHTML = '<div class="alert alert-error">❌ Máximo 5 MB</div>';
-                return;
-            }
-
-            btnCargarFoto.disabled = true;
-            btnCargarFoto.innerHTML = '<span class="spinner"></span> Procesando...';
-
-            try {
-                const formData = new FormData();
-                formData.append('cedula', cedula);
-                formData.append('foto', foto);
-
-                const response = await fetch('/actualizar_foto_rapido', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    resultDiv.innerHTML = `
-                        <div class="success-message">
-                            <h4>✅ ¡Tu foto ha sido cargada exitosamente!</h4>
-                            <p>Tu solicitud ha sido enviada al área de administración.</p>
-                            <p style="margin-top: 15px; font-weight: 600;">
-                                Espera a que el equipo de SENA procese tu solicitud. Esto puede tomar de 24 a 48 horas. 
-                                Pronto recibirás notificación cuando tu carnet esté listo. 📋
-                            </p>
+            let htmlContenido = `
+                <div class="info-display">
+                    <h4 style="color: #1e5c1e; margin-bottom: 15px;">✅ Información del Aprendiz</h4>
+                    <div class="info-display-row">
+                        <div class="info-display-item">
+                            <div class="info-display-label">Nombre</div>
+                            <div class="info-display-value">${aprendiz.nombre}</div>
                         </div>
-                    `;
-                    document.getElementById('formularioFoto').reset();
-                    document.getElementById('nombreArchivo').classList.remove('show');
-                } else {
-                    resultDiv.innerHTML = `<div class="alert alert-error"><strong>❌ Error:</strong> ${result.message}</div>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="alert alert-error"><strong>❌ Error:</strong> ${error.message}</div>`;
-            } finally {
-                btnCargarFoto.disabled = false;
-                btnCargarFoto.innerHTML = '📤 Subir Foto';
+                        <div class="info-display-item">
+                            <div class="info-display-label">Cédula</div>
+                            <div class="info-display-value">${aprendiz.cedula}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Programa</div>
+                            <div class="info-display-value">${aprendiz.nombre_programa || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Nivel</div>
+                            <div class="info-display-value">${aprendiz.nivel_formacion || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Código Ficha</div>
+                            <div class="info-display-value">${aprendiz.codigo_ficha || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Centro</div>
+                            <div class="info-display-value">${aprendiz.centro || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">NIS</div>
+                            <div class="info-display-value">${aprendiz.nis || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Tipo Sangre</div>
+                            <div class="info-display-value">${aprendiz.tipo_sangre || 'N/A'}</div>
+                        </div>
+                        <div class="info-display-item">
+                            <div class="info-display-label">Red Tecnológica</div>
+                            <div class="info-display-value">${aprendiz.red_tecnologica || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (tieneProto) {
+                htmlContenido += `
+                    <div class="info-card" style="background: linear-gradient(135deg, #D4EDDA 0%, #C3E6CB 100%); border-left: 5px solid #28A745;">
+                        <h3 style="color: #155724;">✅ Foto ya Cargada</h3>
+                        <p style="color: #155724; margin: 10px 0; font-weight: 600;">
+                            ✓ Tu foto ha sido cargada exitosamente en el sistema.
+                        </p>
+                        <p style="color: #155724; margin: 10px 0;">
+                            El área de administración está procesando tu solicitud de carnet. Esto puede tomar de 24 a 48 horas.
+                        </p>
+                        <p style="color: #155724; margin: 10px 0;">
+                            Si deseas actualizar tu foto, comunícate con el área administrativa para que eliminen la anterior y habiliten la opción de cargar una nueva imagen.
+                        </p>
+                    </div>
+                `;
+            } else {
+                htmlContenido += `
+                    <div class="info-card" style="background: linear-gradient(135deg, #FFF3CD 0%, #FFE69C 100%); border-left: 5px solid #FF9800;">
+                        <h3 style="color: #856404;">❌ Foto No Cargada</h3>
+                        <p style="color: #856404; margin: 10px 0; font-weight: 600;">
+                            ⚠️ Aún no has cargado una foto en el sistema.
+                        </p>
+                        <p style="color: #856404; margin: 10px 0;">
+                            Por favor, carga tu foto para que el equipo administrativo pueda generar tu carnet digital.
+                        </p>
+                    </div>
+                `;
             }
-        });
 
-        const fileInputLabel = document.querySelector('.file-input-label');
-        const fotoInput = document.getElementById('foto');
+            // FORMULARIO DE CARGA DE FOTO (SIEMPRE SE MUESTRA)
+            htmlContenido += `
+                <div class="info-card">
+                    <h3>📸 ${tieneProto ? 'Actualizar' : 'Cargar'} mi Foto</h3>
+                    <div class="info-card" style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border-left: 5px solid #2196F3; margin-bottom: 20px;">
+                        <h3 style="color: #0D47A1;">📋 Especificaciones de la Foto</h3>
+                        <ul style="margin: 15px 0; color: #0D47A1; line-height: 1.8; list-style-position: inside;">
+                            <li>✓ Formato: JPG, JPEG o PNG</li>
+                            <li>✓ Tamaño: 3x4 (o similar)</li>
+                            <li>✓ Fondo: Blanco o uniforme</li>
+                            <li>✓ Peso máximo: 5MB</li>
+                            <li>✓ Foto clara y reciente</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="formularioFotoAprendiz" style="margin-top: 20px;">
+                        <input type="hidden" id="cedulaFotoHidden" value="${aprendiz.cedula}">
+                        <div class="form-group">
+                            <label class="form-label">Selecciona tu Foto:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="fotoAprendiz" accept=".jpg,.jpeg,.png,.gif" required>
+                                <label for="fotoAprendiz" class="file-input-label">
+                                    <span>📁 Haz clic o arrastra tu foto aquí</span>
+                                </label>
+                            </div>
+                            <div class="file-name" id="nombreArchivoAprendiz"></div>
+                        </div>
+                        <button type="submit" class="action-button" id="btnCargarFotoAprendiz" style="width: 100%; justify-content: center;">
+                            📤 ${tieneProto ? 'Actualizar' : 'Subir'} Foto
+                        </button>
+                    </form>
+                    
+                    <div id="resultadoFotoAprendiz" style="margin-top: 20px;"></div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = htmlContenido;
 
-        if (fileInputLabel) {
+            // Manejar cambio de archivo
+            const fotoInput = document.getElementById('fotoAprendiz');
+            fotoInput.addEventListener('change', function(e) {
+                const nombreArchivo = document.getElementById('nombreArchivoAprendiz');
+                if (this.files.length > 0) {
+                    const archivo = this.files[0];
+                    const tamanoMB = (archivo.size / 1024 / 1024).toFixed(2);
+                    nombreArchivo.textContent = `✓ Archivo: ${archivo.name} (${tamanoMB} MB)`;
+                    nombreArchivo.classList.add('show');
+                } else {
+                    nombreArchivo.classList.remove('show');
+                }
+            });
+
+            // Manejar drag & drop
+            const fileInputLabel = document.querySelector('.file-input-label');
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 fileInputLabel.addEventListener(eventName, (e) => {
                     e.preventDefault();
@@ -1138,13 +1153,90 @@
                 });
             });
 
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileInputLabel.addEventListener(eventName, () => {
+                    fileInputLabel.style.background = '#f0f8f4';
+                });
+            });
+
             fileInputLabel.addEventListener('drop', (e) => {
                 fotoInput.files = e.dataTransfer.files;
                 const event = new Event('change', { bubbles: true });
                 fotoInput.dispatchEvent(event);
             });
+
+            // Manejar envío del formulario de foto
+            document.getElementById('formularioFotoAprendiz').addEventListener('submit', cargarFotoAprendiz);
         }
 
+        async function cargarFotoAprendiz(e) {
+            e.preventDefault();
+            
+            const cedula = document.getElementById('cedulaFotoHidden').value;
+            const foto = document.getElementById('fotoAprendiz').files[0];
+            const resultDiv = document.getElementById('resultadoFotoAprendiz');
+            const btnCargar = document.getElementById('btnCargarFotoAprendiz');
+            
+            if (!foto) {
+                resultDiv.innerHTML = '<div class="alert alert-error">❌ Por favor selecciona una foto</div>';
+                return;
+            }
+
+            if (foto.size > 5 * 1024 * 1024) {
+                resultDiv.innerHTML = '<div class="alert alert-error">❌ El archivo no debe exceder 5 MB</div>';
+                return;
+            }
+
+            btnCargar.disabled = true;
+            btnCargar.innerHTML = '<span class="spinner"></span> Procesando...';
+
+            mostrarLoading(true);
+
+            try {
+                const formData = new FormData();
+                formData.append('cedula', cedula);
+                formData.append('foto', foto);
+
+                const response = await fetch('/actualizar_foto_rapido', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                mostrarLoading(false);
+
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success-message">
+                            <h4>✅ ¡Tu foto ha sido cargada exitosamente!</h4>
+                            <p>Tu solicitud ha sido enviada al área de administración.</p>
+                            <p style="margin-top: 15px; font-weight: 600;">
+                                Espera a que el equipo de SENA procese tu solicitud. Esto puede tomar de 24 a 48 horas. 
+                                Pronto recibirás notificación cuando tu carnet esté listo. 📋
+                            </p>
+                        </div>
+                    `;
+                    document.getElementById('formularioFotoAprendiz').reset();
+                    document.getElementById('nombreArchivoAprendiz').classList.remove('show');
+                    
+                    // Mostrar alerta de éxito
+                    mostrarAlerta('✅ Foto cargada exitosamente', 'success');
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error"><strong>❌ Error:</strong> ${result.message}</div>`;
+                    mostrarAlerta('❌ Error al cargar la foto', 'error');
+                }
+            } catch (error) {
+                mostrarLoading(false);
+                resultDiv.innerHTML = `<div class="alert alert-error"><strong>❌ Error:</strong> ${error.message}</div>`;
+                mostrarAlerta('❌ Error al procesar la solicitud', 'error');
+            } finally {
+                btnCargar.disabled = false;
+                btnCargar.innerHTML = '📤 Subir Foto';
+            }
+        }
+
+        // Responsive
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
                 document.getElementById('sidebar').classList.remove('active');
@@ -1152,6 +1244,7 @@
             }
         });
 
+        // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             showSection('dashboard');
         });
