@@ -1566,8 +1566,8 @@ def buscar_rapido():
 
 @app.route('/actualizar_foto_rapido', methods=['POST'])
 def actualizar_foto_rapido():
-    """Ruta para actualizar foto desde búsqueda rápida"""
-    if 'usuario' not in session or session.get('rol') != 'admin':
+    """Ruta para actualizar foto - accesible para aprendiz y admin"""
+    if 'usuario' not in session:
         return jsonify({'success': False, 'message': 'Acceso denegado'})
     
     try:
@@ -1594,20 +1594,23 @@ def actualizar_foto_rapido():
         
         if cursor.rowcount == 0:
             conn.close()
-            return jsonify({'success': False, 'message': 'No se encontró el aprendiz para actualizar'})
+            return jsonify({'success': False, 'message': 'No se encontró el aprendiz para actualizar'}), 404
         
         conn.commit()
         conn.close()
         
+        print(f"✅ Foto cargada para: {cedula_limpia}")
+        
         return jsonify({
             'success': True, 
-            'message': 'Foto actualizada exitosamente (con backup automático)',
+            'message': 'Foto cargada exitosamente. El área de administración revisará tu solicitud.',
             'foto_url': f'/static/fotos/{nombre_archivo_foto}'
         })
         
     except Exception as e:
         print(f"Error actualizando foto rápido: {e}")
-        return jsonify({'success': False, 'message': f'Error: {str(e)}'})
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+    
 
 # =============================================
 # RUTAS PARA CONSULTA DE DATOS
@@ -2708,7 +2711,7 @@ def api_estadisticas_fichas():
 @app.route('/api/buscar_aprendiz/<cedula>')
 def api_buscar_aprendiz(cedula):
     """API para buscar aprendiz por cédula"""
-    if 'usuario' not in session or session.get('rol') != 'admin':
+    if 'usuario' not in session:
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
