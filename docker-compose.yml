@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    container_name: carnetizacion_sena
+    ports:
+      # IMPORTANTE: 0.0.0.0 permite acceso desde cualquier IP
+      - "0.0.0.0:5000:5000"
+    volumes:
+      - ./static/fotos:/app/static/fotos
+      - ./static/qr:/app/static/qr
+      - ./static/carnets:/app/static/carnets
+      - ./static/fotos_backup:/app/static/fotos_backup
+      - ./uploads:/app/uploads
+      - ./instance:/app/instance
+      - ./carnet.db:/app/carnet.db
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # Red bridge para mejor aislamiento
+    networks:
+      - sena_network
+
+networks:
+  sena_network:
+    driver: bridge
