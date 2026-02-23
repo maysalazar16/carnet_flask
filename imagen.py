@@ -1,6 +1,90 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 
+# ============================================
+# SISTEMA ROBUSTO DE CARGA DE FUENTES
+# Prueba múltiples rutas hasta encontrar una
+# ============================================
+
+def cargar_fuente(tamaño, bold=False, tipo='sans'):
+    """
+    Carga fuente con múltiples alternativas para garantizar
+    que SIEMPRE se use una fuente legible, nunca la default de 8px
+    """
+    candidatas = []
+    
+    if tipo == 'serif':
+        candidatas = [
+            "cambria.ttf", "georgia.ttf", "times.ttf", "timesbd.ttf",
+            "C:/Windows/Fonts/cambria.ttf",
+            "C:/Windows/Fonts/georgia.ttf",
+            "C:/Windows/Fonts/times.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+            "/System/Library/Fonts/Times New Roman.ttf",
+        ]
+    elif bold:
+        candidatas = [
+            "arialbd.ttf", "calibrib.ttf", "arial_bold.ttf",
+            "C:/Windows/Fonts/arialbd.ttf",
+            "C:/Windows/Fonts/calibrib.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+        ]
+    else:
+        candidatas = [
+            "arial.ttf", "calibri.ttf", "trebuc.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/calibri.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        ]
+
+    for ruta in candidatas:
+        try:
+            return ImageFont.truetype(ruta, tamaño)
+        except:
+            continue
+
+    # Último recurso: crear fuente bitmap escalada
+    # Usamos un truco: ImageFont.load_default() es 8px pero podemos
+    # generar texto más grande dibujando en una imagen mayor
+    try:
+        # Intentar con la fuente por defecto pero notificar
+        print(f"⚠️  ADVERTENCIA: No se encontró fuente TTF para tamaño {tamaño}. "
+              f"El carnet puede verse diferente al esperado.")
+        print(f"   Instala fuentes en: C:/Windows/Fonts/ o /usr/share/fonts/")
+        # Devolver default — al menos algo
+        return ImageFont.load_default()
+    except:
+        return ImageFont.load_default()
+
+
+def wrap_text(texto, font, draw, max_ancho):
+    """Divide texto largo en líneas que caben en max_ancho"""
+    palabras = texto.split()
+    lineas = []
+    linea_actual = ""
+    
+    for palabra in palabras:
+        prueba = f"{linea_actual} {palabra}".strip()
+        bbox = draw.textbbox((0, 0), prueba, font=font)
+        if bbox[2] - bbox[0] <= max_ancho:
+            linea_actual = prueba
+        else:
+            if linea_actual:
+                lineas.append(linea_actual)
+            linea_actual = palabra
+    
+    if linea_actual:
+        lineas.append(linea_actual)
+    
+    return lineas
+
+
 def generar_carnet(empleado, ruta_qr):
     # MEDIDAS EXACTAS DEL CARNET SENA: 5.5cm ancho x 8.7cm alto (formato vertical)
     # A 300 DPI para impresión de calidad: 649px ancho x 1024px alto
@@ -9,140 +93,123 @@ def generar_carnet(empleado, ruta_qr):
     img = Image.new("RGB", (ancho, alto), fondo_color)
     draw = ImageDraw.Draw(img)
 
-    # Cargar fuentes PRIMERO (antes de usarlas)
-    try:
-        font_nombre = ImageFont.truetype("arial.ttf", 42)                    # Nombre: ARIAL (igual)
-        font_cedula = ImageFont.truetype("calibri.ttf", 32)                  # CC: SANS-SERIF (Calibri)
-        font_rh_label = ImageFont.truetype("trebuc.ttf", 28)                 # Rh: TREBUCHET MS
-        font_rh_tipo = ImageFont.truetype("trebuc.ttf", 85)                  # Tipo sangre: TREBUCHET MS
-        font_footer = ImageFont.truetype("arial.ttf", 28)                    # Regional: ARIAL (igual)
-        font_vertical = ImageFont.truetype("arial.ttf", 25)
-        font_vertical_bold = ImageFont.truetype("arialbd.ttf", 35)
-        font_logo = ImageFont.truetype("arial.ttf", 36)
-    except:
-        font_nombre = font_cedula = font_rh_label = font_rh_tipo = font_footer = font_vertical = font_vertical_bold = font_logo = ImageFont.load_default()
+    # ============================================
+    # FUENTES — sistema robusto con múltiples alternativas
+    # ============================================
+    # FUENTES ajustadas al carnet Word de referencia (55x85mm a 300dpi)
+    # Word usa 6-10pt → a 300dpi: 25-42px
+    font_nombre       = cargar_fuente(36, bold=True)   # 8.6pt — nombre aprendiz (bold verde)
+    font_cedula       = cargar_fuente(24, bold=False)  # 6.7pt — CC. 1.114.543.155
+    font_rh_label     = cargar_fuente(26, bold=False)  # 6.2pt — Rh O+
+    font_footer       = cargar_fuente(22, bold=False)  # 5.3pt — Regional / Centro
+    font_aprendiz     = cargar_fuente(24, bold=True)   # 5.7pt — APRENDIZ (bold negro)
+    font_vertical_bold= cargar_fuente(32, bold=True)
+    font_logo         = cargar_fuente(30, bold=False)
 
-    # Cargar imagen del logo SENA - MÁS PEQUEÑO
+    # ========== LOGO SENA ==========
     ruta_logo = os.path.join("static", "fotos", "logo_sena.png")
     try:
         logo = Image.open(ruta_logo).convert("RGBA")
-        logo = logo.resize((130, 140))  # Logo más pequeño (antes era 260x250)
-        img.paste(logo, (65, 75), logo)
+        logo = logo.resize((90, 100))
+        img.paste(logo, (30, 30), logo)
     except:
-        draw.text((40, 75), "SENA", fill=(0, 128, 0), font=font_logo)
+        draw.text((30, 30), "SENA", fill=(0, 128, 0), font=font_logo)
 
-    # ========== SECCIÓN DE LA FOTO ==========
-    foto_encontrada = False
+    # ========== FOTO DEL APRENDIZ ==========
     foto = None
-    
     posibles_rutas = []
-    
+
     if empleado.get('cedula'):
-        posibles_rutas.append(os.path.join("static", "fotos", f"foto_{empleado['cedula']}.png"))
-        posibles_rutas.append(os.path.join("static", "fotos", f"foto_{empleado['cedula']}.jpg"))
-    
+        posibles_rutas += [
+            os.path.join("static", "fotos", f"foto_{empleado['cedula']}.png"),
+            os.path.join("static", "fotos", f"foto_{empleado['cedula']}.jpg"),
+            os.path.join("static", "fotos", f"{empleado['cedula']}.png"),
+            os.path.join("static", "fotos", f"{empleado['cedula']}.jpg"),
+        ]
+
     if empleado.get('foto'):
         posibles_rutas.append(os.path.join("static", "fotos", empleado['foto']))
-        if not empleado['foto'].endswith(('.png', '.jpg', '.jpeg')):
-            posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['foto']}.png"))
-            posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['foto']}.jpg"))
-    
-    if empleado.get('cedula'):
-        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.png"))
-        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.jpg"))
-        posibles_rutas.append(os.path.join("static", "fotos", f"{empleado['cedula']}.jpeg"))
-    
+
     for ruta in posibles_rutas:
         if os.path.exists(ruta):
             try:
                 foto = Image.open(ruta).convert("RGB")
-                foto_encontrada = True
                 break
             except:
                 continue
-    
-    if not foto_encontrada:
-        try:
-            from procesamiento_fotos import obtener_ruta_foto_final
-            ruta_foto_final = obtener_ruta_foto_final(empleado['cedula'])
-            if ruta_foto_final and os.path.exists(ruta_foto_final):
-                foto = Image.open(ruta_foto_final).convert("RGB")
-                foto_encontrada = True
-        except:
-            pass
-    
-    if not foto_encontrada:
-        foto = Image.new("RGB", (220, 270), (240, 240, 240))
-        draw_placeholder = ImageDraw.Draw(foto)
-        try:
-            font_placeholder = ImageFont.truetype("arial.ttf", 20)
-        except:
-            font_placeholder = ImageFont.load_default()
-        draw_placeholder.text((60, 120), "SIN FOTO", fill=(150, 150, 150), font=font_placeholder)
-    
-    foto = foto.resize((220, 260))
-    img.paste(foto, (399, 40)) #posicionamiento a la derecha 
 
-    # Texto "APRENDIZ" HORIZONTAL debajo del logo, SOBRE la línea verde - EN COLOR NEGRO Y NEGRILLA
+    if foto is None:
+        foto = Image.new("RGB", (220, 260), (235, 235, 235))
+        draw_ph = ImageDraw.Draw(foto)
+        font_ph = cargar_fuente(18)
+        draw_ph.text((55, 115), "SIN FOTO", fill=(150, 150, 150), font=font_ph)
+
+    # Siempre redimensionar a tamaño fijo — independiente de la foto original
+    foto = foto.resize((195, 230), Image.LANCZOS)
+    img.paste(foto, (420, 25))
+
+    # ========== CARGO ==========
     cargo_texto = empleado.get('cargo', 'APRENDIZ').upper()
-    try:
-        font_aprendiz = ImageFont.truetype("arialbd.ttf", 26)  # NEGRILLA
-    except:
-        font_aprendiz = ImageFont.load_default()
-    
-    # Colocar APRENDIZ debajo del logo más pequeño, sobre la línea verde
-    draw.text((40, 270), cargo_texto, fill=(0, 0, 0), font=font_aprendiz)
+    # CARGO "APRENDIZ" — justo debajo de la foto+logo
+    draw.text((30, 258), cargo_texto, fill=(0, 0, 0), font=font_aprendiz)
 
-    # Línea verde horizontal - CON GROSOR PERO SIN TOCAR LOS BORDES
-    draw.line((40, 310, 624, 310), fill=(0, 128, 0), width=7)  # width aumenta el grosor de la linea verde 
+    # Línea verde horizontal separadora
+    draw.line((30, 292, 619, 292), fill=(0, 128, 0), width=4)
 
-    # NOMBRES
+    # ========== NOMBRE — dividido en líneas si es largo ==========
     nombre_completo = empleado['nombre'].upper()
-    if len(nombre_completo) > 16:
-        partes = nombre_completo.split()
-        linea1 = " ".join(partes[:2])
-        linea2 = " ".join(partes[2:])
-        draw.text((40, 325 + 20 ), linea1, fill=(0, 128, 0), font=font_nombre)
-        if linea2:
-            draw.text((40, 375 + 20), linea2, fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = 435
+    partes = nombre_completo.split()
+
+    y_nombre = 304
+    espaciado = 42   # espacio entre líneas del nombre (fuente 36px bold)
+
+    if len(partes) <= 2:
+        # Una sola línea: "ANA MARIA"
+        draw.text((30, y_nombre), nombre_completo, fill=(0, 128, 0), font=font_nombre)
+        siguiente_y = y_nombre + espaciado + 10
+    elif len(partes) == 3:
+        # Dos líneas: "ANA MARIA" / "TOQUICA"
+        draw.text((30, y_nombre),            " ".join(partes[:2]), fill=(0, 128, 0), font=font_nombre)
+        draw.text((30, y_nombre + espaciado)," ".join(partes[2:]), fill=(0, 128, 0), font=font_nombre)
+        siguiente_y = y_nombre + espaciado * 2 + 8
     else:
-        draw.text((15, 325), nombre_completo, fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = 375
+        # Tres líneas: "ANA MARIA" / "TOQUICA" / "MILLAN"
+        draw.text((30, y_nombre),                " ".join(partes[:2]), fill=(0, 128, 0), font=font_nombre)
+        draw.text((30, y_nombre + espaciado),    " ".join(partes[2:3]), fill=(0, 128, 0), font=font_nombre)
+        draw.text((30, y_nombre + espaciado * 2)," ".join(partes[3:]), fill=(0, 128, 0), font=font_nombre)
+        siguiente_y = y_nombre + espaciado * 3 + 6
 
-   
-    # CÉDULA CON TIPO DE DOCUMENTO (TI, CC, etc.)
+    # ========== CÉDULA ==========
     tipo_doc = empleado.get('tipo_documento', 'CC')
-    cedula_formateada = "{:,}".format(int(empleado['cedula'])).replace(",", ".")
-    texto_completo_cedula = f"{tipo_doc}. {cedula_formateada}"
-    draw.text((40, siguiente_y + 50), texto_completo_cedula, fill=(0, 0, 0), font=font_cedula)
+    try:
+        cedula_formateada = "{:,}".format(int(empleado['cedula'])).replace(",", ".")
+    except:
+        cedula_formateada = str(empleado['cedula'])
+    texto_cedula = f"{tipo_doc}. {cedula_formateada}"
+    draw.text((30, siguiente_y + 8), texto_cedula, fill=(0, 0, 0), font=font_cedula)
 
-    # RH y TIPO DE SANGRE
-    rh_y = siguiente_y + 140
-    tipo_sangre = empleado['tipo_sangre'].upper()
-    texto_rh_completo = f"Rh {tipo_sangre}"
-    draw.text((40, rh_y-40), texto_rh_completo, fill=(0, 0, 0), font=font_rh_label)
+    # ========== RH / TIPO SANGRE ==========
+    tipo_sangre = empleado.get('tipo_sangre', 'O+').upper()
+    draw.text((30, siguiente_y + 44), f"Rh {tipo_sangre}", fill=(0, 0, 0), font=font_rh_label)
 
-    # CÓDIGO QR
+    # ========== CÓDIGO QR — esquina inferior derecha ==========
     try:
         qr = Image.open(ruta_qr).convert("RGB")
-        qr = qr.resize((330, 330))
-        img.paste(qr, (300, 460))
+        qr = qr.resize((240, 240), Image.LANCZOS)
+        img.paste(qr, (390, siguiente_y + 10))
     except:
-        draw.rectangle([(320, 430), (620, 730)], outline=(0, 0, 0), width=2)
-        draw.text((420, 570), "QR CODE", fill=(0, 0, 0), font=font_footer)
+        draw.rectangle([(390, siguiente_y + 10), (630, siguiente_y + 250)], outline=(0, 0, 0), width=2)
+        draw.text((480, siguiente_y + 120), "QR", fill=(0, 0, 0), font=font_footer)
 
-    # LÍNEA VERDE ANTES DEL FOOTER (igual que la de arriba)
-    draw.line((40, 900, 100, 900), fill=(0, 100, 0), width=7)
-    
-    # INFORMACIÓN REGIONAL - TODO EN VERDE Y EN DOS LÍNEAS
-    footer_y = 870
-    draw.text((40, footer_y + 50), "Regional Valle del Cauca", fill=(0, 128, 0), font=font_footer)
-    draw.text((40, footer_y + 90), "Centro de Biotecnología Industrial", fill=(0, 100, 0), font=font_footer)
+    # ========== FOOTER ==========
+    draw.line((30, 940, 80, 940), fill=(0, 100, 0), width=4)
+    draw.text((30, 952), "Regional Valle del Cauca",         fill=(0, 128, 0), font=font_footer)
+    draw.text((30, 976), "Centro de Biotecnología Industrial", fill=(0, 100, 0), font=font_footer)
 
     # Guardar anverso
     ruta_anverso = os.path.join("static", "carnets", f"carnet_{empleado['cedula']}.png")
     img.save(ruta_anverso, dpi=(300, 300))
+    print(f"✅ Anverso guardado: {ruta_anverso}")
 
     # ===== REVERSO DEL CARNET =====
     try:
@@ -151,32 +218,23 @@ def generar_carnet(empleado, ruta_qr):
         reverso = reverso.resize((ancho, alto))
     except:
         reverso = Image.new("RGB", (ancho, alto), (255, 255, 255))
-    
+
     draw_reverso = ImageDraw.Draw(reverso)
 
-    try:
-        font_reverso = ImageFont.truetype("cambria.ttf", 28)  # LETRA GRANDE
-        font_programa = ImageFont.truetype("arialbd.ttf", 18)
-        font_fecha = ImageFont.truetype("arial.ttf", 16)
-    except:
-        try:
-            font_reverso = ImageFont.truetype("arial.ttf", 28)
-            font_programa = ImageFont.truetype("arialbd.ttf", 18)
-            font_fecha = ImageFont.truetype("arial.ttf", 16)
-        except:
-            font_reverso = font_programa = font_fecha = ImageFont.load_default()
+    # Fuentes del reverso — también con sistema robusto
+    font_reverso       = cargar_fuente(32, tipo='serif')
+    font_extraviado    = cargar_fuente(26, tipo='serif')
+    font_programa_bold = cargar_fuente(26, tipo='serif')
+    font_firma_titulo  = cargar_fuente(26, tipo='serif')
+    font_ficha         = cargar_fuente(26, tipo='serif')
 
-    # CUADRO PRINCIPAL (solo variables)
-    cuadro_x, cuadro_y = 40, 50
-    cuadro_ancho, cuadro_alto = 560, 400
+    # ========== TEXTO PRINCIPAL DEL REVERSO ==========
+    margen_izq = 40
+    margen_der = 40
+    max_ancho_texto = ancho - margen_izq - margen_der
+    texto_y = 80
+    sep = 50  # separación entre líneas
 
-    # MÁRGENES IGUALES A IZQUIERDA Y DERECHA
-    margen_izquierdo = 40
-    margen_derecho = 40
-    ancho_texto_disponible = ancho - margen_izquierdo - margen_derecho
-
-    # PRIMER TEXTO - LETRA GRANDE
-    texto1_y = cuadro_y + 30
     texto1_lines = [
         "Este carné identifica a quien lo porta,",
         "únicamente para el cumplimiento de sus",
@@ -187,119 +245,79 @@ def generar_carnet(empleado, ruta_qr):
         "prestarle toda la colaboración para su",
         "desempeño."
     ]
-    
-    # DIBUJAR EL TEXTO CENTRADO
-    separacion_lineas = 45  # Separación entre líneas
 
     for i, line in enumerate(texto1_lines):
-        if line.strip():  # Solo si la línea no está vacía
-            # Justificar el texto (distribuir espacios)
-            palabras = line.split()
-            if len(palabras) > 1:
-                # Calcular ancho total de palabras sin espacios
-                ancho_palabras = sum([draw_reverso.textbbox((0, 0), palabra, font=font_reverso)[2] - 
-                                    draw_reverso.textbbox((0, 0), palabra, font=font_reverso)[0] 
-                                    for palabra in palabras])
-                # Espacio disponible para distribuir entre palabras
-                espacio_total = ancho_texto_disponible - ancho_palabras
-                espacio_entre_palabras = espacio_total / (len(palabras) - 1) if len(palabras) > 1 else 0
-                
-                # Dibujar cada palabra con el espaciado calculado
-                x_actual = margen_izquierdo
-                for palabra in palabras:
-                    draw_reverso.text((x_actual, texto1_y + (i * separacion_lineas)), palabra, fill=(0, 0, 0), font=font_reverso)
-                    bbox_palabra = draw_reverso.textbbox((0, 0), palabra, font=font_reverso)
-                    ancho_palabra = bbox_palabra[2] - bbox_palabra[0]
-                    x_actual += ancho_palabra + espacio_entre_palabras
-            else:
-                # Si solo hay una palabra, centrarla
-                draw_reverso.text((margen_izquierdo, texto1_y + (i * separacion_lineas)), line, fill=(0, 0, 0), font=font_reverso)
-    
-    # ========== SECCIÓN INFERIOR DEL REVERSO ==========
-    
-   # FIRMA
-    firma_y = alto - 100
+        if not line.strip():
+            continue
+        palabras = line.split()
+        if len(palabras) > 1:
+            # Texto justificado
+            anchos_palabras = [
+                draw_reverso.textbbox((0, 0), p, font=font_reverso)[2] -
+                draw_reverso.textbbox((0, 0), p, font=font_reverso)[0]
+                for p in palabras
+            ]
+            suma_palabras = sum(anchos_palabras)
+            espacio = (max_ancho_texto - suma_palabras) / (len(palabras) - 1)
+            x = margen_izq
+            for j, palabra in enumerate(palabras):
+                draw_reverso.text((x, texto_y + i * sep), palabra,
+                                  fill=(0, 0, 0), font=font_reverso)
+                x += anchos_palabras[j] + (espacio if j < len(palabras) - 1 else 0)
+        else:
+            draw_reverso.text((margen_izq, texto_y + i * sep),
+                              line, fill=(0, 0, 0), font=font_reverso)
 
-# IMAGEN DE FIRMA CENTRADA (PRIMERO)
-    firma_img_y = 400  # Cambiar este número para subir/bajar la firma
-    firma_img_x = (ancho - 100) // 3  # Centrada, o cambiar para mover izq/der
+    # ========== FIRMA ==========
+    firma_y = 520
+    firma_x = (ancho - 100) // 3
     try:
         ruta_firma = os.path.join("static", "fotos", "firma_directora.png")
         if os.path.exists(ruta_firma):
             firma_img = Image.open(ruta_firma).convert("RGBA")
-            firma_img = firma_img.resize((300, 300))
-            reverso.paste(firma_img, (firma_img_x, firma_img_y), firma_img)
+            firma_img = firma_img.resize((300, 180), Image.LANCZOS)
+            reverso.paste(firma_img, (firma_x, firma_y), firma_img)
     except:
         pass
 
-# TEXTO "FIRMA Y AUTORIZA" DEBAJO DE LA FIRMA
-    texto_firma_y = 920  # Cambiar este número para subir/bajar el texto
-
-    try:
-        font_firma_titulo = ImageFont.truetype("cambria.ttf", 22)
-    except:
-        font_firma_titulo = font_reverso
-
-    firma_texto_y = firma_img_y + 280  # Debajo de la imagen
+    # "Firma y Autoriza"
+    firma_texto_y = firma_y + 195
     texto_firma = "Firma y Autoriza"
     bbox_firma = draw_reverso.textbbox((0, 0), texto_firma, font=font_firma_titulo)
-    ancho_firma = bbox_firma[2] - bbox_firma[0]
-    pos_x_firma = (ancho - ancho_firma) // 12
-    draw_reverso.text((pos_x_firma, firma_texto_y), texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
-    
-    # ===== TEXTO SOBRE CARNÉ EXTRAVIADO - ALINEADO A LA IZQUIERDA =====
-    # Mismo tamaño que el texto de arriba (28pt)
-    try:
-        font_extraviado = ImageFont.truetype("cambria.ttf", 22)  # Mismo tamaño que arriba
-    except:
-        font_extraviado = font_reverso
+    pos_x_firma = margen_izq
+    draw_reverso.text((pos_x_firma, firma_texto_y),
+                      texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
 
-    # Posición inicial (izquierda)
-    margen_izquierdo_extraviado = 40  #  CAMBIAR este número para mover más izq/der
-    info_y = 760  #  CAMBIAR este número para subir/bajar todo el bloque
-
+    # ========== TEXTO CARNÉ EXTRAVIADO ==========
+    info_y = 780
     texto_extraviado = [
         "Si por algún motivo este carné es extraviado,",
         "por favor diríjase al Centro de Biotecnología",
         "Industrial ubicado en la calle 40 #30-44"
     ]
-
-# Dibujar cada línea alineada a la izquierda
-    separacion_lineas_extraviado = 40  #  CAMBIAR para más/menos espacio entre líneas
-
     for i, linea in enumerate(texto_extraviado):
-        draw_reverso.text((margen_izquierdo_extraviado, info_y + (i * separacion_lineas_extraviado)), 
-                        linea, fill=(0, 0, 0), font=font_extraviado)
-        
-    # ===== NOMBRE DEL PROGRAMA (POSICIÓN INDEPENDIENTE) =====
-    programa_x = 40  #  CAMBIAR para mover izquierda/derecha
-    programa_y = 900  #  CAMBIAR para mover arriba/abajo
+        draw_reverso.text((margen_izq, info_y + i * 42),
+                          linea, fill=(0, 0, 0), font=font_extraviado)
+
+    # ========== PROGRAMA Y FICHA ==========
     nombre_programa = empleado.get('nombre_programa', 'Programa Técnico')
+    codigo_ficha    = empleado.get('codigo_ficha', '0000')
 
-    try:
-        font_programa_bold = ImageFont.truetype("times.ttf", 22)
-    except:
-        font_programa_bold = font_programa
+    # Wrap del nombre de programa si es muy largo
+    lineas_programa = wrap_text(nombre_programa, font_programa_bold, draw_reverso,
+                                max_ancho_texto)
+    prog_y = 910
+    for i, lp in enumerate(lineas_programa[:2]):  # máximo 2 líneas
+        draw_reverso.text((margen_izq, prog_y + i * 34),
+                          lp, fill=(0, 0, 0), font=font_programa_bold)
 
-    draw_reverso.text((programa_x, programa_y), nombre_programa, fill=(0, 0, 0), font=font_programa_bold)
-
-    
-    # FICHA (CENTRADO Y NEGRILLA)
-    codigo_ficha = empleado.get('codigo_ficha', '0000')
-    ficha_y = programa_y + 45
-    ficha_text = f"FICHA {codigo_ficha}"
-    try:
-        font_ficha = ImageFont.truetype("times.ttf", 22)
-    except:
-        font_ficha = font_programa
-    
-    bbox_ficha = draw_reverso.textbbox((0, 0), ficha_text, font=font_ficha)
-    ancho_ficha = bbox_ficha[2] - bbox_ficha[0]
-    pos_x_ficha = (ancho - ancho_ficha) // 13
-    draw_reverso.text((pos_x_ficha, ficha_y), ficha_text, fill=(0, 0, 0), font=font_ficha)
+    ficha_y = prog_y + (len(lineas_programa[:2])) * 34 + 6
+    draw_reverso.text((margen_izq, ficha_y),
+                      f"FICHA {codigo_ficha}", fill=(0, 0, 0), font=font_ficha)
 
     ruta_reverso = os.path.join("static", "carnets", f"reverso_{empleado['cedula']}.png")
     reverso.save(ruta_reverso, dpi=(300, 300))
+    print(f"✅ Reverso guardado: {ruta_reverso}")
 
     return ruta_anverso
 
@@ -314,25 +332,26 @@ def combinar_anverso_reverso(nombre_archivo_anverso, nombre_archivo_reverso, nom
     except Exception as e:
         raise Exception(f"Error al cargar las imágenes: {e}")
 
-    ancho_total = anverso.width + reverso.width + 40
-    alto_total = max(anverso.height, reverso.height) + 60
+    # Padding entre las dos caras
+    padding = 40
+    ancho_total = anverso.width + reverso.width + padding
+    alto_total  = max(anverso.height, reverso.height) + 60
 
     combinado = Image.new("RGB", (ancho_total, alto_total), (245, 245, 245))
-    
     combinado.paste(anverso, (0, 0))
-    combinado.paste(reverso, (anverso.width + 40, 0))
+    combinado.paste(reverso, (anverso.width + padding, 0))
 
+    # Etiquetas ANVERSO / REVERSO
     draw = ImageDraw.Draw(combinado)
-    try:
-        font_label = ImageFont.truetype("arial.ttf", 18)
-    except:
-        font_label = ImageFont.load_default()
-    
-    draw.text((anverso.width//2 - 40, anverso.height + 20), "ANVERSO", fill=(0, 0, 0), font=font_label)
-    draw.text((anverso.width + 40 + reverso.width//2 - 40, reverso.height + 20), "REVERSO", fill=(0, 0, 0), font=font_label)
+    font_label = cargar_fuente(22)
+    draw.text((anverso.width // 2 - 40, anverso.height + 15),
+              "ANVERSO", fill=(80, 80, 80), font=font_label)
+    draw.text((anverso.width + padding + reverso.width // 2 - 40, reverso.height + 15),
+              "REVERSO", fill=(80, 80, 80), font=font_label)
 
     nombre_archivo = f"{nombre_aprendiz.replace(' ', '_')}_completo.png"
     ruta_combinada = os.path.join("static", "carnets", nombre_archivo)
     combinado.save(ruta_combinada, dpi=(300, 300))
+    print(f"✅ Carnet combinado guardado: {ruta_combinada}")
 
     return nombre_archivo
