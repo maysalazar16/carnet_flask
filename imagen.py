@@ -15,16 +15,22 @@ def cargar_fuente(tamaño, bold=False, tipo='sans'):
     
     if tipo == 'serif':
         candidatas = [
-            "cambria.ttf", "georgia.ttf", "times.ttf", "timesbd.ttf",
-            "C:/Windows/Fonts/cambria.ttf",
-            "C:/Windows/Fonts/georgia.ttf",
+            "static/fonts/times.ttf",          # ← Times primero
+            "static/fonts/timesbd.ttf",
             "C:/Windows/Fonts/times.ttf",
+            "static/fonts/cambria.ttf",
+            "cambria.ttf",
+            "C:/Windows/Fonts/cambria.ttf",
+            "georgia.ttf",
+            "C:/Windows/Fonts/georgia.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
             "/System/Library/Fonts/Times New Roman.ttf",
         ]
+    
     elif bold:
         candidatas = [
+            "static/fonts/arialbd.ttf",            # ← local primero
             "arialbd.ttf", "calibrib.ttf", "arial_bold.ttf",
             "C:/Windows/Fonts/arialbd.ttf",
             "C:/Windows/Fonts/calibrib.ttf",
@@ -32,8 +38,17 @@ def cargar_fuente(tamaño, bold=False, tipo='sans'):
             "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
             "/System/Library/Fonts/Helvetica.ttc",
         ]
+    elif tipo == 'cedula':                         # ← bloque nuevo para cédula
+        candidatas = [
+            "static/fonts/cambria.ttf",            # ← Cambria local primero
+            "cambria.ttf",
+            "C:/Windows/Fonts/cambria.ttf",
+            "georgia.ttf",
+            "C:/Windows/Fonts/georgia.ttf",
+        ]
     else:
         candidatas = [
+            "static/fonts/arial.ttf",              # ← local primero
             "arial.ttf", "calibri.ttf", "trebuc.ttf",
             "C:/Windows/Fonts/arial.ttf",
             "C:/Windows/Fonts/calibri.ttf",
@@ -87,22 +102,20 @@ def wrap_text(texto, font, draw, max_ancho):
 
 def generar_carnet(empleado, ruta_qr):
     # MEDIDAS EXACTAS DEL CARNET SENA: 5.5cm ancho x 8.7cm alto (formato vertical)
-    # A 300 DPI para impresión de calidad: 649px ancho x 1024px alto
-    ancho, alto = 649, 1024
+    # A 300 DPI para impresión de calidad: 650px ancho x 1028px alto (5.5cm x 8.7cm)
+    ancho, alto = 650, 1028
     fondo_color = (255, 255, 255)
     img = Image.new("RGB", (ancho, alto), fondo_color)
     draw = ImageDraw.Draw(img)
 
     # ============================================
-    # FUENTES — sistema robusto con múltiples alternativas
+    # FUENTES — tamaños ajustados para coincidir con carnet de referencia
     # ============================================
-    # FUENTES ajustadas al carnet Word de referencia (55x85mm a 300dpi)
-    # Word usa 6-10pt → a 300dpi: 25-42px
-    font_nombre       = cargar_fuente(36, bold=True)   # 8.6pt — nombre aprendiz (bold verde)
-    font_cedula       = cargar_fuente(24, bold=False)  # 6.7pt — CC. 1.114.543.155
-    font_rh_label     = cargar_fuente(26, bold=False)  # 6.2pt — Rh O+
-    font_footer       = cargar_fuente(22, bold=False)  # 5.3pt — Regional / Centro
-    font_aprendiz     = cargar_fuente(24, bold=True)   # 5.7pt — APRENDIZ (bold negro)
+    font_nombre       = cargar_fuente(44, bold=True)   # nombre aprendiz (bold verde)
+    font_cedula       = cargar_fuente(40, tipo='serif')  # CC. 1.114.543.155
+    font_rh_label     = cargar_fuente(40, bold=False)  # Rh O+
+    font_footer       = cargar_fuente(30, bold=False)  # Regional / Centro
+    font_aprendiz     = cargar_fuente(34, bold=True)   # APRENDIZ (bold negro)
     font_vertical_bold= cargar_fuente(32, bold=True)
     font_logo         = cargar_fuente(30, bold=False)
 
@@ -110,8 +123,8 @@ def generar_carnet(empleado, ruta_qr):
     ruta_logo = os.path.join("static", "fotos", "logo_sena.png")
     try:
         logo = Image.open(ruta_logo).convert("RGBA")
-        logo = logo.resize((90, 100))
-        img.paste(logo, (30, 30), logo)
+        logo = logo.resize((160, 160))
+        img.paste(logo, (50, 30), logo)
     except:
         draw.text((30, 30), "SENA", fill=(0, 128, 0), font=font_logo)
 
@@ -145,66 +158,62 @@ def generar_carnet(empleado, ruta_qr):
         draw_ph.text((55, 115), "SIN FOTO", fill=(150, 150, 150), font=font_ph)
 
     # Siempre redimensionar a tamaño fijo — independiente de la foto original
-    foto = foto.resize((195, 230), Image.LANCZOS)
-    img.paste(foto, (420, 25))
+    foto = foto.resize((224, 257), Image.LANCZOS)
+    img.paste(foto, (390, 20))
 
     # ========== CARGO ==========
     cargo_texto = empleado.get('cargo', 'APRENDIZ').upper()
     # CARGO "APRENDIZ" — justo debajo de la foto+logo
-    draw.text((30, 258), cargo_texto, fill=(0, 0, 0), font=font_aprendiz)
+    draw.text((30, 245), cargo_texto, fill=(0, 0, 0), font=font_aprendiz)
 
     # Línea verde horizontal separadora
-    draw.line((30, 292, 619, 292), fill=(0, 128, 0), width=4)
+    draw.line((30, 293, 610, 293), fill=(0, 128, 0), width=9)
 
     # ========== NOMBRE — dividido en líneas si es largo ==========
     nombre_completo = empleado['nombre'].upper()
     partes = nombre_completo.split()
 
-    y_nombre = 304
-    espaciado = 42   # espacio entre líneas del nombre (fuente 36px bold)
+    y_nombre = 315
+    espaciado = 60   # espacio entre líneas del nombre
 
-    if len(partes) <= 2:
-        # Una sola línea: "ANA MARIA"
-        draw.text((30, y_nombre), nombre_completo, fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = y_nombre + espaciado + 10
-    elif len(partes) == 3:
-        # Dos líneas: "ANA MARIA" / "TOQUICA"
-        draw.text((30, y_nombre),            " ".join(partes[:2]), fill=(0, 128, 0), font=font_nombre)
-        draw.text((30, y_nombre + espaciado)," ".join(partes[2:]), fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = y_nombre + espaciado * 2 + 8
-    else:
-        # Tres líneas: "ANA MARIA" / "TOQUICA" / "MILLAN"
-        draw.text((30, y_nombre),                " ".join(partes[:2]), fill=(0, 128, 0), font=font_nombre)
-        draw.text((30, y_nombre + espaciado),    " ".join(partes[2:3]), fill=(0, 128, 0), font=font_nombre)
-        draw.text((30, y_nombre + espaciado * 2)," ".join(partes[3:]), fill=(0, 128, 0), font=font_nombre)
-        siguiente_y = y_nombre + espaciado * 3 + 6
+    # Siempre máximo 2 palabras por línea para consistencia visual
+    # "JOHAN QUINTERO HERNANDEZ" → "JOHAN QUINTERO" / "HERNANDEZ"
+    # "ANA MARIA TOQUICA MILLAN" → "ANA MARIA" / "TOQUICA MILLAN"
+    lineas_nombre = []
+    for i in range(0, len(partes), 2):
+        lineas_nombre.append(" ".join(partes[i:i+2]))
+
+    for idx, linea in enumerate(lineas_nombre):
+        draw.text((30, y_nombre + espaciado * idx), linea, fill=(0, 128, 0), font=font_nombre)
+
+    siguiente_y = y_nombre + espaciado * len(lineas_nombre) + 10
 
     # ========== CÉDULA ==========
     tipo_doc = empleado.get('tipo_documento', 'CC')
     try:
-        cedula_formateada = "{:,}".format(int(empleado['cedula'])).replace(",", ".")
+        cedula_formateada = str(empleado['cedula'])
     except:
         cedula_formateada = str(empleado['cedula'])
     texto_cedula = f"{tipo_doc}. {cedula_formateada}"
-    draw.text((30, siguiente_y + 8), texto_cedula, fill=(0, 0, 0), font=font_cedula)
+    draw.text((30, siguiente_y + 44), texto_cedula, fill=(0, 0, 0), font=font_cedula)
 
     # ========== RH / TIPO SANGRE ==========
     tipo_sangre = empleado.get('tipo_sangre', 'O+').upper()
-    draw.text((30, siguiente_y + 44), f"Rh {tipo_sangre}", fill=(0, 0, 0), font=font_rh_label)
+    draw.text((30, siguiente_y + 110), f"Rh {tipo_sangre}", fill=(0, 0, 0), font=font_rh_label)
 
     # ========== CÓDIGO QR — esquina inferior derecha ==========
     try:
         qr = Image.open(ruta_qr).convert("RGB")
-        qr = qr.resize((240, 240), Image.LANCZOS)
-        img.paste(qr, (390, siguiente_y + 10))
+        qr = qr.resize((310, 329), Image.LANCZOS)
+        img.paste(qr, (330, siguiente_y +25))
     except:
-        draw.rectangle([(390, siguiente_y + 10), (630, siguiente_y + 250)], outline=(0, 0, 0), width=2)
+        draw.rectangle([(377, siguiente_y + 10), (630, siguiente_y + 250)], outline=(0, 0, 0), width=2)
         draw.text((480, siguiente_y + 120), "QR", fill=(0, 0, 0), font=font_footer)
 
     # ========== FOOTER ==========
-    draw.line((30, 940, 80, 940), fill=(0, 100, 0), width=4)
-    draw.text((30, 952), "Regional Valle del Cauca",         fill=(0, 128, 0), font=font_footer)
-    draw.text((30, 976), "Centro de Biotecnología Industrial", fill=(0, 100, 0), font=font_footer)
+    draw.line((30, 900, 90, 900), fill=(0, 120, 0), width=9)
+    draw.text((30, 927), "Regional Valle del Cauca",           fill=(79, 160, 70), font=font_footer, )
+    draw.text((30, 971), "Centro de Biotecnología Industrial",  fill=(79, 160, 70), font=font_footer)
 
     # Guardar anverso
     ruta_anverso = os.path.join("static", "carnets", f"carnet_{empleado['cedula']}.png")
@@ -222,35 +231,35 @@ def generar_carnet(empleado, ruta_qr):
     draw_reverso = ImageDraw.Draw(reverso)
 
     # Fuentes del reverso — también con sistema robusto
-    font_reverso       = cargar_fuente(32, tipo='serif')
+    font_reverso       = cargar_fuente(29, tipo='serif')
     font_extraviado    = cargar_fuente(26, tipo='serif')
     font_programa_bold = cargar_fuente(26, tipo='serif')
     font_firma_titulo  = cargar_fuente(26, tipo='serif')
     font_ficha         = cargar_fuente(26, tipo='serif')
 
     # ========== TEXTO PRINCIPAL DEL REVERSO ==========
-    margen_izq = 40
-    margen_der = 40
+    margen_izq = 43
+    margen_der = 50
     max_ancho_texto = ancho - margen_izq - margen_der
-    texto_y = 80
-    sep = 50  # separación entre líneas
+    texto_y = 35
+    sep = 40  # separación entre líneas
 
     texto1_lines = [
-        "Este carné identifica a quien lo porta,",
-        "únicamente para el cumplimiento de sus",
-        "funciones y para la obtención de los",
-        "servicios que el SENA presta a sus",
-        "aprendices, funcionarios y/o contratistas.",
-        "Se solicita a las autoridades civiles y militares",
-        "prestarle toda la colaboración para su",
-        "desempeño."
+    "Este carné identifica a quien lo porta,",
+    "únicamente para el cumplimiento de sus",
+    "funciones y para la obtención de los",
+    "servicios que el SENA presta a sus",
+    "aprendices, funcionarios y/o contratistas.",
+    "Se solicita a las autoridades civiles y militares",
+    "prestarle toda la colaboración para su",
+    "desempeño.",
     ]
 
     for i, line in enumerate(texto1_lines):
         if not line.strip():
             continue
         palabras = line.split()
-        if len(palabras) > 1:
+        if len(palabras) > 1 and i < len(texto1_lines) - 2:
             # Texto justificado
             anchos_palabras = [
                 draw_reverso.textbbox((0, 0), p, font=font_reverso)[2] -
@@ -269,19 +278,19 @@ def generar_carnet(empleado, ruta_qr):
                               line, fill=(0, 0, 0), font=font_reverso)
 
     # ========== FIRMA ==========
-    firma_y = 520
+    firma_y = 400
     firma_x = (ancho - 100) // 3
     try:
         ruta_firma = os.path.join("static", "fotos", "firma_directora.png")
         if os.path.exists(ruta_firma):
             firma_img = Image.open(ruta_firma).convert("RGBA")
-            firma_img = firma_img.resize((300, 180), Image.LANCZOS)
+            firma_img = firma_img.resize((350, 250), Image.LANCZOS)
             reverso.paste(firma_img, (firma_x, firma_y), firma_img)
     except:
         pass
 
     # "Firma y Autoriza"
-    firma_texto_y = firma_y + 195
+    firma_texto_y = firma_y + 230
     texto_firma = "Firma y Autoriza"
     bbox_firma = draw_reverso.textbbox((0, 0), texto_firma, font=font_firma_titulo)
     pos_x_firma = margen_izq
@@ -289,7 +298,7 @@ def generar_carnet(empleado, ruta_qr):
                       texto_firma, fill=(0, 0, 0), font=font_firma_titulo)
 
     # ========== TEXTO CARNÉ EXTRAVIADO ==========
-    info_y = 780
+    info_y = 700
     texto_extraviado = [
         "Si por algún motivo este carné es extraviado,",
         "por favor diríjase al Centro de Biotecnología",
@@ -306,18 +315,18 @@ def generar_carnet(empleado, ruta_qr):
     # Wrap del nombre de programa si es muy largo
     lineas_programa = wrap_text(nombre_programa, font_programa_bold, draw_reverso,
                                 max_ancho_texto)
-    prog_y = 910
+    prog_y = 860
     for i, lp in enumerate(lineas_programa[:2]):  # máximo 2 líneas
         draw_reverso.text((margen_izq, prog_y + i * 34),
                           lp, fill=(0, 0, 0), font=font_programa_bold)
 
-    ficha_y = prog_y + (len(lineas_programa[:2])) * 34 + 6
+    ficha_y = prog_y + (len(lineas_programa[:2])) * 34 + 25
     draw_reverso.text((margen_izq, ficha_y),
                       f"FICHA {codigo_ficha}", fill=(0, 0, 0), font=font_ficha)
 
     ruta_reverso = os.path.join("static", "carnets", f"reverso_{empleado['cedula']}.png")
     reverso.save(ruta_reverso, dpi=(300, 300))
-    print(f"✅ Reverso guardado: {ruta_reverso}")
+    print(f" Reverso guardado: {ruta_reverso}")
 
     return ruta_anverso
 
