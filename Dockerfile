@@ -1,13 +1,13 @@
 FROM python:3.11-slim
 
-# Variables de entorno
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV FLASK_ENV=production
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
 
 WORKDIR /app
 
-# Instalar dependencias del sistema para OpenCV y Pillow
+# Dependencias del sistema + fuentes Liberation (equivalentes a Arial/Times)
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -19,27 +19,27 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     libopenblas0 \
     libgfortran5 \
+    fonts-liberation \
+    fonts-dejavu-core \
+    fontconfig \
+    && fc-cache -fv \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements
-COPY requirements.txt .
-
 # Instalar dependencias Python
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código de la aplicación
+# Copiar código
 COPY . .
 
 # Crear directorios necesarios
 RUN mkdir -p static/fotos static/qr static/carnets uploads \
     static/fotos_backup/por_fecha static/fotos_backup/metadatos \
-    templates instance
+    static/css static/js static/fonts templates instance
 
-# Permisos de escritura
-RUN chmod -R 777 static uploads instance
+# Permisos
+RUN chmod -R 777 static uploads instance templates
 
-# Exponer puerto
 EXPOSE 5000
 
-# Iniciar con Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]

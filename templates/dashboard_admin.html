@@ -679,8 +679,8 @@
         .mc-overlay.open { display: flex; }
 
         .mc-box {
-            background: white; border-radius: 16px; width: 100%; max-width: 720px;
-            max-height: 90vh; overflow-y: auto; padding: 20px; position: relative;
+            background: white; border-radius: 16px; width: 100%; max-width: 900px;
+            max-height: 95vh; overflow-y: auto; padding: 24px; position: relative;
             box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: mcEntrada 0.25s ease;
         }
         @keyframes mcEntrada { from { opacity:0; transform:scale(0.93) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
@@ -690,17 +690,22 @@
 
         .mc-nombre { font-size: 16px; font-weight: 800; color: #1e5c1e; margin-bottom: 16px; padding-right: 36px; line-height: 1.3; }
 
-        .mc-caras { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .mc-caras { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+        .mc-caras .mc-img-wrap img { width: 100%; height: auto; display: block; border-radius: 8px; }
+
+        @media (max-width: 600px) { .mc-caras { grid-template-columns: 1fr; } }
 
         .mc-cara-label { font-size: 11px; font-weight: 700; color: #39A935; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; text-align: center; }
 
-        .mc-img-wrap { border: 2px solid #e8f5e9; border-radius: 10px; overflow: hidden; background: #fafffe; min-height: 180px; display: flex; align-items: center; justify-content: center; }
+        .mc-img-wrap { border: 2px solid #e8f5e9; border-radius: 10px; overflow: hidden; background: #fafffe; min-height: 350px; display: flex; align-items: center; justify-content: center; }
         .mc-img-wrap img { width: 100%; height: auto; display: block; border-radius: 8px; }
         .mc-spinner { padding: 30px; }
 
         .mc-error { color: #999; font-size: 12px; text-align: center; padding: 20px; }
 
         .mc-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
 
         @media (max-width: 500px) { .mc-caras { grid-template-columns: 1fr; } .mc-btns { flex-direction: column; } .mc-btns .action-button { width: 100%; } }
 

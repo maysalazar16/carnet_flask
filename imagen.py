@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 
+
 # ============================================
 # SISTEMA ROBUSTO DE CARGA DE FUENTES
 # Prueba múltiples rutas hasta encontrar una
@@ -15,46 +16,27 @@ def cargar_fuente(tamaño, bold=False, tipo='sans'):
     
     if tipo == 'serif':
         candidatas = [
-            "static/fonts/times.ttf",          # ← Times primero
-            "static/fonts/timesbd.ttf",
+            "static/fonts/times.ttf",
             "C:/Windows/Fonts/times.ttf",
-            "static/fonts/cambria.ttf",
-            "cambria.ttf",
-            "C:/Windows/Fonts/cambria.ttf",
-            "georgia.ttf",
-            "C:/Windows/Fonts/georgia.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
-            "/System/Library/Fonts/Times New Roman.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
         ]
     
     elif bold:
         candidatas = [
-            "static/fonts/arialbd.ttf",            # ← local primero
-            "arialbd.ttf", "calibrib.ttf", "arial_bold.ttf",
-            "C:/Windows/Fonts/arialbd.ttf",
-            "C:/Windows/Fonts/calibrib.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-            "/System/Library/Fonts/Helvetica.ttc",
-        ]
-    elif tipo == 'cedula':                         # ← bloque nuevo para cédula
-        candidatas = [
-            "static/fonts/cambria.ttf",            # ← Cambria local primero
-            "cambria.ttf",
-            "C:/Windows/Fonts/cambria.ttf",
-            "georgia.ttf",
-            "C:/Windows/Fonts/georgia.ttf",
-        ]
+        "static/fonts/arialbd.ttf",
+        "C:/Windows/Fonts/arialbd.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
+    ]
     else:
         candidatas = [
-            "static/fonts/arial.ttf",              # ← local primero
-            "arial.ttf", "calibri.ttf", "trebuc.ttf",
+            "static/fonts/arial.ttf",
             "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/calibri.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            "/System/Library/Fonts/Helvetica.ttc",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
         ]
 

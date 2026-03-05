@@ -3,9 +3,9 @@ services:
     build: .
     container_name: carnetizacion_sena
     ports:
-      # IMPORTANTE: 0.0.0.0 permite acceso desde cualquier IP
-      - "0.0.0.0:5000:5000"
+      - "0.0.0.0:5001:5000"
     volumes:
+      # Datos persistentes
       - ./static/fotos:/app/static/fotos
       - ./static/qr:/app/static/qr
       - ./static/carnets:/app/static/carnets
@@ -13,11 +13,16 @@ services:
       - ./uploads:/app/uploads
       - ./instance:/app/instance
       - ./carnet.db:/app/carnet.db
+      # Código en tiempo real - toma cambios sin reconstruir
+      - ./templates:/app/templates
+      - ./static/css:/app/static/css
+      - ./static/js:/app/static/js
+      - ./app.py:/app/app.py
     environment:
-      - FLASK_ENV=production
+      - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
+      - FLASK_DEBUG=1
     restart: unless-stopped
-    # Red bridge para mejor aislamiento
     networks:
       - sena_network
 
